@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Test.Security;
 
-internal sealed class LocalEvaluationFactory(string? installationId = null)
+internal sealed class LocalEvaluationFactory(string? installationId = null, bool enableOpenApi = false)
     : WebApplicationFactory<LocalEvaluation.LocalProgram>
 {
     public const string Origin = "http://127.0.0.1:5080";
@@ -22,7 +22,7 @@ internal sealed class LocalEvaluationFactory(string? installationId = null)
         builder.UseSetting("ConnectionStrings:AppDbContext",
             "Server=127.0.0.1,1;Database=NoSqlUsedByHttpSecurityTests;Integrated Security=true;Encrypt=true;Connect Timeout=1;");
         builder.UseSetting("Novasoft:Enabled", "false");
-        builder.UseSetting("OpenApi:Enabled", "false");
+        builder.UseSetting("OpenApi:Enabled", enableOpenApi ? "true" : "false");
         builder.UseWebRoot(_webRoot);
     }
 

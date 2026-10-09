@@ -30,7 +30,34 @@ describe('API contract errors', () => {
   });
   it('returns the exact server totals without calculating them', () => {
     const data = { gross: 500000, discount: 25000, tax: 90250, total: 565250 };
-    expect(unwrap({ isSuccess: true, data } as Envelope<typeof data>)).toBe(data);
+    const response: Envelope<typeof data> = {
+      isSuccess: true,
+      statusCode: 200,
+      message: 'Operación exitosa.',
+      data,
+      errors: null,
+      fieldErrors: null,
+      traceId: null,
+    };
+    expect(unwrap(response)).toBe(data);
+  });
+  it.each([null, undefined])('rejects a successful envelope with data %s', (data) => {
+    // Simulate untrusted JSON at the transport boundary, including a missing property.
+    const response = {
+      isSuccess: true,
+      statusCode: 200,
+      message: 'Operación exitosa.',
+      traceId: 'malformed-response-test',
+      ...(data === undefined ? {} : { data }),
+    };
+    expect(() => unwrap(response as Envelope<unknown>)).toThrowError(
+      expect.objectContaining({
+        message: 'La aplicación devolvió una respuesta incompleta. Vuelve a intentarlo.',
+        status: 200,
+        traceId: 'malformed-response-test',
+        code: 'response.invalid',
+      }),
+    );
   });
   it('does not expose an HTML error page', () => {
     const failure = normalizeError(

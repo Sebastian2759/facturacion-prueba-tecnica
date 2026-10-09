@@ -55,7 +55,7 @@ La clave única owner/idempotencyKey protege concurrencia; la huella del cuerpo 
 
 dbo.Facturas y dbo.DetalleFactura tienen relación y FK; la numeración no pretende ser contigua ante rollback. El modelo también conserva la tabla pedagógica DemoArchitectures.
 
-El migrador aplica esquema con credencial administrativa separada. Runtime sólo tiene DML de facturas y no aplica migraciones en requests. El snapshot inicial manual requiere comprobar HasPendingModelChanges y SQL real en CI. El backup de entrega será esquema vacío; ejemplos de portada fuera de SQL.
+El migrador aplica esquema con credencial administrativa separada. Runtime sólo tiene SELECT e INSERT en Facturas/DetalleFactura; init revoca UPDATE/DELETE previos del rol y comprueba privilegios efectivos. La API no aplica migraciones en requests. El snapshot manual, el modelo y las cinco integraciones SQL superaron CI. La prueba de init/backup/restore del paquete sigue pendiente; los ejemplos de portada están fuera de SQL.
 
 ## HTTP y frontend
 
@@ -88,3 +88,5 @@ Accounts local usa almacenamiento simulado por propietario que se reinicia con e
 Api/Api conserva un host JWT opcional, fuera del alcance de entrega y sin IdP configurado. Su rechazo de modo local es defensa adicional de diseño, no evidencia de un despliegue web validado.
 
 Los HTML y reportes DemoArchitecture en docs/architecture son documentación histórica de Template, no un grafo actualizado de este sistema. Build y evidencia actual están en [TESTING](TESTING.md).
+
+Evidencia de ejecución: [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549), commit `21a36f9a246727db3f602d58cb1055dc4528c515`: 149 tests .NET aprobados, 0 omitidos. Trivy de la imagen SQL mantiene bloqueada la release; no se acredita aún el recorrido completo del ZIP.

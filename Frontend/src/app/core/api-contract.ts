@@ -1,13 +1,13 @@
-/** Contract v1, mirrored from docs/implementation-contract.md until OpenAPI export. */
+/** Contract v1; nullable transport fields confirmed against C# DTOs, pending OpenAPI export. */
 export interface Envelope<T> {
   isSuccess: boolean;
   statusCode: number;
   message: string;
-  data: T;
-  errors?: string[];
+  data: T | null;
+  errors?: string[] | null;
   code?: string;
-  fieldErrors?: Record<string, string[]>;
-  traceId?: string;
+  fieldErrors?: Record<string, string[]> | null;
+  traceId?: string | null;
 }
 export interface Totals {
   gross: number;
@@ -53,8 +53,8 @@ export interface Session {
   authenticated: boolean;
   canEvaluate: boolean;
   canUseRealAccounts: boolean;
-  csrfToken?: string;
-  oidc?: { authority: string; clientId: string; scope: string };
+  csrfToken?: string | null;
+  oidc?: { authority: string; clientId: string; scope: string } | null;
 }
 export type AccountsMode = 'simulated' | 'real';
 export interface Account {
@@ -62,20 +62,20 @@ export interface Account {
   identificationType: string;
   document: string;
   name: string;
-  firstName?: string;
-  lastName?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   email: string;
   personType: number;
   cityCode: string;
   departmentCode: string;
   countryCode: string;
-  address?: string;
-  additionalAddress?: string;
-  phone?: string;
+  address?: string | null;
+  additionalAddress?: string | null;
+  phone?: string | null;
   customerType: number;
-  website?: string;
+  website?: string | null;
   registeredAt: string;
-  externalCode?: string;
+  externalCode?: string | null;
 }
 export interface AccountsResult {
   mode: AccountsMode;

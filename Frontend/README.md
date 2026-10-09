@@ -4,7 +4,7 @@ Aplicación Angular en español para facturas y Accounts. La entrega vigente es 
 
 ## Desarrollo reproducible
 
-Toolchain fijado: Node **26.1.0**, npm **11.13.0**, Angular/CLI/Material/CDK **22.2.2**, TypeScript **6.0.2**. `package-lock.json` fija las dependencias transitivas. El evaluador del ZIP no necesita estas herramientas: recibe los archivos ya compilados.
+Toolchain fijado: Node **24.21.0 LTS**, npm **11.13.0**, Angular/CLI/Material/CDK **22.2.2**, TypeScript **6.0.2**. Esta versión LTS de Node está dentro del rango compatible de Angular 22 (`^24.15.0`). `package-lock.json` fija las dependencias transitivas. El evaluador del ZIP no necesita estas herramientas: recibe los archivos ya compilados. Fuentes: [versiones de Node](https://nodejs.org/en/about/previous-releases) y [compatibilidad de Angular](https://angular.dev/reference/versions).
 
 ```powershell
 npm ci
@@ -49,7 +49,7 @@ Se muestran el modo devuelto y el resultado real del contrato: una creación dev
 
 Se normalizan `ResponseBase<T>` y ProblemDetails, incluidos `fieldErrors` con rutas como `details[0].quantity`, códigos HTTP y `traceId`. Los errores no vacían el formulario. Un error de red no cambia silenciosamente el proveedor a simulación.
 
-`core/api-contract.ts` refleja `../docs/implementation-contract.md`. La generación/verificación desde el OpenAPI definitivo queda como paso de integración del repositorio; estos tipos no se presentan como un cliente generado automáticamente.
+`core/api-contract.ts` refleja `../docs/implementation-contract.md`. El generador fijado y sus comandos `api:setup`, `api:generate` y `api:check` están preparados en `tools/openapi`; la referencia inicial y su conexión a los modelos consumidos esperan el archivo OpenAPI real exportado por CI. **Todavía no hay un cliente generado ni una comprobación de drift completada.** El comando de comprobación falla mientras falten esos archivos. Consulte [procedimiento OpenAPI](docs/openapi.md).
 
 ## Pruebas
 

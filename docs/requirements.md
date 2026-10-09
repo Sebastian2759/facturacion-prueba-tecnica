@@ -44,7 +44,7 @@ El ejercicio pide login para obtener token y consumo C# de GET/POST Accounts, mo
 
 El contrato revisado difiere del ejemplo PDF: fecIng es fecha/hora y estCli no figura en el esquema consultado. El adaptador normaliza nombres y no envía un campo sin respaldo del contrato. El token y su expiración permanecen en backend.
 
-El cliente real y las pruebas HTTP controladas están implementados; **no se ha verificado una llamada real**. LocalEvaluation exige simulación visible y rechaza modo real con 403. Una simulación aprobada no cierra la comprobación de conectividad real del ejercicio. Si se requiere esa evidencia, ejecutar una prueba posterior autorizada con credenciales válidas, entorno/datos definidos y resultado depurado, sin necesidad de desplegar en Azure.
+El cliente real está implementado y sus pruebas HTTP controladas pasaron en CI; **no se ha verificado una llamada real**. LocalEvaluation exige simulación visible y rechaza modo real con 403. Una simulación aprobada no cierra la comprobación de conectividad real del ejercicio. Si se requiere esa evidencia, ejecutar una prueba posterior autorizada con credenciales válidas, entorno/datos definidos y resultado depurado, sin necesidad de desplegar en Azure.
 
 Accounts simulado no es persistencia SQL: se reinicia al reiniciar el proceso. POST devuelve aceptación y permite consultar después por código; no inventa una respuesta de cuenta completa.
 
@@ -65,4 +65,4 @@ El cierre requiere crear y recuperar una factura de múltiples líneas contra SQ
 
 El backup final será esquema vacío. Los ejemplos de portada son ficticios, públicos y separados; el smoke crea su propia factura. El ZIP y documentos deben identificar el mismo commit, con acceso comprobado al repositorio privado y a la copia SharePoint.
 
-A 9 de octubre de 2026: build .NET integrado 0 errores/0 warnings; Angular build/formato, 14 unitarias y 7 UI controladas aprobados. Tests .NET/SQL/backup/ZIP/CI pendientes por WDAC y ausencia Docker/WSL en el equipo actual. Una prueba live del navegador permanece omitida. Gitleaks sobre el árbol actual sin secretos detectados no acredita por sí solo el historial/paquete final.
+A 9 de octubre de 2026: [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549), commit `21a36f9a246727db3f602d58cb1055dc4528c515`, aprobó 149 tests .NET sin omisiones, incluidas cinco integraciones SQL y modelo EF. Angular: build/formato, 14 unitarias, 4 proxy y 7 UI controladas aprobadas. Gitleaks, Semgrep, NuGet/npm y Trivy filesystem/ASP.NET pasaron. Trivy de la imagen oficial SQL bloquea la entrega, sin excepción. Backup/restore, ZIP, live E2E y arranque Windows con Docker siguen pendientes. Node 24.21.0 LTS/npm 11.13.0 portable verificado.

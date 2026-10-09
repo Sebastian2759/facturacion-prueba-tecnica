@@ -24,14 +24,19 @@ try {
     }
     Invoke-Checked 'dotnet' @('list', 'Example.sln', 'package', '--deprecated')
     Invoke-Checked 'dotnet' @('list', 'Example.sln', 'package', '--outdated')
-    Push-Location (Join-Path $script:ReleaseRoot 'Frontend')
-    try {
-        $npm = if ($env:OS -eq 'Windows_NT') { 'npm.cmd' } else { 'npm' }
-        $audit = & $npm audit --json --audit-level=moderate 2>&1
-        $exitCode = $LASTEXITCODE
-        $auditText = $audit -join "`n"
-        Write-Utf8 (Join-Path $reports 'npm-audit.json') $auditText
-        $npmReport = $auditText | ConvertFrom-Json
-        if ($npmReport.PSObject.Properties['error'] -or $exitCode -ne 0) { throw 'La auditoría npm falló o detectó hallazgos moderados, altos o críticos.' }
-    } finally { Pop-Location }
+    foreach ($inventory in @(
+        @{ Path = 'Frontend'; Report = 'npm-audit.json' },
+        @{ Path = 'Frontend/tools/openapi'; Report = 'npm-openapi-audit.json' }
+    )) {
+        Push-Location (Join-Path $script:ReleaseRoot $inventory.Path)
+        try {
+            $npm = if ($env:OS -eq 'Windows_NT') { 'npm.cmd' } else { 'npm' }
+            $audit = & $npm audit --json --audit-level=moderate 2>&1
+            $exitCode = $LASTEXITCODE
+            $auditText = $audit -join "`n"
+            Write-Utf8 (Join-Path $reports $inventory.Report) $auditText
+            $npmReport = $auditText | ConvertFrom-Json
+            if ($npmReport.PSObject.Properties['error'] -or $exitCode -ne 0) { throw "La auditoría npm de $($inventory.Path) falló o detectó hallazgos moderados, altos o críticos." }
+        } finally { Pop-Location }
+    }
 } finally { Pop-Location }

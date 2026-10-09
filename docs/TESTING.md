@@ -4,19 +4,25 @@ Actualizado: 9 de octubre de 2026. No confundir compilación con ejecución ni r
 
 ## Resultado observado
 
+Evidencia: [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549), commit `21a36f9a246727db3f602d58cb1055dc4528c515`, 9 de octubre de 2026.
+
 | Comprobación | Resultado |
 |---|---|
-| Build integrado Example.sln | 0 errores y 0 advertencias. |
-| Formato .NET | Aplicado; gate CI pendiente. |
-| Angular build / format:check | Aprobados. Bundle inicial 344,22 kB, transferencia estimada 92,62 kB. |
-| Angular unitarias | 14 aprobadas; además 4 pruebas HTTP del proxy. |
-| Playwright Edge | 7 pruebas UI aprobadas; 1 live omitida sin E2E_LIVE. |
-| Axe en vistas escritorio/móvil | Sin violaciones detectadas en los casos ejecutados; no certifica accesibilidad completa. |
-| Gitleaks del árbol actual | Sin secretos detectados; historial/paquete final se revisan en CI. |
-| Tests .NET | Bloqueados por WDAC 0x800711C7 al cargar assemblies. |
-| SQL/migración/backup/restore/containers | Pendientes; Docker/WSL no disponible en este equipo. |
-| GitHub Actions | Workflow preparado; primera ejecución pendiente. |
-| Novasoft real | No ejecutado; sólo fixtures/control HTTP y simulación local. |
+| Build integrado / formato .NET | Aprobados; build local 0 errores y 0 advertencias. |
+| Tests .NET en CI Linux | **149 aprobados, 0 omitidos**. Incluyen HTTP/WAF, modelo/snapshot y 5 integraciones SQL. |
+| SQL Server real | 5 aprobadas: round-trip/propiedad, concurrencia/idempotencia, rollback, paginación y permisos SELECT/INSERT. |
+| Angular build / formato | Aprobados. Node 24.21.0 LTS/npm 11.13.0; toolchain portable verificado. |
+| Frontend unitarias / proxy | 14 unitarias y 4 pruebas HTTP del proxy aprobadas. |
+| Playwright con respuestas controladas | 7 aprobadas; E2E live navegador/API/SQL todavía pendiente. |
+| Axe escritorio/móvil | Sin violaciones detectadas en los casos revisados; no certificación completa. |
+| Gitleaks / Semgrep / NuGet / npm | Gates aprobados en la ejecución indicada. |
+| Trivy filesystem e imagen ASP.NET | Aprobados. |
+| Trivy imagen oficial SQL Server | **Bloquea la entrega**; hallazgos en investigación, sin excepción. |
+| Backup/restore, smoke del ZIP, paquete final | Pendientes; no se etiqueta como release verificada. |
+| Instalación Windows con Docker | No ejecutada; Docker/WSL ausentes en el equipo local. |
+| Novasoft real | No ejecutado; pruebas HTTP controladas y simulación local. |
+
+WDAC 0x800711C7 continúa afectando la ejecución .NET del equipo Windows. Las 149 pruebas aprobadas pertenecen al entorno CI Linux, no a una evasión de esa política.
 
 ## Backend
 
@@ -36,11 +42,11 @@ Los tests SQL utilizan `FACTURACION_TEST_SQL_CONNECTION` y crean/eliminan bases 
 | Test/Invoices/*ValidatorTests y *QueryTests | Límites, permisos y contratos de casos de uso. |
 | Test/Invoices/InvoiceMappingTests | Mapper por convención y DTO de líneas. |
 | Test/Invoices/InvoicePersistenceModelTests | Tipos/identity/FK e igualdad snapshot-modelo. |
-| Test/Invoices/InvoiceSqlIntegrationTests | Aggregate real, aislamiento A/B, paginación, concurrencia y rollback. |
+| Test/Invoices/InvoiceSqlIntegrationTests | Agregado real, aislamiento A/B, paginación, concurrencia, rollback y funcionamiento con SELECT/INSERT sin UPDATE/DELETE. |
 | Test/Security | Sesión real de LocalEvaluation mediante WebApplicationFactory, Host/Origin/CSRF, cookies, límites, errores y fixtures sin SQL. |
 | Test/Accounts | Cliente HTTP con respuestas controladas, cache de token, simulación y permisos. |
 
-La migración inicial manual necesita el test HasPendingModelChanges y aplicación a SQL. No se silencia el resultado. Las pruebas HTTP locales no reemplazan el smoke de contenedores ni las de persistencia.
+La migración inicial manual superó HasPendingModelChanges/modelo y aplicación a SQL en la ejecución CI indicada. Ese gate debe seguir ejecutándose ante nuevos cambios. Las pruebas HTTP locales no reemplazan el smoke de contenedores ni las de persistencia.
 
 ## Frontend
 
@@ -50,6 +56,7 @@ Desde Frontend:
 npm ci
 npm run build
 npm test
+npm run test:proxy
 npm run format:check
 npx playwright install chromium
 npm run test:e2e
@@ -71,7 +78,7 @@ Conservar reporte/trazas depuradas. La revisión automática de accesibilidad se
 
 ## Release y CI
 
-El workflow vigente es [.github/workflows/quality.yml](../.github/workflows/quality.yml). Debe ejecutar restore locked, auditorías, análisis, build/formato, tests .NET/SQL/UI, scans y empaquetado.
+El workflow vigente es [.github/workflows/quality.yml](../.github/workflows/quality.yml). Restore, auditorías, análisis, build/formato y tests .NET/SQL/UI pasaron en la ejecución indicada. Trivy de SQL bloqueó el avance al empaquetado; no se omite ni silencia el gate.
 
 El empaquetado exige backup real vacío, RESTORE VERIFYONLY y restore a otra base, CHECKDB, verificación de esquema/permisos y smoke creando/consultando una factura. Luego analiza imágenes/paquete, genera SBOM/manifiesto/checksums, extrae ZIP y lo comprueba. El script PrepareOnly no acredita estas verificaciones.
 

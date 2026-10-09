@@ -14,7 +14,7 @@ Los ejemplos públicos son ficticios y no consultan SQL. La API no acepta propie
 
 No versionar local.env, contraseñas SQL, cookies, credenciales/tokens Novasoft, PDF con credenciales, backups de usuarios ni logs con datos personales. El script genera claves de instalación y restringe su archivo. No adjuntar salidas completas de docker inspect o compose config.
 
-Migrador y API usan identidades SQL diferentes. Runtime sólo tiene DML de las tablas de factura; no DDL. En la red Docker aislada, Encrypt=True con TrustServerCertificate=True cifra la conexión pero no valida la identidad del certificado autofirmado. Esa excepción no se traslada a otros entornos.
+Migrador y API usan identidades SQL diferentes. Runtime sólo tiene SELECT e INSERT sobre Facturas/DetalleFactura; init revoca UPDATE/DELETE anteriores y verifica que no haya privilegios administrativos/de esquema indebidos. En la red Docker aislada, Encrypt=True con TrustServerCertificate=True cifra la conexión pero no valida la identidad del certificado autofirmado. Esa excepción no se traslada a otros entornos.
 
 El backup de release será esquema vacío, restaurado y comprobado. Backups posteriores del evaluador son privados. Restore usa una base nueva y no sustituye la activa automáticamente.
 
@@ -22,9 +22,9 @@ El backup de release será esquema vacío, restaurado y comprobado. Backups post
 
 El workflow GitHub prepara NuGet/npm Audit, analizadores .NET, reglas TypeScript Semgrep, Gitleaks, Trivy, pruebas, SBOM, restore y ZAP baseline local. NuGet NU1900–NU1905 bloquean; npm moderate o superior y Trivy high/critical bloquean. Feeds/herramientas fallidos no son aprobaciones. ZAP baseline no equivale a pentest exhaustivo.
 
-Las pruebas de seguridad están en Test/Security y las de propiedad/persistencia en Test/Invoices. A 9 de octubre de 2026, build .NET compila pero WDAC impide ejecutar tests localmente; Docker/SQL y CI siguen pendientes. Los tests frontend aprobados no reemplazan esas evidencias. No hay certificado ni resultado de pentest realizado.
+Las pruebas de seguridad están en Test/Security y las de propiedad/persistencia en Test/Invoices. [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549), commit `21a36f9a246727db3f602d58cb1055dc4528c515`, aprobó 149 pruebas .NET sin omisiones, incluidas cinco SQL y modelo EF; también Gitleaks, Semgrep, NuGet/npm Audit y Trivy filesystem/ASP.NET. Trivy de la imagen oficial SQL bloquea la entrega: se investiga sin excepción. Backup/restore, smoke/ZIP y E2E live siguen pendientes. WDAC limita el equipo Windows y no hay Docker/WSL local; la evidencia backend corresponde a CI Linux. No hay certificado ni pentest realizado.
 
-El host web/JWT opcional no tiene IdP ni despliegue verificado y queda fuera de la entrega. El cliente real Novasoft tiene pruebas controladas escritas, sin prueba de conexión real; local fuerza simulación.
+El host web/JWT opcional no tiene IdP ni despliegue verificado y queda fuera de la entrega. El cliente real Novasoft tiene pruebas controladas aprobadas, sin prueba de conexión real; local fuerza simulación.
 
 ## Reportar y responder
 

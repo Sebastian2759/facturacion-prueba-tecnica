@@ -1,13 +1,39 @@
-param([Parameter(Mandatory=$true)][string]$Stage, [Parameter(Mandatory=$true)][string]$Version)
+param(
+    [Parameter(Mandatory=$true)][string]$Stage,
+    [Parameter(Mandatory=$true)][string]$Version,
+    [switch]$FunctionalOnly,
+    [switch]$PackageOnly
+)
 . (Join-Path $PSScriptRoot 'common.ps1')
-if ($env:GITHUB_ACTIONS -ne 'true' -or $env:CI_QUALITY_GATE -ne 'passed') { throw 'La entrega final requiere el job de CI completo; use -PrepareOnly para preparar el payload localmente.' }
-if (-not $env:CI_SQL_PASSWORD -or -not $env:Database__AdminConnectionString) { throw 'La entrega final requiere el SQL efímero y las pruebas completas de CI.' }
+if ($FunctionalOnly -and $PackageOnly) { throw 'Seleccione una sola fase.' }
+if ($env:GITHUB_ACTIONS -ne 'true') { throw 'La verificación integral requiere el job de CI; use -PrepareOnly para preparar el payload localmente.' }
+if (-not $FunctionalOnly -and $env:CI_QUALITY_GATE -ne 'passed') { throw 'La entrega final requiere todos los controles previos de CI aprobados.' }
+if (-not $PackageOnly -and (-not $env:CI_SQL_PASSWORD -or -not $env:Database__AdminConnectionString)) { throw 'La verificación requiere SQL efímero y las pruebas completas de CI.' }
 if (-not (Get-Command gitleaks -ErrorAction SilentlyContinue) -or -not (Get-Command trivy -ErrorAction SilentlyContinue)) { throw 'Faltan los analizadores verificados.' }
 $artifactRoot = [IO.Path]::GetFullPath((Join-Path $script:ReleaseRoot 'artifacts')) + [IO.Path]::DirectorySeparatorChar
 $stagePath = [IO.Path]::GetFullPath($Stage)
 if (-not $stagePath.StartsWith($artifactRoot, [StringComparison]::Ordinal)) { throw 'El paquete debe estar bajo artifacts del repositorio.' }
 $manifestPath = Join-Path $stagePath 'release.json'
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+$receiptPath = Join-Path $stagePath 'docs/functional-evidence.json'
+if ($manifest.version -ne $Version) { throw 'La versión solicitada no corresponde al payload.' }
+function Get-PayloadDigest {
+    param([string]$PayloadRoot, [string]$ReceiptPath)
+    $relativePaths = [string[]]@(Get-ChildItem -LiteralPath $PayloadRoot -Recurse -Force -File |
+        Where-Object { -not $_.FullName.Equals($ReceiptPath, [StringComparison]::Ordinal) } |
+        ForEach-Object { [IO.Path]::GetRelativePath($PayloadRoot, $_.FullName).Replace('\', '/') })
+    [Array]::Sort($relativePaths, [StringComparer]::Ordinal)
+    $entries = foreach ($relative in $relativePaths) {
+        $hash = (Get-FileHash -LiteralPath (Join-Path $PayloadRoot $relative) -Algorithm SHA256).Hash.ToLowerInvariant()
+        "$hash  $relative"
+    }
+    $sha256 = [Security.Cryptography.SHA256]::Create()
+    try {
+        $digest = $sha256.ComputeHash([Text.Encoding]::UTF8.GetBytes(($entries -join "`n") + "`n"))
+        return [BitConverter]::ToString($digest).Replace('-', '').ToLowerInvariant()
+    } finally { $sha256.Dispose() }
+}
+if (-not $PackageOnly) {
 $env:Database__Name = 'FacturacionCI_ReleaseDemo'
 $env:Database__RuntimePassword = New-LocalSecret
 Write-Host "::add-mask::$($env:Database__RuntimePassword)"
@@ -38,8 +64,6 @@ $env:ASPNETCORE_ENVIRONMENT = 'LocalEvaluation'
 $env:OpenApi__Enabled = 'true'
 Invoke-Checked 'docker' @('build', '-t', 'facturacion-local-ci', '-f', (Join-Path $stagePath 'scripts/docker/Dockerfile.local'), $stagePath)
 Invoke-Checked 'docker' @('build', '-t', 'facturacion-migrator-ci', '-f', (Join-Path $stagePath 'scripts/docker/Dockerfile.migrator'), $stagePath)
-Invoke-Checked 'trivy' @('image', '--severity', 'HIGH,CRITICAL', '--exit-code', '1', 'facturacion-local-ci')
-Invoke-Checked 'trivy' @('image', '--severity', 'HIGH,CRITICAL', '--exit-code', '1', 'facturacion-migrator-ci')
 $env:Database__AdminConnectionString = "Server=facturacion-ci-sql;Database=master;User ID=sa;Password=$($env:CI_SQL_PASSWORD);Encrypt=True;TrustServerCertificate=True"
 Invoke-Checked 'docker' @('run', '--rm', '--network', 'facturacion-ci', '-e', 'Database__AdminConnectionString', '-e', 'Database__Name', '-e', 'Database__RuntimePassword', 'facturacion-migrator-ci', 'init')
 Invoke-Checked 'docker' @('run', '--detach', '--name', 'facturacion-ci-app', '--network', 'facturacion-ci', '--read-only', '--tmpfs', '/tmp:rw,noexec,nosuid,size=64m', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', '-p', '127.0.0.1:5080:8080', '-e', 'ConnectionStrings__AppDbContext', '-e', 'Local__InstallationId', '-e', 'ASPNETCORE_ENVIRONMENT', '-e', 'OpenApi__Enabled', 'facturacion-local-ci')
@@ -69,6 +93,27 @@ try {
 } finally {
     Invoke-Checked 'docker' @('rm', '-f', 'facturacion-ci-app')
 }
+$receipt = [ordered]@{
+    status = 'functional-verified-not-authorized-for-release'
+    runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT
+    sourceCommit = $manifest.sourceCommit; version = $manifest.version
+    payloadSha256 = Get-PayloadDigest $stagePath $receiptPath
+    verifiedUtc = [DateTime]::UtcNow.ToString('o')
+}
+Write-Utf8 $receiptPath ($receipt | ConvertTo-Json)
+Copy-Item -LiteralPath $receiptPath -Destination (Join-Path $script:ReleaseRoot 'artifacts/functional-evidence.json')
+}
+if ($FunctionalOnly) { Write-Host 'Evidencia funcional generada. Esta fase no autoriza ni produce un ZIP.'; return }
+if (-not (Test-Path -LiteralPath $receiptPath)) { throw 'Falta el recibo de verificación funcional.' }
+$receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
+if ($receipt.status -ne 'functional-verified-not-authorized-for-release' -or
+    $receipt.runId -ne $env:GITHUB_RUN_ID -or $receipt.runAttempt -ne $env:GITHUB_RUN_ATTEMPT -or
+    $receipt.sourceCommit -ne $manifest.sourceCommit -or $receipt.version -ne $manifest.version -or
+    $receipt.payloadSha256 -ne (Get-PayloadDigest $stagePath $receiptPath)) {
+    throw 'La evidencia funcional no corresponde al run o payload actual.'
+}
+Invoke-Checked 'trivy' @('image', '--severity', 'HIGH,CRITICAL', '--exit-code', '1', 'facturacion-local-ci')
+Invoke-Checked 'trivy' @('image', '--severity', 'HIGH,CRITICAL', '--exit-code', '1', 'facturacion-migrator-ci')
 Invoke-Checked 'gitleaks' @('dir', $stagePath, '--redact', '--report-format', 'json', '--report-path', (Join-Path $script:ReleaseRoot 'artifacts/security/package-secrets.json'))
 Invoke-Checked 'trivy' @('fs', '--scanners', 'vuln,misconfig,secret', '--severity', 'HIGH,CRITICAL', '--exit-code', '1', $stagePath)
 Invoke-Checked 'trivy' @('fs', '--format', 'cyclonedx', '--output', (Join-Path $stagePath 'SBOM.cdx.json'), $stagePath)

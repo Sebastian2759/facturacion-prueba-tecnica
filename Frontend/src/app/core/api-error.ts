@@ -54,5 +54,14 @@ export function normalizeError(error: unknown): ApiError {
 }
 export function unwrap<T>(response: Envelope<T>): T {
   if (!response || response.isSuccess !== true) throw normalizeError(response);
+  if (response.data == null) {
+    throw new ApiError(
+      'La aplicación devolvió una respuesta incompleta. Vuelve a intentarlo.',
+      response.statusCode,
+      {},
+      response.traceId ?? undefined,
+      'response.invalid',
+    );
+  }
   return response.data;
 }

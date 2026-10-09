@@ -12,6 +12,9 @@
     "zap": "ghcr.io/zaproxy/zaproxy:stable@sha256:7aaa659b0d43078febd82e29bad112285c370727e86ab8340444220e17d9f0d2",
     "semgrep": "semgrep/semgrep:latest@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b"
   },
+  "diagnosticImages": {
+    "sql2025Candidate": "mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726"
+  },
   "tools": {
     "gitleaks": {
       "version": "8.30.1",

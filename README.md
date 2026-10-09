@@ -6,13 +6,13 @@ Aplicación Angular + C# basada en Template para registrar facturas en SQL Serve
 
 Con Windows x64, internet y Docker Desktop funcionando con contenedores Linux/Compose v2, descargue y verifique el ZIP de la release, extráigalo y ejecute:
 
-```cmd
-iniciar.cmd
+```powershell
+.\iniciar.cmd
 ```
 
-Abra **http://127.0.0.1:5080**. La guía incluida será `LEEME.html`. El primer inicio descarga imágenes oficiales fijadas y ensambla imágenes copiando publicaciones .NET/Angular precompiladas; el evaluador no necesita SDK ni Node. SQL queda en una red privada Docker sin puerto al host.
+Abra **http://127.0.0.1:5080**. La guía incluida es `LEEME.html`. El primer inicio descarga imágenes oficiales fijadas y ensambla imágenes copiando publicaciones .NET/Angular precompiladas; el evaluador no necesita SDK ni Node. SQL queda en una red privada Docker sin puerto al host.
 
-Este comando corresponde al **ZIP verificado**. Un checkout del código todavía no contiene app/migrator publicados ni el manifiesto final. La release y su prueba de instalación real siguen pendientes de CI/SQL; no se presenta el código actual como ZIP ya verificado.
+Este comando corresponde al **ZIP verificado**. Un checkout del código todavía no contiene app/migrator publicados ni el manifiesto final. El ZIP final, backup/restore y prueba de instalación real siguen pendientes porque Trivy bloquea la imagen oficial SQL; no se presenta el código actual como ZIP ya verificado.
 
 `detener.cmd` conserva datos; `diagnosticar.cmd` revisa estado. `backup.cmd` produce una copia privada; `restaurar.cmd` restaura a una base nueva sin sobrescribir ni cambiar la base activa automáticamente. El backup distribuido será **esquema migrado vacío**; los ejemplos de portada son ficticios y no están almacenados como facturas privadas.
 
@@ -41,7 +41,7 @@ Se implementó el cliente HTTP real de Novasoft y sus pruebas controladas, pero 
 
 ## Desarrollo
 
-Toolchain fijado: .NET SDK **10.0.401**, EF Core **10.0.10**, Node **26.1.0**, npm **11.13.0**, Angular **22.2.2**, TypeScript **6.0.2**. Ver `global.json`, `Directory.Build.props`, locks y `Frontend/package.json`.
+Toolchain fijado: .NET SDK **10.0.401**, EF Core **10.0.10**, Node **24.21.0 LTS**, npm **11.13.0**, Angular **22.2.2**, TypeScript **6.0.2**. Ver `global.json`, `Directory.Build.props`, locks y `Frontend/package.json`.
 
 Desde la raíz:
 
@@ -62,20 +62,23 @@ Desde un commit y árbol limpios, `pwsh scripts/build-release.ps1 -PrepareOnly` 
 
 ## Estado de verificación
 
-Actualizado 9 de octubre de 2026:
+Evidencia del 9 de octubre de 2026: [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549), commit `21a36f9a246727db3f602d58cb1055dc4528c515`.
 
-- Build .NET integrado: **0 errores y 0 advertencias**.
-- Angular: build, formato y **14 unitarias aprobados**.
-- Playwright en Edge: **7 pruebas UI aprobadas**, **1 live omitida** sin E2E_LIVE; incluye móvil, teclado y axe. Las respuestas controladas no acreditan SQL.
-- Gitleaks del árbol actual: sin secretos detectados; revisión de historial/paquete final pendiente.
-- Tests .NET bloqueados localmente por WDAC `0x800711C7`; Docker/WSL ausentes. No se modifica esa política.
-- Migración/snapshot manuales pendientes de comprobación EF en CI. SQL, backup/restore, ZIP y gates de GitHub aún pendientes.
-- Novasoft real: no ejecutado. Simulación identificada en local.
+- Build .NET integrado: **0 errores y 0 advertencias**; formato aprobado.
+- **149 pruebas .NET aprobadas, 0 omitidas**, incluidas las **5 de SQL Server real**, modelo/snapshot EF, autorización HTTP y cliente Accounts con respuestas controladas.
+- Angular: build/formato, **14 unitarias**, **4 pruebas de proxy** y **7 de navegador con respuestas controladas** aprobadas. La revisión incluye axe; no acredita accesibilidad completa.
+- Gitleaks, Semgrep, NuGet/npm Audit, Trivy del filesystem y de la imagen ASP.NET: gates aprobados.
+- **Bloqueo activo:** Trivy detecta hallazgos en la imagen oficial SQL Server. Se investiga sin excepción ni supresión para obtener verde. No se ha generado un ZIP final aprobado.
+- Backup/restore del paquete, smoke de entrega y E2E live navegador/API/SQL: pendientes. La ejecución Windows con Docker tampoco está acreditada.
+- En el equipo local, WDAC `0x800711C7` sigue limitando el runtime .NET y no hay Docker/WSL; las pruebas backend/SQL anteriores se ejecutaron en CI Linux.
+- Novasoft real: no ejecutado; el ZIP fuerza simulación identificada. La guía HTML se revisó offline en escritorio/móvil; no sustituye el arranque de la aplicación.
+
+Node **24.21.0 LTS** con npm **11.13.0** fue verificado también mediante toolchain portable. La preparación no instala ni cambia políticas del equipo.
 
 ## Origen y propiedad
 
 Basado en [ServiciosAndesTool/Template](https://dev.azure.com/ServiciosAndesTool/_git/Template), commit `3393c2e7b02f7d0ea439b461b8fba5d561107681`. Se conserva Clean Architecture, CQRS, validación, ResponseBase y convenciones de repositorio/mapper. Los archivos DemoArchitecture son material heredado y no un grafo actualizado de la aplicación.
 
-Destino: [GitHub privado personal](https://github.com/Sebastian2759/facturacion-prueba-tecnica), cuenta `Sebastian2759`, correo principal requerido verificado `forero.sebastian157@gmail.com`. Repositorio creado; sincronización del proyecto y primer CI pendientes. El workflow vigente es `.github/workflows/quality.yml`; `azure-pipelines.yml` fue retirado y reemplazado por GitHub Actions.
+Destino: [GitHub privado personal](https://github.com/Sebastian2759/facturacion-prueba-tecnica), cuenta `Sebastian2759`, correo principal requerido verificado `forero.sebastian157@gmail.com`. Repositorio sincronizado; la evidencia CI corresponde al commit `21a36f9a246727db3f602d58cb1055dc4528c515`. La release final sigue bloqueada por el análisis de la imagen SQL. El workflow vigente es `.github/workflows/quality.yml`; `azure-pipelines.yml` fue retirado y reemplazado por GitHub Actions.
 
 El paquete excluye datos reales, credenciales del examen, secretos locales y PDF original. Los componentes de terceros conservan sus condiciones de licencia; la configuración SQL Developer se destina a evaluación.

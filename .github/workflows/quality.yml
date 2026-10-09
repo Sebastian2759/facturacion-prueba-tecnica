@@ -33,8 +33,13 @@ jobs:
           global-json-file: global.json
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version-file: Frontend/package.json
+          node-version: '24.21.0'
           package-manager-cache: false
+      - name: Use the exact package manager version
+        run: |
+          npm install --global npm@11.13.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ((node --version).Trim() -ne 'v24.21.0' -or (npm --version).Trim() -ne '11.13.0') { throw 'Node/npm no coinciden con las versiones fijadas.' }
       - name: Install security tools with verified checksums
         run: ./scripts/install-ci-tools.ps1
       - name: Bundle source for verified checkout recovery
@@ -57,9 +62,12 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm ci --prefix Frontend
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run api:setup --prefix Frontend
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Validate the actual evaluator Compose configuration
         run: ./scripts/validate-compose.ps1
       - name: Formatting and build with security analyzers
+        id: build
         run: |
           dotnet format Example.sln --no-restore --verify-no-changes
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -74,6 +82,7 @@ jobs:
       - name: Unit, authorization and real SQL integration tests
         run: |
           if (-not $env:FACTURACION_TEST_SQL_CONNECTION) { throw 'SQL integration tests cannot be skipped.' }
+          $env:FACTURACION_OPENAPI_OUTPUT = Join-Path $PWD 'artifacts/openapi.json'
           dotnet test Example.sln --no-build -c Release --logger 'trx;LogFileName=tests.trx' --results-directory artifacts/tests --collect:'XPlat Code Coverage'
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm test --prefix Frontend
@@ -87,26 +96,32 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm run test:e2e
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build payload and verify backup, restored SQL and the real browser
+        run: |
+          ./scripts/build-release.ps1 -Version "1.0.0-ci.${{ github.run_number }}" -PrepareOnly
+          ./scripts/verify-and-package.ps1 -Stage "artifacts/package-1.0.0-ci.${{ github.run_number }}" -Version "1.0.0-ci.${{ github.run_number }}" -FunctionalOnly
       - name: Audit dependencies without suppressing failed feeds
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: ./scripts/audit-dependencies.ps1
       - name: TypeScript security rules, offline configuration and disabled metrics
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           $lock = Get-Content scripts/toolchain-lock.json -Raw | ConvertFrom-Json
           docker run --rm -v "${PWD}:/src" --workdir /src $lock.images.semgrep semgrep scan --config scripts/security/semgrep.yml --metrics off --disable-version-check --error --json --output artifacts/security/typescript-sast.json Frontend/src
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Filesystem, configuration and official runtime image scans
+      - name: Filesystem, configuration and secret scans
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           trivy fs --scanners vuln,misconfig,secret --severity HIGH,CRITICAL --exit-code 1 --skip-dirs .git --skip-dirs .tools --skip-dirs artifacts .
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $lock = Get-Content scripts/toolchain-lock.json -Raw | ConvertFrom-Json
-          foreach ($image in @($lock.images.aspnet, $lock.images.sqlserver)) {
-            trivy image --severity HIGH,CRITICAL --exit-code 1 $image
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          }
-      - name: Build ZIP, restore backup, smoke containers and scan the extracted package
+      - name: Required runtime images and diagnostic SQL candidate
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: ./scripts/scan-runtime-images.ps1
+      - name: Authorize ZIP only after functional and security checks
+        if: success()
         env:
           CI_QUALITY_GATE: passed
-        run: ./scripts/build-release.ps1 -Version "1.0.0-ci.${{ github.run_number }}"
+        run: ./scripts/verify-and-package.ps1 -Stage "artifacts/package-1.0.0-ci.${{ github.run_number }}" -Version "1.0.0-ci.${{ github.run_number }}" -PackageOnly
       - name: Preserve redacted evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -116,6 +131,7 @@ jobs:
             artifacts/security/
             artifacts/tests/
             artifacts/openapi.json
+            artifacts/functional-evidence.json
             Frontend/test-results/**/*.png
           retention-days: 7
           if-no-files-found: error

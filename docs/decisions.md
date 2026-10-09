@@ -44,7 +44,7 @@ Docker publica sólo 127.0.0.1:5080; el proceso interno escucha 0.0.0.0:8080. SQ
 
 ## D08. Migrador separado y backup vacío
 
-La API no migra en requests. Un proceso administrativo inicializa/migra; runtime sólo tiene DML de las tablas de factura. La migración/snapshot se escribieron manualmente porque WDAC bloqueó el tooling; el gate de modelo SQL/EF es obligatorio.
+La API no migra en requests. Un proceso administrativo inicializa/migra; runtime sólo tiene SELECT e INSERT sobre las tablas de factura. init revoca UPDATE/DELETE antiguos y rechaza privilegios efectivos indebidos. La migración/snapshot se escribieron manualmente porque WDAC bloqueó el tooling; el gate de modelo SQL/EF ya pasó en CI y seguirá siendo obligatorio.
 
 La release lleva un backup SQL Server de esquema vacío, en lugar del seed persistido inicialmente propuesto. La UI tiene ejemplos ficticios fuera de SQL. CI debe restaurar realmente y crear/consultar después una factura de smoke. Restore del evaluador crea otra base y no sobrescribe ni cambia destino automáticamente.
 
@@ -68,4 +68,8 @@ Se conservan campos de ResponseBase y se añaden code/fieldErrors/traceId. Probl
 
 Build no equivale a tests; mocks no equivalen a SQL; YAML no equivale a CI ejecutado; VERIFYONLY no sustituye restore. Un escáner/feed fallido bloquea. NuGet Audit transitivo y NU1900–NU1905, npm, analizadores, Gitleaks, Semgrep, Trivy, SBOM y ZAP local tienen evidencia separada.
 
-La release final sólo procede desde commit/árbol limpio y gates aprobados. No se modifica WDAC para ejecutar assemblies bloqueados. Se usa CI Linux con SQL real para resolver las validaciones pendientes.
+La release final sólo procede desde commit/árbol limpio y gates aprobados. No se modifica WDAC. [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549) (`21a36f9a246727db3f602d58cb1055dc4528c515`) aprobó 149 tests .NET, incluidas cinco integraciones SQL, y los gates Gitleaks/Semgrep/NuGet/npm/Trivy filesystem/ASP.NET. La imagen oficial SQL tiene hallazgos de Trivy que bloquean el paquete, sin excepción. Backup/restore, smoke del ZIP y E2E live siguen pendientes.
+
+## D13. Node LTS fijado
+
+Se fija Node 24.21.0 LTS con npm 11.13.0, verificados también en distribución portable. Angular/CLI sigue en 22.2.2. La toolchain está bloqueada para reproducibilidad; el evaluador del ZIP no necesita Node.

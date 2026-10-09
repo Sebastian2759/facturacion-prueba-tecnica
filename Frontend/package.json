@@ -9,6 +9,9 @@
     "test": "ng test --watch=false",
     "test:watch": "ng test",
     "test:proxy": "node --test proxy.conf.spec.cjs",
+    "api:setup": "npm ci --prefix tools/openapi",
+    "api:generate": "node tools/openapi/contract.mjs generate",
+    "api:check": "node tools/openapi/contract.mjs check",
     "test:e2e": "playwright test",
     "format:check": "prettier --check src e2e *.json *.md",
     "format": "prettier --write src e2e *.json *.md"
@@ -39,7 +42,7 @@
     "vitest": "5.0.0"
   },
   "engines": {
-    "node": "26.1.0",
+    "node": "24.21.0",
     "npm": "11.13.0"
   }
 }
