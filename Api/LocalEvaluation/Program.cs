@@ -58,7 +58,8 @@ app.UseMiddleware<LocalHostGuard>();
 ApiServices.UseCore(app, isLocal: true, additionalSecurity: host => host.UseMiddleware<LocalWriteGuard>());
 app.MapFallback("/api/{**path}", context => ApiProblems.Write(context, 404,
     "No se encontró el recurso solicitado.", "resource.not_found")).AllowAnonymous();
-app.MapFallbackToFile("index.html").AllowAnonymous();
+app.MapMethods("/index.html", ["GET", "HEAD"], AngularIndex.RenderAsync).AllowAnonymous();
+app.MapFallback(AngularIndex.RenderAsync).WithMetadata(new HttpMethodMetadata(["GET", "HEAD"])).AllowAnonymous();
 app.Run();
 
 namespace LocalEvaluation

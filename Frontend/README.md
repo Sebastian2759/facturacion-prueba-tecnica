@@ -41,6 +41,8 @@ El host local establece su cookie y devuelve sesión/antiforgery en `/api/v1/ses
 
 Esta entrega no integra login OIDC ni habilita llamadas reales a Novasoft. La UI no mostrará acceso cloud ni una URL publicada inexistente. El perfil local y el rechazo de operaciones reales se prueban también en backend.
 
+El HTML compilado contiene `ngCspNonce="__CSP_NONCE__"`: el host del paquete sustituye el marcador por un nonce aleatorio por respuesta y lo incluye en su cabecera CSP. Angular lo aplica a los elementos `style` que genera, incluido CDK. El build de producción desactiva `inlineCritical` y `subresourceIntegrity` para evitar scripts inline del cargador de CSS; los estilos globales se sirven en un archivo del mismo origen. No hay nonce fijo ni proveedor `CSP_NONCE` duplicado. `ng serve` es desarrollo y no acredita esta política: el recorrido real prueba el HTML servido por el host, la ausencia de violaciones CSP, los nonces de los estilos y su renovación al recargar. Fuente: [CSP oficial de Angular](https://angular.dev/best-practices/security).
+
 ### Accounts
 
 Se muestran el modo devuelto y el resultado real del contrato: una creación devuelve **aceptación**, no una cuenta completa inventada; el usuario consulta después por código. Los registros simulados se reinician con el servidor. Los códigos de clasificación no tienen etiquetas de negocio inventadas cuando Swagger sólo define números.
@@ -49,7 +51,7 @@ Se muestran el modo devuelto y el resultado real del contrato: una creación dev
 
 Se normalizan `ResponseBase<T>` y ProblemDetails, incluidos `fieldErrors` con rutas como `details[0].quantity`, códigos HTTP y `traceId`. Los errores no vacían el formulario. Un error de red no cambia silenciosamente el proveedor a simulación.
 
-`core/api-contract.ts` refleja `../docs/implementation-contract.md`. El generador fijado y sus comandos `api:setup`, `api:generate` y `api:check` están preparados en `tools/openapi`; la referencia inicial y su conexión a los modelos consumidos esperan el archivo OpenAPI real exportado por CI. **Todavía no hay un cliente generado ni una comprobación de drift completada.** El comando de comprobación falla mientras falten esos archivos. Consulte [procedimiento OpenAPI](docs/openapi.md).
+`core/openapi.generated.ts` y `openapi/backend.schema.json` proceden del OpenAPI real exportado por CI. `core/api-contract.ts` importa esos tipos de transporte; `core/api-decoders.ts` comprueba la respuesta y normaliza números/cadenas numéricas para los modelos de UI sin calcular importes. Los modos desconocidos y las respuestas incompletas se rechazan conservando `traceId`. `api:check` compara la referencia íntegra y compila el puente de tipos que consume la aplicación. Consulte [procedimiento y procedencia OpenAPI](docs/openapi.md).
 
 ## Pruebas
 

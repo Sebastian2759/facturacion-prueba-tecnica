@@ -66,6 +66,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Validate the actual evaluator Compose configuration
         run: ./scripts/validate-compose.ps1
+      - name: Verify fail-closed ZAP and API cache policy gates
+        run: |
+          ./scripts/tests/zap-gate.tests.ps1
+          ./scripts/tests/smoke-cache.tests.ps1
       - name: Formatting and build with security analyzers
         id: build
         run: |
@@ -88,6 +92,11 @@ jobs:
           npm test --prefix Frontend
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm run test:proxy --prefix Frontend
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify frontend contract against the exported real OpenAPI schema
+        working-directory: Frontend
+        run: |
+          npm run api:check -- ../artifacts/openapi.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Browser tests
         working-directory: Frontend

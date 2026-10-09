@@ -3,7 +3,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ApiClient } from '../core/api-client';
-import { Account, AcceptedAccount, AccountsMode, AccountsResult } from '../core/api-contract';
+import {
+  AcceptedAccount,
+  AccountsMode,
+  AccountsResult,
+  CreateAccountWire,
+} from '../core/api-contract';
+import { decodeAcceptedAccount, decodeAccountsResult } from '../core/api-decoders';
 import { ApiError, normalizeError } from '../core/api-error';
 import { AuthSession } from '../core/auth-session';
 import { Feedback } from '../shared/feedback';
@@ -104,8 +110,9 @@ export class Accounts {
     this.error.set(null);
     this.result.set(null);
     this.api
-      .get<AccountsResult>(
+      .get(
         `/api/v1/accounts?mode=${this.mode()}&code=${encodeURIComponent(this.code.value.trim())}`,
+        decodeAccountsResult,
       )
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -130,7 +137,7 @@ export class Accounts {
       return;
     }
     const raw = this.form.getRawValue();
-    const body: Account & { mode: AccountsMode } = {
+    const body: CreateAccountWire = {
       ...raw,
       code: raw.code.trim(),
       name: raw.name.trim(),
@@ -141,7 +148,7 @@ export class Accounts {
     this.error.set(null);
     this.accepted.set(null);
     this.api
-      .post<AcceptedAccount>('/api/v1/accounts', body)
+      .post('/api/v1/accounts', body, undefined, decodeAcceptedAccount)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.saving.set(false)),

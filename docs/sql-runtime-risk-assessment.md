@@ -1,6 +1,6 @@
 # Evaluación del riesgo de la imagen SQL Server
 
-Fecha de corte: 9 de octubre de 2026, después de la CI 37987889714 (run6). Estado: investigación abierta; la entrega sigue bloqueada por el gate de la imagen SQL y la verificación funcional del paquete está incompleta. **No se aplicaron exclusiones, excepciones ni cambios de umbral.** Esta revisión documental no demuestra explotabilidad ni ausencia de riesgo.
+Fecha de corte: 9 de octubre de 2026, después de la CI 37989162596 (run7). Estado: la entrega sigue bloqueada por la imagen SQL; las cuatro advertencias ZAP del run7 también están pendientes de resolución. **No se aplicaron exclusiones, excepciones ni cambios de umbral.** La revisión confirma versiones y símbolos afectados presentes, pero no demuestra explotabilidad ni ausencia de riesgo.
 
 ## Imagen y evidencia de origen
 
@@ -32,7 +32,9 @@ Ambas imágenes SQL presentan los mismos 24 identificadores CVE: **23 de Go repe
 
 La comparación se calculó desde `trivy-sqlserver.json`, `trivy-sql2025-candidate.json`, `trivy-aspnet.json` y `runtime-images-summary.json` del artefacto de seguridad del run6, contando cada registro de vulnerabilidad y deduplicando `VulnerabilityID` por imagen.
 
-El TRX del run6 confirma **150 pruebas .NET aprobadas y cero omitidas**. El frontend registra 16 pruebas unitarias, cuatro de proxy y siete de navegador con respuestas controladas. El job funcional publicó el payload y completó `init` del migrador para `FacturacionCI_ReleaseDemo`, pero falló después en el lote backup/restore. El punto exacto de fallo aún requiere un diagnóstico SQL legible; la corrección del lote está en preparación. No se declara backup restaurado ni se alcanzaron el smoke API del paquete, E2E live o ZAP. Estos resultados no liberan el ZIP.
+El TRX del run6 confirma **150 pruebas .NET aprobadas y cero omitidas**. El frontend registró 16 pruebas unitarias, cuatro de proxy y siete de navegador con respuestas controladas. Esa ejecución publicó el payload y completó `init` del migrador, pero falló en el lote backup/restore. Este resultado se conserva como historial; los avances posteriores figuran en el corte del run7 siguiente.
+
+La [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596), commit `c6b44269ac0944289cb1d848a48510efcd1e5523`, volvió a aprobar las 150 pruebas .NET y completó backup/restore, CHECKDB, el migrador, el smoke API del paquete y la prueba de navegador live. Los controles de configuración SQL también pasaron. La fase funcional terminó con cuatro advertencias ZAP; el gate de imagen SQL sigue fallando. No se declara ZIP liberado ni ejecución del paquete en Docker Desktop Windows.
 
 ## OpenSSL: paquete afectado y condición de activación
 
@@ -62,47 +64,63 @@ Los 23 CVE high reportados para cada uno de los tres binarios se contrastaron co
 
 Los avisos más recientes de la lista incluyen correcciones en Go 1.26.9 y 1.27.2. Actualizar el compilador instalado o los paquetes Ubuntu no recompila los ejecutables distribuidos por Microsoft ni sustituye automáticamente su biblioteca estándar incorporada. Hace falta un binario corregido del proveedor o evidencia concreta de no aplicabilidad por CVE.
 
-Microsoft sitúa `launchpadd` y `launchpad` en la ejecución de lenguajes externos. `external scripts enabled` tiene valor predeterminado `0`; el valor efectivo, los permisos y los procesos deben verificarse. Ese valor no demuestra por sí solo que los tres ejecutables nunca se ejecuten, y no se ha documentado aquí una función exacta de `setnetbr`. [Extensibilidad](https://learn.microsoft.com/en-us/sql/language-extensions/concepts/extensibility-framework?view=sql-server-ver17), [opciones de servidor](https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/server-configuration-options-sql-server?view=sql-server-ver16).
+Microsoft sitúa `launchpadd` y `launchpad` en la ejecución de lenguajes externos. `external scripts enabled` tiene valor predeterminado `0`; el run7 verificó ese valor efectivo y tres permisos externos ausentes, como se detalla abajo. Esto no demuestra por sí solo que los tres ejecutables nunca se ejecuten, y no se ha documentado aquí una función exacta de `setnetbr`. [Extensibilidad](https://learn.microsoft.com/en-us/sql/language-extensions/concepts/extensibility-framework?view=sql-server-ver17), [opciones de servidor](https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/server-configuration-options-sql-server?view=sql-server-ver16).
 
 El [issue Microsoft 960](https://github.com/microsoft/mssql-docker/issues/960) informa versiones Go vulnerables en esas rutas. Es un reporte de terceros dentro del repositorio del proveedor; no constituye un análisis de alcanzabilidad ni una aprobación de excepción de Microsoft.
 
-## Diagnóstico binario propuesto, todavía no ejecutado
+## Diagnóstico binario ejecutado en run7
 
-`govulncheck -mode=binary` lee el ejecutable y puede discriminar las versiones de módulos de las funciones vulnerables cuyos símbolos estén presentes. No ejecuta los binarios SQL analizados. Sin símbolos utilizables, puede volver a hallazgos por módulo. La presencia de una función no prueba que sea alcanzable y el modo binario no reconstruye un grafo completo de llamadas. [Documentación de govulncheck v1.8.0](https://pkg.go.dev/golang.org/x/vuln@v1.8.0/cmd/govulncheck).
+Se revisaron completos los seis flujos JSON (`module` y `symbol` por ejecutable), sus seis stderr, los tres metadatos, `summary.json`, `tool-version.txt` y `sql-runtime-configuration.txt`. Pertenecen al artefacto `11644926583` del run7; SHA-256 del archivo de artefacto verificado: `7722e78ad3d2ffd96e478407e6bbe4cde52ef7f0f697748a6fb16c24dcb3ac2e`. Los metadatos de extracción están fechados entre 20:54:46 y 20:54:48 UTC del 9 de octubre.
 
-Se propone `golang.org/x/vuln/cmd/govulncheck@v1.8.0`, versión oficial fija publicada el 8 de septiembre de 2026, con Go 1.26.9 en un job de diagnóstico Linux. Su [go.mod](https://raw.githubusercontent.com/golang/vuln/v1.8.0/go.mod) requiere Go 1.26.0 como mínimo. Esto es una receta de análisis, no una herramienta ya instalada o ejecutada en la CI citada.
+El [script de diagnóstico](../scripts/diagnose-sql-binaries.ps1) copió los tres archivos desde un contenedor creado y nunca iniciado de la imagen SQL 2022 fijada. No ejecutó ni modificó los ELF del proveedor. La herramienta fue `govulncheck@v1.8.0`, compilada con Go 1.26.9; todos los registros `config` señalan `scan_mode=binary`, el nivel solicitado y `https://vuln.go.dev`, con base modificada en `2026-10-08T22:31:09Z`.
 
-Los binarios se copiarían desde un contenedor **creado y nunca iniciado**, usando el digest ya disponible en CI. No hace falta descargar SQL al equipo Windows ni iniciar Launchpad. Ejemplo Bash para un directorio de trabajo nuevo:
+Los tres metadatos identifican ELF Linux x86-64, `not stripped`, información de depuración y `GOOS=linux`, `GOARCH=amd64`, `CGO_ENABLED=1`. Sus SBOM e información de compilación coinciden en **Go 1.26.1 dentro del binario**. Go 1.26.9 es la versión de la herramienta de diagnóstico; no actualiza el runtime SQL analizado. El módulo propietario aparece como `mssql-server/extensibility (devel)`, sin una versión pública utilizable para un inventario completo de vulnerabilidades del código Microsoft.
 
-```bash
-set -euo pipefail
-sql_image='mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090'
-evidence_dir="$PWD/work/sql-runtime-risk"
-mkdir -p "$evidence_dir/bin" "$evidence_dir/reports" "$evidence_dir/tools"
-container_id=$(docker create --entrypoint /bin/true "$sql_image")
-trap 'docker rm -v "$container_id" >/dev/null' EXIT
-docker cp "$container_id:/opt/mssql/bin/launchpadd" "$evidence_dir/bin/launchpadd"
-docker cp "$container_id:/opt/mssql-extensibility/bin/launchpad" "$evidence_dir/bin/launchpad"
-docker cp "$container_id:/opt/mssql/bin/setnetbr" "$evidence_dir/bin/setnetbr"
+| Archivo | SHA-256 del ELF extraído |
+| --- | --- |
+| launchpad | `fed01857e8c311ea681f7df77d4b70f7a29205fec41acfcf13b7d2ad8229ffe9` |
+| launchpadd | `3c0756482a482fba9923f4125c288c0da91294d8d4f0ba3560582d421d0975bd` |
+| setnetbr | `7db6773f71639aefa5183544d1a164fa51ba924b3d8fc04c39bb1564eb4920f8` |
 
-test "$(go env GOVERSION)" = 'go1.26.9'
-GOTOOLCHAIN=local GOBIN="$evidence_dir/tools" \
-  go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
-"$evidence_dir/tools/govulncheck" -version > "$evidence_dir/reports/tool-version.txt"
-for binary in launchpadd launchpad setnetbr; do
-  file "$evidence_dir/bin/$binary" > "$evidence_dir/reports/$binary.file.txt"
-  sha256sum "$evidence_dir/bin/$binary" > "$evidence_dir/reports/$binary.sha256"
-  go version -m "$evidence_dir/bin/$binary" > "$evidence_dir/reports/$binary.build.txt"
-  "$evidence_dir/tools/govulncheck" -mode=binary -scan=module -format=json \
-    "$evidence_dir/bin/$binary" > "$evidence_dir/reports/$binary.module.json"
-  "$evidence_dir/tools/govulncheck" -mode=binary -scan=symbol -format=json \
-    "$evidence_dir/bin/$binary" > "$evidence_dir/reports/$binary.symbol.json"
-done
-```
+### Interpretación de los registros
 
-Los niveles `module` y `symbol` están admitidos por las [opciones de esa versión](https://raw.githubusercontent.com/golang/vuln/v1.8.0/internal/scan/flags.go). El formato JSON es un flujo de registros; su exit code puede ser cero aunque haya vulnerabilidades. Deben revisarse los registros de configuración, versión Go, SBOM y findings, además de stderr y fallos de extracción/feed. Cero hallazgos o una diferencia entre ambos niveles no genera automáticamente una excepción. Conservar fecha y metadatos de la base de vulnerabilidades junto con los informes: fijar sólo la herramienta no fija un feed que cambia.
+Los seis flujos se pudieron decodificar hasta el final, incluyen configuración, SBOM y las etapas de progreso esperadas; sus stderr están vacíos. El código cero de las seis ejecuciones confirma que terminó el diagnóstico, **no** que no haya vulnerabilidades. Los registros `osv` incluyen avisos sin filtrar y no se contaron como hallazgos: se analizaron los registros `finding`, separados por la presencia de `trace.package` y `trace.function`. [Formato y limitaciones oficiales](https://pkg.go.dev/golang.org/x/vuln@v1.8.0/cmd/govulncheck).
 
-Una conclusión individual necesita identificar digest, hash del ejecutable, plataforma, extracción de símbolos satisfactoria, CVE y condición que se ha descartado. Los casos sin evidencia suficiente quedan abiertos. No se generará ni consumirá VEX automáticamente a partir de la mera ausencia de una ruta observada.
+| Binario | CVE únicos a nivel módulo | CVE con paquete detectado | CVE con función detectada | Registros finding de función |
+| --- | ---: | ---: | ---: | ---: |
+| launchpad | 40 | 15 | 10 | 20 |
+| launchpadd | 40 | 15 | 11 | 22 |
+| setnetbr | 40 | 5 | 0 | 0 |
+
+Los conjuntos de paquete incluyen a los de función: las columnas no se suman. Cada flujo `module` tiene 45 registros finding para 40 identificadores Go/CVE distintos. Los flujos `symbol` conservan esos registros de módulo y añaden paquete/función, para un total de 80, 82 y 50 registros, respectivamente. Govulncheck no se filtró por severidad, por lo que sus 40 CVE no se comparan directamente con los 23 CVE Go HIGH de Trivy.
+
+La extracción discrimina efectivamente paquetes y símbolos: no presenta una lista idéntica de funciones para todos los binarios. El código oficial recurre a los símbolos vulnerables conocidos cuando no puede extraerlos; ese comportamiento no concuerda con la selección observada, especialmente los cinco paquetes y cero funciones de `setnetbr`. Junto con los metadatos y la ausencia de errores, esto sustenta una extracción operativa válida, sin certificar que sea un análisis completo de todas las rutas o bibliotecas nativas. [Implementación binaria de govulncheck](https://raw.githubusercontent.com/golang/vuln/v1.8.0/internal/vulncheck/binary.go), [extracción de información](https://raw.githubusercontent.com/golang/vuln/v1.8.0/internal/scan/binary.go).
+
+### Funciones asociadas a CVE presentes
+
+| CVE de 2026 | Símbolos informados | Binarios |
+| --- | --- | --- |
+| 33810, 32281, 32280 | `crypto/x509.Certificate.Verify` | launchpad y launchpadd |
+| 27145 | `crypto/x509.Certificate.Verify`, `Certificate.VerifyHostname`, `HostnameError.Error` | launchpad y launchpadd |
+| 32283, 56862, 97031 | `crypto/tls.Conn.Handshake`, `Conn.HandshakeContext` | launchpad y launchpadd |
+| 33818 | `encoding/asn1.Unmarshal`, `UnmarshalWithParams` | launchpad y launchpadd |
+| 56860 | `net/url.URL.Parse`, `URL.ResolveReference` | Sólo launchpadd; en launchpad queda a nivel paquete |
+| 39836 | `net.Dial`, `Dialer.Dial`, `Dialer.DialContext`, `Resolver.LookupPort` | launchpad y launchpadd; el aviso exige Windows y los ELF son Linux |
+| 42505 | `crypto/tls.Conn.Handshake`, `Conn.HandshakeContext` | launchpad y launchpadd; aviso adicional fuera del conjunto HIGH inicial de Trivy |
+
+Las fuentes de los primeros diez identificadores están en la tabla de CVE anterior. El adicional [CVE-2026-42505 / GO-2026-5856](https://pkg.go.dev/vuln/GO-2026-5856) describe pérdida de privacidad de ECH. Se conserva para revisión, sin asignarle aquí una severidad no verificada.
+
+El caso 39836 demuestra un límite importante: coincidir en el nombre de una función no basta para establecer aplicabilidad, pues el aviso describe un defecto de Windows. Sin descontar formalmente ningún hallazgo del gate, la unión de los otros resultados contiene **nueve CVE HIGH previamente detectados por Trivy con funciones presentes y sin esa restricción Windows**: 27145, 32280, 32281, 32283, 33810, 33818, 56860, 56862 y 97031.
+
+En `setnetbr` quedaron a nivel paquete 32282, 39822, 39836, 33811 y 46600; no se detectó ninguna función afectada. Esto acota el análisis de ese archivo, pero no elimina los resultados de los otros binarios ni el hallazgo OpenSSL. La ausencia de coincidencia no genera VEX ni una exclusión automática.
+
+### Configuración efectiva y decisión
+
+`sql-runtime-configuration.txt` acredita `external scripts enabled=0` y que, bajo el login `facturacion_runtime`, `EXECUTE ANY EXTERNAL SCRIPT`, `ALTER ANY EXTERNAL LANGUAGE` y `ALTER ANY EXTERNAL LIBRARY` devuelven `0`. El [control del paquete](../scripts/verify-and-package.ps1) falla ante NULL o permisos presentes. Son restricciones verificadas que reducen la superficie de ejecución de extensiones.
+
+No se obtuvo el grafo de llamadas ni evidencia del origen y control de las entradas que llegan a las funciones Go detectadas. Tampoco se demostró que ningún proceso use OpenSSL/DTLS. La presencia de funciones/versiones afectadas está confirmada; la explotabilidad remota en este perfil permanece sin demostrar. El aislamiento y los permisos no sustituyen el parche del proveedor.
+
+**El bloqueo de la imagen SQL sigue sustentado.** El diagnóstico descarta tratar las 71 ocurrencias como idénticamente explotables, pero tampoco permite declararlas falsos positivos en conjunto: hay funciones asociadas a nueve CVE HIGH Linux en launchpad/launchpadd, además del paquete OpenSSL pendiente de corrección. Se mantiene el gate sin excepciones hasta disponer de una imagen corregida o de evidencia individual suficiente y revisada. La copia de archivos y este análisis no se extienden a los ELF de SQL 2025; de ese candidato sólo se dispone aquí del escaneo de imagen.
 
 ## Opciones de corrección y criterio de entrega
 

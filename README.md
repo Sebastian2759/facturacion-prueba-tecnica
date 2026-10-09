@@ -12,7 +12,7 @@ Con Windows x64, internet y Docker Desktop funcionando con contenedores Linux/Co
 
 Abra **http://127.0.0.1:5080**. La guía incluida es `LEEME.html`. El primer inicio descarga imágenes oficiales fijadas y ensambla imágenes copiando publicaciones .NET/Angular precompiladas; el evaluador no necesita SDK ni Node. SQL queda en una red privada Docker sin puerto al host.
 
-Este comando corresponde al **ZIP verificado**. Un checkout del código todavía no contiene app/migrator publicados ni el manifiesto final. El ZIP final, backup/restore y prueba de instalación real siguen pendientes porque Trivy bloquea la imagen oficial SQL; no se presenta el código actual como ZIP ya verificado.
+Este comando corresponde al **ZIP verificado**. Un checkout del código todavía no contiene app/migrator publicados ni el manifiesto final. CI ya comprobó backup/restore, CHECKDB y el recorrido API/SQL de la aplicación preparada. El ZIP final y la instalación Windows siguen pendientes: los gates de seguridad aún bloquean la release.
 
 `detener.cmd` conserva datos; `diagnosticar.cmd` revisa estado. `backup.cmd` produce una copia privada; `restaurar.cmd` restaura a una base nueva sin sobrescribir ni cambiar la base activa automáticamente. El backup distribuido será **esquema migrado vacío**; los ejemplos de portada son ficticios y no están almacenados como facturas privadas.
 
@@ -62,14 +62,16 @@ Desde un commit y árbol limpios, `pwsh scripts/build-release.ps1 -PrepareOnly` 
 
 ## Estado de verificación
 
-Evidencia del 9 de octubre de 2026: [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549), commit `21a36f9a246727db3f602d58cb1055dc4528c515`.
+Evidencia del 9 de octubre de 2026: [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596), commit `c6b44269ac0944289cb1d848a48510efcd1e5523` (run7).
 
 - Build .NET integrado: **0 errores y 0 advertencias**; formato aprobado.
-- **149 pruebas .NET aprobadas, 0 omitidas**, incluidas las **5 de SQL Server real**, modelo/snapshot EF, autorización HTTP y cliente Accounts con respuestas controladas.
-- Angular: build/formato, **14 unitarias**, **4 pruebas de proxy** y **7 de navegador con respuestas controladas** aprobadas. La revisión incluye axe; no acredita accesibilidad completa.
+- **150 pruebas .NET aprobadas, 0 omitidas**, incluidas las **5 de SQL Server real**, modelo/snapshot EF, autorización HTTP y cliente Accounts con respuestas controladas.
+- Angular en CI: build/formato, **16 unitarias**, **4 pruebas de proxy**, **7 de navegador con respuestas controladas/axe** y **1 live con API/SQL** aprobadas. Axe no acredita accesibilidad completa.
+- Backup vacío, restore a otra base, CHECKDB, migradores y smoke de API con persistencia: aprobados en CI Linux.
 - Gitleaks, Semgrep, NuGet/npm Audit, Trivy del filesystem y de la imagen ASP.NET: gates aprobados.
-- **Bloqueo activo:** Trivy detecta hallazgos en la imagen oficial SQL Server. Se investiga sin excepción ni supresión para obtener verde. No se ha generado un ZIP final aprobado.
-- Backup/restore del paquete, smoke de entrega y E2E live navegador/API/SQL: pendientes. La ejecución Windows con Docker tampoco está acreditada.
+- **Bloqueo de seguridad:** la imagen oficial SQL conserva hallazgos Go y OpenSSL; el análisis binario identifica símbolos asociados a **9 CVE Go HIGH** sin restricción Windows. No demuestra explotabilidad remota ni justifica una excepción. Véase el [análisis de runtime](docs/sql-runtime-risk-assessment.md).
+- ZAP terminó con **4 advertencias**. Las correcciones de cabeceras y la evaluación acotada de informativos están pendientes de nueva CI. No hay ZIP final aprobado ni instalación Windows con Docker acreditada.
+- La captura real del run7 reveló CSS global bloqueado pese al éxito funcional. Después se corrigieron CSP/nonce y el build de estilos; el smoke local de producción pasó sin violaciones CSP. La integración OpenAPI real y **28 unitarias locales** también pasaron; su validación integrada en la siguiente CI queda pendiente.
 - En el equipo local, WDAC `0x800711C7` sigue limitando el runtime .NET y no hay Docker/WSL; las pruebas backend/SQL anteriores se ejecutaron en CI Linux.
 - Novasoft real: no ejecutado; el ZIP fuerza simulación identificada. La guía HTML se revisó offline en escritorio/móvil; no sustituye el arranque de la aplicación.
 
@@ -79,6 +81,6 @@ Node **24.21.0 LTS** con npm **11.13.0** fue verificado también mediante toolch
 
 Basado en [ServiciosAndesTool/Template](https://dev.azure.com/ServiciosAndesTool/_git/Template), commit `3393c2e7b02f7d0ea439b461b8fba5d561107681`. Se conserva Clean Architecture, CQRS, validación, ResponseBase y convenciones de repositorio/mapper. Los archivos DemoArchitecture son material heredado y no un grafo actualizado de la aplicación.
 
-Destino: [GitHub privado personal](https://github.com/Sebastian2759/facturacion-prueba-tecnica), cuenta `Sebastian2759`, correo principal requerido verificado `forero.sebastian157@gmail.com`. Repositorio sincronizado; la evidencia CI corresponde al commit `21a36f9a246727db3f602d58cb1055dc4528c515`. La release final sigue bloqueada por el análisis de la imagen SQL. El workflow vigente es `.github/workflows/quality.yml`; `azure-pipelines.yml` fue retirado y reemplazado por GitHub Actions.
+Destino: [GitHub privado personal](https://github.com/Sebastian2759/facturacion-prueba-tecnica), cuenta `Sebastian2759`, correo principal requerido verificado `forero.sebastian157@gmail.com`. Repositorio sincronizado; el corte de evidencia CI corresponde al commit `c6b44269ac0944289cb1d848a48510efcd1e5523`. La release final sigue bloqueada. El workflow vigente es `.github/workflows/quality.yml`; `azure-pipelines.yml` fue retirado y reemplazado por GitHub Actions.
 
 El paquete excluye datos reales, credenciales del examen, secretos locales y PDF original. Los componentes de terceros conservan sus condiciones de licencia; la configuración SQL Developer se destina a evaluación.

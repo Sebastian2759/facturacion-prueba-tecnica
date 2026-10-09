@@ -46,7 +46,7 @@ Docker publica sólo 127.0.0.1:5080; el proceso interno escucha 0.0.0.0:8080. SQ
 
 La API no migra en requests. Un proceso administrativo inicializa/migra; runtime sólo tiene SELECT e INSERT sobre las tablas de factura. init revoca UPDATE/DELETE antiguos y rechaza privilegios efectivos indebidos. La migración/snapshot se escribieron manualmente porque WDAC bloqueó el tooling; el gate de modelo SQL/EF ya pasó en CI y seguirá siendo obligatorio.
 
-La release lleva un backup SQL Server de esquema vacío, en lugar del seed persistido inicialmente propuesto. La UI tiene ejemplos ficticios fuera de SQL. CI debe restaurar realmente y crear/consultar después una factura de smoke. Restore del evaluador crea otra base y no sobrescribe ni cambia destino automáticamente.
+La release lleva un backup SQL Server de esquema vacío, en lugar del seed persistido inicialmente propuesto. La UI tiene ejemplos ficticios fuera de SQL. El run7 comprobó backup, restore real, CHECKDB, migradores y creación/consulta posterior de factura mediante smoke. Restore del evaluador crea otra base y no sobrescribe ni cambia destino automáticamente; la instalación Windows sigue pendiente.
 
 ## D09. Binarios precompilados, internet y licencias
 
@@ -62,14 +62,18 @@ fecIng se mapea a fecha/hora; no se añade estCli sin respaldo del Swagger consu
 
 ## D11. Contrato de errores compatible
 
-Se conservan campos de ResponseBase y se añaden code/fieldErrors/traceId. ProblemDetails cubre seguridad, binding y excepciones. Angular normaliza ambos y conserva el formulario. Los tipos Angular son explícitos; no se declara generación automática desde OpenAPI sin ese proceso.
+Se conservan campos de ResponseBase y se añaden code/fieldErrors/traceId. ProblemDetails cubre seguridad, binding y excepciones. Angular normaliza ambos y conserva el formulario. Los tipos de transporte proceden del OpenAPI real exportado por CI y se consumen mediante un puente tipado y decodificadores. La comparación íntegra de esquema y ese puente pasaron localmente después del run7; esperan nueva CI. Véase [procedencia OpenAPI](../Frontend/docs/openapi.md).
 
 ## D12. Gates antes de etiquetar la release
 
 Build no equivale a tests; mocks no equivalen a SQL; YAML no equivale a CI ejecutado; VERIFYONLY no sustituye restore. Un escáner/feed fallido bloquea. NuGet Audit transitivo y NU1900–NU1905, npm, analizadores, Gitleaks, Semgrep, Trivy, SBOM y ZAP local tienen evidencia separada.
 
-La release final sólo procede desde commit/árbol limpio y gates aprobados. No se modifica WDAC. [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549) (`21a36f9a246727db3f602d58cb1055dc4528c515`) aprobó 149 tests .NET, incluidas cinco integraciones SQL, y los gates Gitleaks/Semgrep/NuGet/npm/Trivy filesystem/ASP.NET. La imagen oficial SQL tiene hallazgos de Trivy que bloquean el paquete, sin excepción. Backup/restore, smoke del ZIP y E2E live siguen pendientes.
+La release final sólo procede desde commit/árbol limpio y gates aprobados. No se modifica WDAC. [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596) (`c6b44269ac0944289cb1d848a48510efcd1e5523`) aprobó 150 tests .NET, incluidas cinco integraciones SQL, y los gates Gitleaks/Semgrep/NuGet/npm/Trivy filesystem/ASP.NET. Backup/restore, CHECKDB, migradores, smoke API y 1 E2E live API/SQL pasaron. La imagen SQL mantiene el bloqueo Go/OpenSSL, sin excepción; el diagnóstico binario confirma símbolos de 9 CVE Go HIGH sin restricción Windows, sin demostrar explotabilidad remota. ZAP terminó con 4 advertencias; correcciones pendientes de nueva CI. El ZIP final y Windows con Docker siguen pendientes.
 
 ## D13. Node LTS fijado
 
 Se fija Node 24.21.0 LTS con npm 11.13.0, verificados también en distribución portable. Angular/CLI sigue en 22.2.2. La toolchain está bloqueada para reproducibilidad; el evaluador del ZIP no necesita Node.
+
+## D14. Verificar estilos y CSP además del recorrido funcional
+
+La captura del run7 reveló CSS global bloqueado pese a aprobar guardado/consulta. Se corrige el HTML con nonce por respuesta para Angular/CDK y se desactiva inlineCritical para cargar el CSS global desde el mismo origen. El smoke local de producción pasó sin violaciones CSP; se refuerzan las aserciones live de estilos. La nueva CI debe comprobar la integración. Las 28 unitarias frontend posteriores son evidencia local y no sustituyen esa ejecución.

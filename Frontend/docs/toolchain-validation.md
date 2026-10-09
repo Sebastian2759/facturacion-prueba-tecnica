@@ -13,11 +13,11 @@ El runtime quedó en `work/tools/node-24.21.0/node-v24.21.0-win-x64` del workspa
 | Verificación                                       | Resultado                                      |
 | -------------------------------------------------- | ---------------------------------------------- |
 | Engines de todas las dependencias en los dos locks | Compatibles con 24.21.0; ninguna exige Node 26 |
-| `npm run build`                                    | Correcto; bundle inicial 344,37 kB             |
-| `npm test`                                         | 16 pruebas correctas, 4 archivos               |
+| `npm run build`                                    | Correcto; bundle inicial 347,08 kB             |
+| `npm test`                                         | 28 pruebas correctas, 5 archivos               |
 | `npm run test:proxy`                               | 4 pruebas HTTP correctas                       |
 | Prettier de los archivos cambiados                 | Correcto                                       |
 
-El lock de la aplicación y el del generador sólo cambian su requisito de Node; no se actualizaron versiones resueltas de Angular ni de dependencias. El esquema real y la comprobación de drift de OpenAPI continúan pendientes de CI. Esta verificación local del frontend no sustituye las pruebas Linux, API y SQL del pipeline.
+El lock de la aplicación y el del generador sólo cambiaron su requisito de Node; no se actualizaron versiones resueltas de Angular ni de dependencias. Posteriormente se integró el OpenAPI real de CI: `api:check` pasa contra su export y los siete escenarios Playwright con respuestas controladas pasan con los decodificadores conectados. Esta verificación local no sustituye las pruebas Linux, API y SQL del pipeline.
 
 Fuentes de compatibilidad: [Node LTS](https://nodejs.org/en/about/previous-releases) y [Angular](https://angular.dev/reference/versions).

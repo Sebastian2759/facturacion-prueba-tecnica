@@ -55,7 +55,7 @@ La clave única owner/idempotencyKey protege concurrencia; la huella del cuerpo 
 
 dbo.Facturas y dbo.DetalleFactura tienen relación y FK; la numeración no pretende ser contigua ante rollback. El modelo también conserva la tabla pedagógica DemoArchitectures.
 
-El migrador aplica esquema con credencial administrativa separada. Runtime sólo tiene SELECT e INSERT en Facturas/DetalleFactura; init revoca UPDATE/DELETE previos del rol y comprueba privilegios efectivos. La API no aplica migraciones en requests. El snapshot manual, el modelo y las cinco integraciones SQL superaron CI. La prueba de init/backup/restore del paquete sigue pendiente; los ejemplos de portada están fuera de SQL.
+El migrador aplica esquema con credencial administrativa separada. Runtime sólo tiene SELECT e INSERT en Facturas/DetalleFactura; init revoca UPDATE/DELETE previos del rol y comprueba privilegios efectivos. La API no aplica migraciones en requests. El snapshot manual, el modelo y las cinco integraciones SQL superaron CI. El run7 comprobó además init, backup vacío, restore a otra base, CHECKDB y smoke de API con persistencia. Los ejemplos de portada están fuera de SQL.
 
 ## HTTP y frontend
 
@@ -75,9 +75,11 @@ ResponseBase conserva isSuccess, statusCode, message, data y errors, añadiendo 
 | Límite temporal | 429 |
 | Error inesperado | 500, mensaje depurado |
 
-El [contrato](implementation-contract.md) es la referencia de rutas/DTO. Los tipos Angular son explícitos; no se presentan como código generado automáticamente desde OpenAPI. La verificación de drift requiere su gate correspondiente.
+El [contrato](implementation-contract.md) describe rutas/DTO. Angular consume tipos de transporte generados desde el OpenAPI real exportado por CI; los decodificadores comprueban las respuestas antes de formar el modelo de UI. El check compara la referencia completa y compila el puente utilizado por la aplicación. Esta integración posterior al run7 pasó localmente y espera la siguiente CI; véase [procedencia OpenAPI](../Frontend/docs/openapi.md).
 
 Frontend usa componentes standalone, lazy loading por rutas, formularios reactivos tipados y signals. core normaliza errores/sesión; shared contiene campos, feedback e iconos realmente reutilizados. La idempotencia se conserva para reintentar el mismo cuerpo y cambia al editarlo.
+
+La revisión visual del run7 detectó CSS global bloqueado aunque el recorrido funcional pasó. La corrección posterior utiliza nonce por respuesta para los estilos Angular/CDK y desactiva el inline de CSS crítico; el archivo global se sirve desde el mismo origen. El smoke local de producción confirmó estilos efectivos sin violaciones CSP. Las aserciones live reforzadas y esa corrección esperan nueva CI.
 
 ## Sesión y proveedor
 
@@ -89,4 +91,4 @@ Api/Api conserva un host JWT opcional, fuera del alcance de entrega y sin IdP co
 
 Los HTML y reportes DemoArchitecture en docs/architecture son documentación histórica de Template, no un grafo actualizado de este sistema. Build y evidencia actual están en [TESTING](TESTING.md).
 
-Evidencia de ejecución: [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549), commit `21a36f9a246727db3f602d58cb1055dc4528c515`: 149 tests .NET aprobados, 0 omitidos. Trivy de la imagen SQL mantiene bloqueada la release; no se acredita aún el recorrido completo del ZIP.
+Evidencia de ejecución: [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596), commit `c6b44269ac0944289cb1d848a48510efcd1e5523`: 150 tests .NET aprobados, 0 omitidos; frontend 16 unitarias, 4 proxy, 7 navegador/axe controladas y 1 live API/SQL. Trivy SQL y 4 advertencias ZAP impiden cerrar la release. El ZIP final y su instalación Windows siguen pendientes.

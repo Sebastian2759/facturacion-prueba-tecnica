@@ -22,11 +22,13 @@ El backup de release será esquema vacío, restaurado y comprobado. Backups post
 
 El workflow GitHub prepara NuGet/npm Audit, analizadores .NET, reglas TypeScript Semgrep, Gitleaks, Trivy, pruebas, SBOM, restore y ZAP baseline local. NuGet NU1900–NU1905 bloquean; npm moderate o superior y Trivy high/critical bloquean. Feeds/herramientas fallidos no son aprobaciones. ZAP baseline no equivale a pentest exhaustivo.
 
-Las pruebas de seguridad están en Test/Security y las de propiedad/persistencia en Test/Invoices. [CI 37986378549](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37986378549), commit `21a36f9a246727db3f602d58cb1055dc4528c515`, aprobó 149 pruebas .NET sin omisiones, incluidas cinco SQL y modelo EF; también Gitleaks, Semgrep, NuGet/npm Audit y Trivy filesystem/ASP.NET. Trivy de la imagen oficial SQL bloquea la entrega: se investiga sin excepción. Backup/restore, smoke/ZIP y E2E live siguen pendientes. WDAC limita el equipo Windows y no hay Docker/WSL local; la evidencia backend corresponde a CI Linux. No hay certificado ni pentest realizado.
+Las pruebas de seguridad están en Test/Security y las de propiedad/persistencia en Test/Invoices. [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596), commit `c6b44269ac0944289cb1d848a48510efcd1e5523`, aprobó 150 pruebas .NET sin omisiones, incluidas cinco SQL y modelo EF; también Gitleaks, Semgrep, NuGet/npm Audit y Trivy filesystem/ASP.NET. Backup/restore, CHECKDB, migradores, smoke API y 1 navegador live con API/SQL pasaron. Trivy SQL mantiene hallazgos Go/OpenSSL sin excepción. ZAP terminó con 4 advertencias; las correcciones de cabeceras y el gate de informativos esperan nueva CI. ZIP final y Windows con Docker siguen pendientes. WDAC limita el equipo Windows y no hay Docker/WSL local; la evidencia backend corresponde a CI Linux. No hay certificado ni pentest realizado.
+
+La captura del run7 reveló CSS global bloqueado pese al éxito funcional. Después se corrigieron CSP/nonce y la carga de estilos; el smoke local de producción confirmó estilos efectivos sin violaciones CSP. Las aserciones live reforzadas necesitan nueva CI antes de acreditar esa corrección en el paquete.
 
 El host web/JWT opcional no tiene IdP ni despliegue verificado y queda fuera de la entrega. El cliente real Novasoft tiene pruebas controladas aprobadas, sin prueba de conexión real; local fuerza simulación.
 
-La [evaluación de riesgo del runtime SQL](docs/sql-runtime-risk-assessment.md) documenta el digest afectado, las fuentes primarias de OpenSSL/Go y el diagnóstico binario propuesto. No aplica exclusiones ni modifica los resultados de la CI anterior.
+La [evaluación de riesgo del runtime SQL](docs/sql-runtime-risk-assessment.md) documenta digests, fuentes primarias y diagnóstico binario ejecutado. Confirma símbolos asociados a 9 CVE Go HIGH sin restricción Windows en SQL 2022; no demuestra explotabilidad remota. SQL 2025 también falla el escaneo. No se aplicaron exclusiones.
 
 ## Reportar y responder
 

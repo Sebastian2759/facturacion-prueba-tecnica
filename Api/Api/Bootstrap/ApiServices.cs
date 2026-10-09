@@ -9,6 +9,7 @@ using Domain.Contracts.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.OpenApi;
 using Persistence;
 
@@ -112,7 +113,13 @@ public static class ApiServices
             context.Response.Headers.XFrameOptions = "DENY";
             context.Response.Headers["Referrer-Policy"] = "no-referrer";
             context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
-            context.Response.Headers.ContentSecurityPolicy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'";
+            context.Response.Headers.ContentSecurityPolicy = BrowserSecurityPolicy.Default;
+            if (isLocal)
+            {
+                context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
+                context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+                context.Response.Headers["Cross-Origin-Resource-Policy"] = "same-origin";
+            }
             if (context.Request.Path.StartsWithSegments("/api")) context.Response.Headers.CacheControl = "no-store";
             await next(context);
         });
@@ -121,8 +128,12 @@ public static class ApiServices
             $"http.{context.HttpContext.Response.StatusCode}"));
         if (isLocal)
         {
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
+            // HTML must always pass through the nonce renderer, including alternate URL spellings.
+            var contentTypes = new FileExtensionContentTypeProvider();
+            foreach (var extension in contentTypes.Mappings.Where(entry => entry.Value == "text/html")
+                .Select(entry => entry.Key).ToArray())
+                contentTypes.Mappings.Remove(extension);
+            app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = contentTypes });
         }
         app.UseRouting();
         if (!isLocal)

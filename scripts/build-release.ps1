@@ -12,8 +12,8 @@ try {
     $npm = if ($env:OS -eq 'Windows_NT') { 'npm.cmd' } else { 'npm' }
     Push-Location Frontend
     try { Invoke-Checked $npm @('ci'); Invoke-Checked $npm @('run', 'build') } finally { Pop-Location }
-    Invoke-Checked 'dotnet' @('publish', 'Api/LocalEvaluation/LocalEvaluation.csproj', '-c', 'Release', '-r', 'linux-x64', '--self-contained', 'false', '-p:UseAppHost=false', '-p:DebugType=None', '-o', (Join-Path $stage 'app'))
-    Invoke-Checked 'dotnet' @('publish', 'Tools/DatabaseMigrator/DatabaseMigrator.csproj', '-c', 'Release', '-r', 'linux-x64', '--self-contained', 'false', '-p:UseAppHost=false', '-p:DebugType=None', '-o', (Join-Path $stage 'database/migrator'))
+    Invoke-Checked 'dotnet' @('publish', 'Api/LocalEvaluation/LocalEvaluation.csproj', '-c', 'Release', '-r', 'linux-x64', '--self-contained', 'false', '-p:UseAppHost=false', '-p:DebugType=None', '-p:RestoreLockedMode=true', '-o', (Join-Path $stage 'app'))
+    Invoke-Checked 'dotnet' @('publish', 'Tools/DatabaseMigrator/DatabaseMigrator.csproj', '-c', 'Release', '-r', 'linux-x64', '--self-contained', 'false', '-p:UseAppHost=false', '-p:DebugType=None', '-p:RestoreLockedMode=true', '-o', (Join-Path $stage 'database/migrator'))
     $settingsPath = Join-Path $stage 'app/appsettings.json'
     $settings = Get-Content -LiteralPath $settingsPath -Raw | ConvertFrom-Json
     if (-not $settings.PSObject.Properties['Release']) {

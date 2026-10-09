@@ -1,6 +1,6 @@
-# Revisión previa de nulabilidad y campos requeridos
+# Revisión de nulabilidad y campos requeridos
 
-Estado: lectura del código C# y TypeScript al 9 de octubre de 2026; **pendiente contrastar con el OpenAPI real**. Las nulabilidades confirmadas se corrigieron en los modelos manuales y se añadió el rechazo de éxito sin datos. No se creó un esquema ni se modificó el backend. La opcionalidad `required` y los modos esperan la comprobación del export real.
+Estado: contrastado con el **OpenAPI 3.1.1 real del commit `d17f159`**, ejecución CI `37987889714`. Las nulabilidades confirmadas se conservaron y los modelos de transporte ahora derivan de los tipos generados. No se modificó el documento para hacer coincidir el cliente ni se cambió el backend. [Procedencia y hashes](openapi.md).
 
 ## Diferencias detectadas antes de la corrección
 
@@ -15,7 +15,7 @@ Estado: lectura del código C# y TypeScript al 9 de octubre de 2026; **pendiente
 
 Fuentes: [ResponseBase](../../Core/Application/Base/ResponseBase.cs), [SessionDto](../../Api/Api/Session/SessionDto.cs), [AccountDto](../../Core/Application/Dtos/AccountDto.cs), [CreateAccountRequest](../../Core/Application/UseCases/Accounts/CreateAccount/CreateAccountRequest.cs), [contrato manual](../src/app/core/api-contract.ts).
 
-Los campos de factura son no anulables en C# y los campos de cliente son obligatorios por FluentValidation. Esa validación de negocio no permite afirmar por adelantado qué propiedades aparecerán en el array `required` del OpenAPI. En particular, las clases con valores iniciales, los records posicionales y las reglas de FluentValidation pueden producir metadatos diferentes. Se inspeccionará el export sin aplicar `Required<T>` ni `NonNullable<T>` globalmente.
+El export confirma que las clases de facturas y envolturas tienen propiedades opcionales, mientras que los records posicionales declaran campos requeridos. Los datos de cliente siguen siendo obligatorios por FluentValidation. Los campos numéricos se describen como `number | string` y los modos como `string`. Los aliases Wire respetan estas condiciones; los decodificadores comprueban la estructura antes de entregar modelos de UI. No se aplica `Required<T>` ni `NonNullable<T>` globalmente.
 
 ## Comparación que evita falsas alarmas sin ocultar errores
 
@@ -28,8 +28,8 @@ Los campos de factura son no anulables en C# y los campos de cliente son obligat
 
 `statusCode` puede aparecer como enum numérico del backend mientras el normalizador trabaja con `number`; los valores declarados por el servidor son consumibles como números. `date`, `registeredAt` e `id` deben seguir como strings de transporte si el esquema declara formatos de fecha/UUID: el formato no los convierte automáticamente en objetos `Date`.
 
-## Comprobaciones en ejecución a cerrar con la integración
+## Comprobaciones implementadas
 
 `unwrap` comprueba `isSuccess` y rechaza respuestas de éxito con `data: null` o sin `data`, conservando su referencia de seguimiento y el código `response.invalid`. Las pruebas dirigidas cubren ambas respuestas malformadas; el manejo de errores de negocio con `data: null` se conserva. La prueba de éxito también incluye los metadatos anulables que declara C#. Los normalizadores de errores tratan las propiedades recibidas como datos desconocidos antes de leer arrays y mapas.
 
-La referencia íntegra de esquema detectará cambios de metadatos aunque no rompan TypeScript; la comprobación de modelos comprobará el consumo real. Ambas se requieren. Su ejecución satisfactoria sigue pendiente del primer export real y de escribir `api-contract.compatibility.ts` contra ese documento.
+La referencia íntegra detecta cambios de metadatos aunque no rompan TypeScript. `api-contract.compatibility.ts` enlaza los endpoints/envolturas/DTO generados con las peticiones, decodificadores y modelos que consume Angular. `api:check` supera la comparación con el export real y compila el puente en TypeScript 6. Las unitarias cubren estructura incompleta, números malformados, enteros, modos desconocidos, campos anulables y conservación de trazas; las reglas de cálculo siguen exclusivamente en C#.

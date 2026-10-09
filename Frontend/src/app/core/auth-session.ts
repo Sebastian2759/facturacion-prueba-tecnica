@@ -1,8 +1,9 @@
 import { HttpBackend, HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom, timeout } from 'rxjs';
-import type { Envelope, Session } from './api-contract';
-import { unwrap } from './api-error';
+import type { Envelope, Session, SessionWire } from './api-contract';
+import { decodeEnvelope } from './api-error';
+import { decodeSession } from './api-decoders';
 import { RuntimeConfig } from './runtime-config';
 
 @Injectable({ providedIn: 'root' })
@@ -44,9 +45,9 @@ export class AuthSession {
   private async refresh(): Promise<void> {
     const response = await firstValueFrom(
       this.http
-        .get<Envelope<Session>>(this.config.url('/api/v1/session'), { withCredentials: true })
+        .get<Envelope<SessionWire>>(this.config.url('/api/v1/session'), { withCredentials: true })
         .pipe(timeout(15000)),
     );
-    this.state.set(unwrap(response));
+    this.state.set(decodeEnvelope(response, decodeSession));
   }
 }

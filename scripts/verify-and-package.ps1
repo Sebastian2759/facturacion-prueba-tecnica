@@ -97,19 +97,25 @@ try {
     if ($reportedVersion.profile -ne 'local' -or $reportedVersion.commit -ne $manifest.sourceCommit -or $reportedVersion.version -ne $manifest.version) {
         throw 'La versión o el commit de la aplicación no coincide con el manifiesto del paquete.'
     }
-    & (Join-Path $PSScriptRoot 'smoke-local.ps1')
+    $reportDirectory = Join-Path $script:ReleaseRoot 'artifacts/security'
+    $cacheEvidencePath = Join-Path $reportDirectory 'api-cache-policy.json'
+    & (Join-Path $PSScriptRoot 'smoke-local.ps1') -CacheEvidencePath $cacheEvidencePath
     $apiSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
     Invoke-RestMethod 'http://127.0.0.1:5080/api/v1/session' -WebSession $apiSession | Out-Null
     Invoke-WebRequest 'http://127.0.0.1:5080/openapi/v1.json' -WebSession $apiSession -OutFile (Join-Path $script:ReleaseRoot 'artifacts/openapi.json')
     $env:E2E_LIVE = '1'
     $env:E2E_BASE_URL = 'http://127.0.0.1:5080'
     Push-Location (Join-Path $script:ReleaseRoot 'Frontend')
-    try { Invoke-Checked 'npx' @('--no-install', 'playwright', 'test', 'e2e/local-live.spec.ts') }
+    try {
+        Invoke-Checked 'npm' @('run', 'api:check', '--', '../artifacts/openapi.json')
+        Invoke-Checked 'npx' @('--no-install', 'playwright', 'test', 'e2e/local-live.spec.ts')
+    }
     finally { Pop-Location; Remove-Item Env:E2E_LIVE; Remove-Item Env:E2E_BASE_URL }
     $lock = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'toolchain-lock.json') -Raw | ConvertFrom-Json
-    $reportDirectory = Join-Path $script:ReleaseRoot 'artifacts/security'
     Invoke-Checked 'chmod' @('777', $reportDirectory)
-    Invoke-Checked 'docker' @('run', '--rm', '--network', 'host', '-v', "${reportDirectory}:/zap/wrk:rw", '-v', "${PSScriptRoot}/zap-local.tsv:/zap/config.tsv:ro", $lock.images.zap, 'zap-baseline.py', '-t', 'http://127.0.0.1:5080', '-c', '/zap/config.tsv', '-r', 'zap.html', '-J', 'zap.json', '-m', '1')
+    & docker run --rm --network host -v "${reportDirectory}:/zap/wrk:rw" -v "${PSScriptRoot}/zap-local.tsv:/zap/config.tsv:ro" $lock.images.zap zap-baseline.py -t 'http://127.0.0.1:5080' -c '/zap/config.tsv' -r zap.html -J zap.json -m 1
+    $zapExitCode = $LASTEXITCODE
+    & (Join-Path $PSScriptRoot 'assert-zap-report.ps1') -ReportPath (Join-Path $reportDirectory 'zap.json') -ScannerExitCode $zapExitCode -StaticRoot (Join-Path $stagePath 'app/wwwroot') -CacheEvidencePath $cacheEvidencePath -DecisionPath (Join-Path $reportDirectory 'zap-gate.json')
 } finally {
     Invoke-Checked 'docker' @('rm', '-f', 'facturacion-ci-app')
 }

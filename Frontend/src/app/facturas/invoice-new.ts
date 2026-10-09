@@ -30,9 +30,10 @@ export class InvoiceNew {
   protected readonly totals = signal<Totals | null>(null);
   protected readonly error = signal<ApiError | null>(null);
   protected readonly previewError = signal<ApiError | null>(null);
-  protected readonly today = new Intl.DateTimeFormat('es-CO', { dateStyle: 'long' }).format(
-    new Date(),
-  );
+  protected readonly today = new Intl.DateTimeFormat('es-CO', {
+    dateStyle: 'long',
+    timeZone: 'America/Bogota',
+  }).format(new Date());
   constructor() {
     this.form.controls.details.valueChanges
       .pipe(

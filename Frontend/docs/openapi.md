@@ -1,10 +1,16 @@
 # Contrato OpenAPI y comprobación de cambios
 
-## Estado
+## Procedencia de la referencia
 
-Herramienta preparada; referencia inicial pendiente del `artifacts/openapi.json` exportado por el backend real en Linux. No se ha inventado un esquema ni generado tipos desde la documentación manual. `src/app/core/api-contract.ts` continúa siendo el contrato manual vigente hasta revisar ese export.
+La referencia se generó desde el **OpenAPI 3.1.1 real** exportado por el backend en CI, sin modificar sus campos requeridos, tipos ni nulabilidades:
 
-`api:check` falla mientras falten el export, la referencia generada o la conexión tipada con los modelos de Angular. La preparación del mecanismo no acredita todavía que frontend y OpenAPI coincidan.
+- Commit del backend: `d17f159`.
+- Ejecución CI: `37987889714`; artefacto: `11643334457`.
+- Archivo original: `artifacts/openapi.json`.
+- SHA-256 del original: `1569517455f485723d4308786e22969f245d3a2b09126981c3ecf9dde441d602`.
+- SHA-256 del JSON canónico: `8134e73acd7a265d099964f8d84367d0f5320db4c177ca076f859e8e3cb6b8fb`.
+
+Los hashes difieren por el orden de claves y formato estable del JSON canónico. El hash acredita correspondencia e integridad; la procedencia se vincula al artefacto y commit indicados. `openapi/backend.schema.json` conserva el documento completo y `src/app/core/openapi.generated.ts` sus tipos generados. Ambos se versionan y se comparan en `api:check`.
 
 ## Herramientas reproducibles
 
@@ -15,26 +21,27 @@ Desde `Frontend`:
 ```powershell
 npm ci
 npm run api:setup
-npm run api:generate -- ../artifacts/openapi.json
 npm run api:check -- ../artifacts/openapi.json
 ```
 
-`api:generate` sólo debe ejecutarse con el export real y después de revisar su procedencia. Escribe `openapi/backend.schema.json` y `src/app/core/openapi.generated.ts`; ambos se versionarán al establecer la primera referencia. El comando acepta un archivo local OpenAPI 3.0/3.1 completo y rechaza referencias a URLs u otros archivos. No descarga contratos ni utiliza credenciales.
+Después de revisar un cambio real del backend, ejecutar `npm run api:generate -- ../artifacts/openapi.json`, revisar el diff, y volver a ejecutar check, pruebas y build. El generador escribe la referencia y los tipos desde un archivo local OpenAPI 3.0/3.1 completo; rechaza URLs y referencias a otros archivos. No descarga contratos ni utiliza credenciales.
 
 La referencia JSON ordena claves, conserva arrays y usa saltos de línea estables. El archivo TypeScript se genera directamente con la herramienta y contiene el SHA-256 del JSON canónico. Ese hash acredita correspondencia e integridad del archivo; su origen se verifica mediante el artefacto y commit de CI.
 
-## Integración pendiente del esquema real
+## Consumo real en Angular
 
-1. Descargar `artifacts/openapi.json` del job Linux del commit evaluado y revisar nombres, campos, nulabilidad y envolturas reales.
-2. Ejecutar `api:generate` sin modificar el documento para hacer coincidir contratos a mano.
-3. Conectar los modelos usados por la aplicación mediante aliases a los tipos generados o comprobaciones estructurales acordes al sentido del transporte: petición de la UI asignable a la del servidor y respuesta del servidor asignable al tipo de transporte que consume la UI. Reservar la igualdad bidireccional para aliases que deban ser idénticos. El archivo `src/app/core/api-contract.compatibility.ts` contendrá las comprobaciones de DTO, peticiones y respuestas realmente consumidos. Véase la [revisión previa de nulabilidad y modos](openapi-contract-review.md).
-4. Resolver diferencias reales de contrato de forma coordinada; verificar frontend y backend. No convertir campos opcionales en obligatorios mediante aserciones para ocultar un desacuerdo.
-5. Versionar la referencia y ejecutar `api:check` con un nuevo export del mismo backend. La comprobación regenera en memoria, compara íntegramente esquema y tipos y compila la conexión con **TypeScript 6 de la aplicación**, mediante `tsconfig.api-contract.json`. No reescribe archivos en modo check.
+`api-contract.ts` define aliases **Wire** directamente desde los tipos generados. La envoltura genérica deriva de los metadatos reales de `ResponseBase`; cada endpoint y envoltura concreta se verifica en `api-contract.compatibility.ts`.
 
-Comparar un archivo generado que la aplicación no consume sería insuficiente. Por eso la comprobación exige también el archivo de compatibilidad; éste se escribirá sólo después de inspeccionar el esquema real.
+El export declara propiedades opcionales en clases de facturas/envolturas y `number | string` en campos numéricos. Los records de Accounts declaran campos requeridos, incluidos algunos anulables. Los modos son `string`. Estas condiciones se conservan en el transporte.
+
+Los decodificadores comprueban la estructura consumida: campos y colecciones presentes, tipos primitivos, números finitos, formato entero cuando corresponde y modos conocidos. Admiten las cadenas numéricas declaradas por el export y las convierten a números; no recalculan bruto, descuento, IVA ni total. Una respuesta incompleta o modo desconocido produce `response.invalid` conservando `traceId`; no se presenta como simulación ni conexión real.
+
+Los formularios pueden ser más estrictos que el esquema: envían los campos obligatorios por negocio. Las asignaciones a `CreateInvoiceWire`, `PreviewInvoiceWire` y `CreateAccountWire` se comprueban al compilar. No se aplica `Required<T>` ni `NonNullable<T>` globalmente al documento. Véase [revisión de nulabilidad y modos](openapi-contract-review.md).
+
+`api:check` regenera en memoria, compara íntegramente esquema/tipos y compila el puente con **TypeScript 6 de la aplicación** mediante `tsconfig.api-contract.json`. No reescribe ni acepta automáticamente una referencia nueva. Si faltan archivos o existe drift, falla.
 
 ## CI
 
-Instalar el paquete de herramienta con `npm run api:setup` y ejecutar `npm run api:check -- ../artifacts/openapi.json` después de la exportación autenticada. Un cambio exige revisar y regenerar la referencia fuera del paso de comprobación: CI no aceptará automáticamente una referencia nueva. Estos comandos no sustituyen las pruebas HTTP, los escenarios de SQL ni las validaciones de ejecución.
+Instalar la herramienta con `npm run api:setup` y ejecutar `npm run api:check -- ../artifacts/openapi.json` después de la exportación autenticada. Repetir contra el export HTTP del contenedor que se empaqueta. La referencia real supera check; las unitarias cubren respuestas incompletas, cadenas numéricas, nulabilidad, modos desconocidos y trazas. Estos comandos no sustituyen las pruebas HTTP, SQL ni las validaciones de ejecución.
 
 Referencia de implementación: [API Node de openapi-typescript](https://openapi-ts.dev/node).

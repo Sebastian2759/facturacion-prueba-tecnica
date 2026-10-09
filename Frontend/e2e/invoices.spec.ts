@@ -182,11 +182,23 @@ test.describe('UI with controlled API responses (not live SQL evidence)', () => 
             ? [
                 {
                   code: 'DEMO001',
+                  identificationType: '06',
                   name: 'Cuenta ficticia',
                   document: '123',
                   email: 'demo@example.test',
                   countryCode: '057',
+                  departmentCode: '11',
                   cityCode: '11001',
+                  firstName: null,
+                  lastName: null,
+                  personType: 1,
+                  customerType: 1,
+                  address: null,
+                  additionalAddress: null,
+                  phone: null,
+                  website: null,
+                  registeredAt: '2026-10-09T00:00:00Z',
+                  externalCode: null,
                 },
               ]
             : [],

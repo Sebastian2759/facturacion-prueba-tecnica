@@ -84,7 +84,7 @@ internal sealed class LocalEvaluationFactory(string? installationId = null, bool
     {
         var path = Path.Combine(Path.GetTempPath(), "facturacion-security-test-assets", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
-        File.WriteAllText(Path.Combine(path, "index.html"), "<!doctype html><html><body>Local security fixture</body></html>");
+        File.WriteAllText(Path.Combine(path, "index.html"), """<!doctype html><html><body><app-root ngCspNonce="__CSP_NONCE__">Local security fixture</app-root></body></html>""");
         File.WriteAllText(Path.Combine(path, "main.js"), "/* local-security-static-fixture */");
         return path;
     }

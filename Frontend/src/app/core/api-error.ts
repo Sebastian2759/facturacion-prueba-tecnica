@@ -65,3 +65,19 @@ export function unwrap<T>(response: Envelope<T>): T {
   }
   return response.data;
 }
+
+export function decodeEnvelope<T, R>(response: Envelope<T>, decode: (value: T) => R): R {
+  const data = unwrap(response);
+  try {
+    return decode(data);
+  } catch (error) {
+    const failure = normalizeError(error);
+    throw new ApiError(
+      failure.message,
+      failure.status || response.statusCode || 0,
+      failure.fieldErrors,
+      failure.traceId ?? response.traceId ?? undefined,
+      failure.code,
+    );
+  }
+}

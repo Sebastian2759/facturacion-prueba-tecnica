@@ -1,14 +1,28 @@
-/** Contract v1; nullable transport fields confirmed against C# DTOs, pending OpenAPI export. */
-export interface Envelope<T> {
-  isSuccess: boolean;
-  statusCode: number;
-  message: string;
-  data: T | null;
-  errors?: string[] | null;
-  code?: string;
-  fieldErrors?: Record<string, string[]> | null;
-  traceId?: string | null;
-}
+import type { components } from './openapi.generated';
+
+type Schemas = components['schemas'];
+
+/** Exact transport types generated from the backend export; no required/nullability rewriting. */
+export type Envelope<T> = Omit<Schemas['ResponseBaseOfSessionDto'], 'data'> & {
+  data?: T | null;
+};
+export type InvoiceLineWire = Schemas['InvoiceLineDto'];
+export type InvoiceLineInputWire = Schemas['InvoiceLineInput'];
+export type InvoiceWire = Schemas['InvoiceDetailDto'];
+export type InvoiceSummaryWire = Schemas['InvoiceListDto'];
+export type CreateInvoiceWire = Schemas['CreateInvoiceRequest'];
+export type PreviewInvoiceWire = Schemas['PreviewInvoiceRequest'];
+export type TotalsWire = Schemas['PreviewInvoiceResponse'];
+export type CreatedInvoiceWire = Schemas['CreateInvoiceResponse'];
+export type InvoiceResultWire = Schemas['GetInvoiceByNumberResponse'];
+export type InvoicePageWire = Schemas['ListInvoicesResponse'];
+export type SessionWire = Schemas['SessionDto'];
+export type AccountWire = Schemas['AccountDto'];
+export type CreateAccountWire = Schemas['CreateAccountRequest'];
+export type AccountsResultWire = Schemas['GetAccountsResponse'];
+export type AcceptedAccountWire = Schemas['CreateAccountResponse'];
+
+/** UI models are produced by explicit transport decoders; monetary rules remain on the server. */
 export interface Totals {
   gross: number;
   discount: number;
@@ -57,26 +71,10 @@ export interface Session {
   oidc?: { authority: string; clientId: string; scope: string } | null;
 }
 export type AccountsMode = 'simulated' | 'real';
-export interface Account {
-  code: string;
-  identificationType: string;
-  document: string;
-  name: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  email: string;
+export type Account = Omit<AccountWire, 'personType' | 'customerType'> & {
   personType: number;
-  cityCode: string;
-  departmentCode: string;
-  countryCode: string;
-  address?: string | null;
-  additionalAddress?: string | null;
-  phone?: string | null;
   customerType: number;
-  website?: string | null;
-  registeredAt: string;
-  externalCode?: string | null;
-}
+};
 export interface AccountsResult {
   mode: AccountsMode;
   accounts: Account[];
