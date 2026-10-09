@@ -92,3 +92,10 @@ La indisponibilidad del contenedor Semgrep quedó resuelta mediante PyPI oficial
 El empaquetado exige backup real vacío, RESTORE VERIFYONLY y restore a otra base, CHECKDB, verificación de esquema/permisos y smoke creando/consultando una factura; esos pasos SQL pasaron en el run10. La generación y verificación final del ZIP, SBOM/manifiesto/checksums y escaneo del paquete siguen condicionados a los gates. El script PrepareOnly no acredita estas verificaciones.
 
 Registrar por comprobación: comando, commit, herramienta/versión, fecha, resultado y artifact. Las categorías son aprobado, fallido, pendiente u omitido con motivo. No transformar omitido/bloqueado en aprobado. Antes de entrega se debe probar Windows con Docker a partir del ZIP descargado, además de CI Linux.
+# Comprobaciones adicionales en Windows — 9 de octubre de 2026
+
+Se ejecutaron 13 comprobaciones con PowerShell 7 sobre Windows: generación de credenciales independientes, identificador de instalación, ACL NTFS restringida al usuario, conservación de la configuración al repetir el inicio y rechazo de archivos modificados, ausentes, rutas inseguras y estado de paquete no aprobado. Los paquetes utilizados son fixtures sintéticos, no una release de la aplicación. El script reproducible es `scripts/tests/windows-delivery.tests.ps1`; admite `-ReportPath` para registrar resultados sin secretos.
+
+El parser real de Windows PowerShell 5.1 también aceptó los siete scripts del evaluador. Esto acredita sintaxis, no su ejecución: la ejecución directa de scripts con ese motor está deshabilitada en el equipo y no se modificó su política. PowerShell 7 tiene una política local RemoteSigned ya establecida.
+
+Docker y WSL siguen ausentes. No se acreditan instalación, arranque de contenedores, persistencia ni backup/restore en Windows. Esas operaciones conservan únicamente la evidencia CI Linux del run10. La consulta adicional del registro Microsoft devolvió el mismo digest SQL 2022 ya analizado; el bloqueo de seguridad continúa sin excepción autorizada.
