@@ -42,19 +42,19 @@ jobs:
           if ((node --version).Trim() -ne 'v24.21.0' -or (npm --version).Trim() -ne '11.13.0') { throw 'Node/npm no coinciden con las versiones fijadas.' }
       - name: Install security tools with verified checksums
         run: ./scripts/install-ci-tools.ps1
-      - name: Bundle source for verified checkout recovery
-        run: |
-          New-Item -ItemType Directory -Force artifacts | Out-Null
-          git bundle create artifacts/source.bundle --all
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          git bundle verify artifacts/source.bundle
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Detect secrets in Git history and working tree
+        id: secrets
         run: |
           New-Item -ItemType Directory -Force artifacts/security | Out-Null
           gitleaks git . --redact --report-format json --report-path artifacts/security/git-secrets.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           gitleaks dir . --redact --report-format json --report-path artifacts/security/tree-secrets.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Bundle source only after the secrets gate passes
+        run: |
+          git bundle create artifacts/source.bundle --all
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git bundle verify artifacts/source.bundle
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Restore locked dependencies
         run: |
@@ -117,6 +117,9 @@ jobs:
       - name: Required runtime images and diagnostic SQL candidate
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: ./scripts/scan-runtime-images.ps1
+      - name: Diagnose Go modules and symbols without executing SQL vendor binaries
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: ./scripts/diagnose-sql-binaries.ps1
       - name: Authorize ZIP only after functional and security checks
         if: success()
         env:
@@ -136,7 +139,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
       - name: Preserve source bundle
-        if: always()
+        if: ${{ always() && steps.secrets.outcome == 'success' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: source-bundle-${{ github.run_number }}

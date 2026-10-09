@@ -26,6 +26,8 @@ Las pruebas de seguridad están en Test/Security y las de propiedad/persistencia
 
 El host web/JWT opcional no tiene IdP ni despliegue verificado y queda fuera de la entrega. El cliente real Novasoft tiene pruebas controladas aprobadas, sin prueba de conexión real; local fuerza simulación.
 
+La [evaluación de riesgo del runtime SQL](docs/sql-runtime-risk-assessment.md) documenta el digest afectado, las fuentes primarias de OpenSSL/Go y el diagnóstico binario propuesto. No aplica exclusiones ni modifica los resultados de la CI anterior.
+
 ## Reportar y responder
 
 Informar al propietario por el canal privado acordado para la evaluación, con versión/commit, pasos mínimos y traceId depurado. No publicar secretos ni datos personales en issues, capturas o reportes públicos. La identidad propietaria está documentada en el README.

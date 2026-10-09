@@ -69,6 +69,8 @@ La verificación se separa de la autorización de entrega. `verify-and-package.p
 
 Los reportes se conservan siete días en el repositorio privado de CI. El artifact incluye capturas PNG del navegador y excluye sus trazas/cookies. Para la entrega estable, el propietario descarga la evidencia redactada necesaria y la incorpora a la carpeta autorizada de SharePoint. Los reportes de cobertura/pruebas no garantizan cobertura total; una vulnerabilidad bloqueante requiere corrección o revisión explícita documentada, nunca un `continue-on-error` general.
 
+Como diagnóstico adicional, `diagnose-sql-binaries.ps1` copia los tres ejecutables Go identificados en la imagen SQL desde un contenedor creado pero nunca iniciado. Go 1.26.9 se descarga con checksum oficial; `govulncheck` 1.8.0 se instala con verificación de módulos de Go. Se conservan hashes, plataforma, información de compilación y flujos JSON por módulo y símbolo, sin ejecutar los ELF del proveedor. Un exit code cero del formato JSON no implica ausencia de vulnerabilidades; estos informes requieren revisión y no modifican el gate de Trivy. La fase funcional también comprueba el valor efectivo de `external scripts enabled` y la falta de permisos runtime para ejecutar/administrar extensiones; esos controles no prueban por sí solos que todos los CVE sean inalcanzables.
+
 Los límites de GitHub Actions de la cuenta personal aplican a la ejecución; no se habilitan compras, ampliaciones ni servicios pagos mediante estos scripts. El repositorio debe exigir el check de calidad antes de aceptar cambios en `main`, configuración que se verifica en GitHub y no se presume por existir el YAML.
 
 ## Actualización y reversión

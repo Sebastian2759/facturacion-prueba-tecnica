@@ -22,7 +22,13 @@ foreach ($line in $files) {
     }
 }
 if ($moves.Count -lt 2) { throw 'No fue posible validar los archivos del backup.' }
-$sql = "IF DB_ID(N'$NewDatabaseName') IS NOT NULL THROW 51000, 'La base destino ya existe; no se sobrescribirá.', 1; RESTORE DATABASE [$NewDatabaseName] FROM DISK=N'/var/opt/mssql/backup/restore-input.bak' WITH CHECKSUM, $($moves -join ', '); USE [$NewDatabaseName]; IF USER_ID(N'facturacion_runtime') IS NOT NULL ALTER USER [facturacion_runtime] WITH LOGIN=[facturacion_runtime];"
+$sql = @"
+IF DB_ID(N'$NewDatabaseName') IS NOT NULL THROW 51000, 'La base destino ya existe; no se sobrescribirá.', 1;
+RESTORE DATABASE [$NewDatabaseName] FROM DISK=N'/var/opt/mssql/backup/restore-input.bak' WITH CHECKSUM, $($moves -join ', ');
+GO
+USE [$NewDatabaseName];
+IF USER_ID(N'facturacion_runtime') IS NOT NULL ALTER USER [facturacion_runtime] WITH LOGIN=[facturacion_runtime];
+"@
 Invoke-ContainerSql $container $sql | Out-Null
 Write-Host "Restauración completada en la nueva base $NewDatabaseName. La aplicación sigue usando su base anterior."
 Write-Host 'Para utilizar la copia: haga primero backup; detenga la app; cambie únicamente DATABASE_NAME en local.env por el nombre mostrado y ejecute iniciar.cmd.'

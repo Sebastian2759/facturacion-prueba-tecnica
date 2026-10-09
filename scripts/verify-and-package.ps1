@@ -38,6 +38,25 @@ $env:Database__Name = 'FacturacionCI_ReleaseDemo'
 $env:Database__RuntimePassword = New-LocalSecret
 Write-Host "::add-mask::$($env:Database__RuntimePassword)"
 Invoke-Checked 'dotnet' @((Join-Path $stagePath 'database/migrator/DatabaseMigrator.dll'), 'init')
+$runtimeChecks = @"
+SET NOCOUNT ON;
+DECLARE @externalScripts int = (SELECT CONVERT(int, value_in_use) FROM sys.configurations WHERE name=N'external scripts enabled');
+SELECT N'external scripts enabled', @externalScripts;
+IF @externalScripts IS NULL OR @externalScripts <> 0 THROW 51000, 'La ejecución de scripts externos debe estar deshabilitada.', 1;
+USE [FacturacionCI_ReleaseDemo];
+EXECUTE AS LOGIN=N'facturacion_runtime';
+DECLARE @executeExternal int = HAS_PERMS_BY_NAME(DB_NAME(), N'DATABASE', N'EXECUTE ANY EXTERNAL SCRIPT');
+DECLARE @alterLanguage int = HAS_PERMS_BY_NAME(DB_NAME(), N'DATABASE', N'ALTER ANY EXTERNAL LANGUAGE');
+DECLARE @alterLibrary int = HAS_PERMS_BY_NAME(DB_NAME(), N'DATABASE', N'ALTER ANY EXTERNAL LIBRARY');
+SELECT N'runtime EXECUTE ANY EXTERNAL SCRIPT', @executeExternal;
+SELECT N'runtime ALTER ANY EXTERNAL LANGUAGE', @alterLanguage;
+SELECT N'runtime ALTER ANY EXTERNAL LIBRARY', @alterLibrary;
+REVERT;
+IF @executeExternal IS NULL OR @executeExternal <> 0 OR @alterLanguage IS NULL OR @alterLanguage <> 0 OR @alterLibrary IS NULL OR @alterLibrary <> 0
+    THROW 51000, 'El runtime no debe administrar ni ejecutar extensiones externas.', 1;
+"@
+$runtimeEvidence = Invoke-ContainerSql 'facturacion-ci-sql' $runtimeChecks
+Write-Utf8 (Join-Path $script:ReleaseRoot 'artifacts/security/sql-runtime-configuration.txt') ($runtimeEvidence -join "`n")
 Invoke-Checked 'docker' @('exec', 'facturacion-ci-sql', 'mkdir', '-p', '/var/opt/mssql/backup')
 $sql = @"
 USE [FacturacionCI_ReleaseDemo];
@@ -49,6 +68,7 @@ IF DB_ID(N'FacturacionCI_RestoreCheck') IS NOT NULL THROW 51000, 'La base de res
 RESTORE DATABASE [FacturacionCI_RestoreCheck] FROM DISK=N'/var/opt/mssql/backup/demo.bak' WITH CHECKSUM,
  MOVE N'FacturacionCI_ReleaseDemo' TO N'/var/opt/mssql/data/FacturacionCI_RestoreCheck.mdf',
  MOVE N'FacturacionCI_ReleaseDemo_log' TO N'/var/opt/mssql/data/FacturacionCI_RestoreCheck_log.ldf';
+GO
 USE [FacturacionCI_RestoreCheck];
 IF OBJECT_ID(N'dbo.Facturas') IS NULL OR OBJECT_ID(N'dbo.DetalleFactura') IS NULL OR NOT EXISTS(SELECT 1 FROM dbo.__EFMigrationsHistory) THROW 51000, 'Esquema restaurado inválido.', 1;
 IF EXISTS(SELECT 1 FROM dbo.Facturas) OR EXISTS(SELECT 1 FROM dbo.DetalleFactura) THROW 51000, 'La restauración no debe contener datos.', 1;
