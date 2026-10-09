@@ -28,6 +28,10 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Configure the public Docker Hub mirror on the ephemeral runner
+        env:
+          CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: ./scripts/configure-ci-registry-mirror.ps1
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
