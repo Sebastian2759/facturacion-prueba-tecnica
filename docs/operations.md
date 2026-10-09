@@ -13,7 +13,7 @@ El pipeline `Quality and local delivery` es la autoridad operativa para producir
 SQL Server Developer se ejecuta en la red interna del proyecto Compose, sin puerto publicado. La conexión local usa `Encrypt=True;TrustServerCertificate=True` exclusivamente para el certificado autofirmado del contenedor aislado. Esta excepción no es una configuración para servidores remotos. Los dos clientes tienen credenciales separadas:
 
 - Migrador: `Database__AdminConnectionString`, `Database__Name`, `Database__RuntimePassword`. Sólo se ejecuta durante inicialización/mantenimiento.
-- API: `ConnectionStrings__AppDbContext` con `facturacion_runtime`, permisos DML limitados a las tablas de facturación y sin DDL.
+- API: `ConnectionStrings__AppDbContext` con `facturacion_runtime`, sólo `SELECT`/`INSERT` en las tablas de facturación; sin actualización, borrado ni DDL.
 
 `Local__InstallationId` identifica al propietario local y se genera una sola vez en `local.env`. Las contraseñas contienen 32 bytes aleatorios más caracteres de complejidad y no se muestran. El archivo recibe permisos restringidos. Un usuario con control de Docker o del sistema puede administrar sus contenedores; el aislamiento no pretende proteger la instalación frente a su propio administrador.
 

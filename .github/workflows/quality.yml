@@ -116,6 +116,7 @@ jobs:
             artifacts/security/
             artifacts/tests/
             artifacts/openapi.json
+            Frontend/test-results/**/*.png
           retention-days: 7
           if-no-files-found: error
       - name: Preserve source bundle

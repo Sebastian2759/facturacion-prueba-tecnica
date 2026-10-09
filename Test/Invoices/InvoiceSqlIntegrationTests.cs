@@ -16,7 +16,7 @@ public sealed class InvoiceSqlIntegrationTests
     public static bool SqlAvailable =>
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FACTURACION_TEST_SQL_CONNECTION"));
 
-    [Fact(SkipUnless = nameof(SqlAvailable))]
+    [Fact(Skip = "Requires a dedicated SQL Server via FACTURACION_TEST_SQL_CONNECTION.", SkipUnless = nameof(SqlAvailable))]
     [Trait("Category", "SqlIntegration")]
     public async Task Create_RoundTripsAggregateAndFiltersDifferentOwners()
     {
@@ -54,7 +54,7 @@ public sealed class InvoiceSqlIntegrationTests
         }
     }
 
-    [Fact(SkipUnless = nameof(SqlAvailable))]
+    [Fact(Skip = "Requires a dedicated SQL Server via FACTURACION_TEST_SQL_CONNECTION.", SkipUnless = nameof(SqlAvailable))]
     [Trait("Category", "SqlIntegration")]
     public async Task ConcurrentSameKey_InsertsExactlyOneAggregate()
     {
@@ -76,7 +76,7 @@ public sealed class InvoiceSqlIntegrationTests
         (await readContext.InvoiceLines.CountAsync(TestContext.Current.CancellationToken)).Should().Be(1);
     }
 
-    [Fact(SkipUnless = nameof(SqlAvailable))]
+    [Fact(Skip = "Requires a dedicated SQL Server via FACTURACION_TEST_SQL_CONNECTION.", SkipUnless = nameof(SqlAvailable))]
     [Trait("Category", "SqlIntegration")]
     public async Task InvalidDetail_RollsBackHeaderAndAllLines()
     {
@@ -95,7 +95,7 @@ public sealed class InvoiceSqlIntegrationTests
         (await verifyContext.InvoiceLines.CountAsync(TestContext.Current.CancellationToken)).Should().Be(0);
     }
 
-    [Fact(SkipUnless = nameof(SqlAvailable))]
+    [Fact(Skip = "Requires a dedicated SQL Server via FACTURACION_TEST_SQL_CONNECTION.", SkipUnless = nameof(SqlAvailable))]
     [Trait("Category", "SqlIntegration")]
     public async Task List_PaginatesByDescendingNumberWithoutLeakingOtherOwner()
     {
@@ -120,7 +120,7 @@ public sealed class InvoiceSqlIntegrationTests
         first.Items.Concat(second.Items).Should().OnlyContain(invoice => invoice.OwnerSubject == "owner-a");
     }
 
-    [Fact(SkipUnless = nameof(SqlAvailable))]
+    [Fact(Skip = "Requires a dedicated SQL Server via FACTURACION_TEST_SQL_CONNECTION.", SkipUnless = nameof(SqlAvailable))]
     [Trait("Category", "SqlIntegration")]
     public async Task ReadInsertOnly_CreatesReadsAndReplaysWithoutUpdateOrDelete()
     {

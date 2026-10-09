@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-test('live local API: create, reload and read a persisted invoice', async ({ page }) => {
+test('live local API: create, reload and read a persisted invoice', async ({ page }, testInfo) => {
   test.skip(
     process.env['E2E_LIVE'] !== '1',
     'Requires an explicitly running local API and SQL Server; no mocks.',
@@ -19,4 +19,5 @@ test('live local API: create, reload and read a persisted invoice', async ({ pag
   await page.reload();
   await expect(page.getByRole('heading', { name: heading!, exact: true })).toBeVisible();
   await expect(page.getByText('Prueba Automatizada')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('invoice-live.png'), fullPage: true });
 });
