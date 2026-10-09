@@ -4,7 +4,7 @@ Actualizado: 9 de octubre de 2026. No confundir compilación con ejecución ni r
 
 ## Resultado observado
 
-Evidencia: [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37991580284), commit de código `8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2`, 9 de octubre de 2026 (run8). Se revisaron `tests.trx`, `functional-evidence.json`, `zap-gate.json` y los JSON Trivy descargados de esa ejecución. El recibo funcional indica `functional-verified-not-authorized-for-release`.
+Evidencia: [CI 37994136672](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37994136672), commit de código `b0b7e25eb93f93b2870281bc2bc716a38ff2b463`, 9 de octubre de 2026 (run10). Se revisaron `tests.trx`, `functional-evidence.json`, `zap-gate.json` y los JSON Trivy descargados de esa ejecución. El recibo funcional indica `functional-verified-not-authorized-for-release`.
 
 | Comprobación | Resultado |
 |---|---|
@@ -14,22 +14,22 @@ Evidencia: [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-
 | Angular build / formato | Aprobados. Node 24.21.0 LTS/npm 11.13.0; toolchain portable verificado. |
 | Frontend unitarias / proxy | 28 unitarias y 4 pruebas HTTP del proxy aprobadas en CI. |
 | Playwright con respuestas controladas | 7 aprobadas. |
-| Playwright live navegador/API/SQL | 1 aprobada, con estilos efectivos y nonce/CSP comprobados; defecto CSS del run7 corregido. |
+| Playwright live navegador/API/SQL | 1 aprobada en run10, con estilos efectivos y nonce/CSP comprobados; defecto CSS del run7 corregido. |
 | Axe escritorio/móvil | Sin violaciones detectadas en los casos revisados; no certificación completa. |
 | Gitleaks / NuGet / npm | Gates aprobados en la ejecución indicada. |
-| Semgrep | No ejecutado: Docker Hub devolvió HTTP 429 al descargar la imagen. No se atribuye hallazgo TypeScript ni aprobación. |
+| Semgrep | 1.179.0, 31 archivos examinados, 0 hallazgos y 0 errores. PyPI oficial, Python 3.12.3, venv aislado, hashes y wheels obligatorios. |
 | Trivy filesystem e imagen ASP.NET | Aprobados. |
-| Trivy SQL 2022 / candidato SQL 2025 | **Bloquean la entrega**: 71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL en cada imagen. Sin excepción SQL. |
+| Trivy SQL 2022 / candidato SQL 2025 | SQL 2022 **bloquea la entrega**; SQL 2025 falla el diagnóstico. 71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL en cada imagen. Sin excepción SQL. |
 | Backup/restore / CHECKDB / migradores / smoke API | Aprobados en CI sobre la aplicación preparada y SQL real. |
 | ZAP baseline local | Gate aprobado: sólo informativos risk 0 aceptados, API no-store comprobada y ninguna alerta rechazada. Exit 2 del escáner revisado mediante JSON. |
-| OpenAPI del contenedor | Esquema real y puente consumido por Angular comprobados. |
+| OpenAPI | Dos comprobaciones aprobadas: export real del backend y export HTTP del contenedor, con puente consumido por Angular. |
 | ZIP final | Pendiente; no se etiqueta como release verificada. |
 | Instalación Windows con Docker | No ejecutada; Docker/WSL ausentes en el equipo local. |
 | Novasoft real | No ejecutado; pruebas HTTP controladas y simulación local. |
 
 WDAC 0x800711C7 continúa afectando la ejecución .NET del equipo Windows. Las 159 pruebas aprobadas pertenecen al entorno CI Linux, no a una evasión de esa política.
 
-El run8 valida la integración OpenAPI y las 28 unitarias frontend. La corrección CSP/nonce y `inlineCritical: false` resolvió el CSS bloqueado hallado en la captura del run7. El navegador real del run8 comprueba estilos efectivos, estilos Material/CDK, renovación del nonce y ausencia de violaciones CSP; el éxito funcional ya no es la única evidencia visual.
+El run10 valida la integración OpenAPI y las 28 unitarias frontend. La corrección CSP/nonce y `inlineCritical: false` resolvió el CSS bloqueado hallado en la captura del run7. El navegador real del run10 comprueba estilos efectivos, estilos Material/CDK, renovación del nonce y ausencia de violaciones CSP; el éxito funcional ya no es la única evidencia visual.
 
 ## Backend
 
@@ -81,12 +81,14 @@ $env:E2E_BASE_URL='http://127.0.0.1:5080'
 npm run test:e2e -- e2e/local-live.spec.ts
 ```
 
-El run8 ejecutó este recorrido con API/SQL real y las aserciones de estilos/CSP añadidas tras el defecto visual del run7. Conservar reporte/trazas depuradas. La revisión automática de accesibilidad se complementa con teclado y revisión visual; no se atribuye certificación WCAG a axe.
+El run10 ejecutó este recorrido con API/SQL real y las aserciones de estilos/CSP añadidas tras el defecto visual del run7. Conservar capturas y reportes depurados; no distribuir trazas con cookies. La revisión automática de accesibilidad se complementa con teclado y revisión visual; no se atribuye certificación WCAG a axe.
 
 ## Release y CI
 
-El workflow vigente es [.github/workflows/quality.yml](../.github/workflows/quality.yml). Build/formato, tests .NET/SQL/UI, auditorías NuGet/npm, Gitleaks y Trivy filesystem/ASP.NET pasaron. La fase funcional completó backup/restore, CHECKDB, migradores, smoke/no-store, contrato OpenAPI del contenedor, navegador real y gate ZAP. Trivy SQL bloquea la release; además Semgrep no pudo ejecutarse por el 429 del registro. La siguiente CI debe repetirlo con la corrección de disponibilidad del mirror, sin tratar su ausencia como aprobación.
+El workflow vigente es [.github/workflows/quality.yml](../.github/workflows/quality.yml). Build/formato, tests .NET/SQL/UI, auditorías NuGet/npm, Gitleaks, Semgrep y Trivy filesystem/ASP.NET pasaron. La fase funcional completó backup/restore, CHECKDB, migradores, siete respuestas HTTP con no-store, ambos contratos OpenAPI, navegador real y gate ZAP. Trivy SQL es el único gate previo a empaquetado que falla. La fase final del ZIP no se ejecuta mientras ese bloqueo persista.
 
-El empaquetado exige backup real vacío, RESTORE VERIFYONLY y restore a otra base, CHECKDB, verificación de esquema/permisos y smoke creando/consultando una factura; esos pasos SQL pasaron en el run8. La generación y verificación final del ZIP, SBOM/manifiesto/checksums y escaneo del paquete siguen condicionados a los gates. El script PrepareOnly no acredita estas verificaciones.
+La indisponibilidad del contenedor Semgrep quedó resuelta mediante PyPI oficial y un venv aislado. El run10 verificó instalación con hashes, pip check y versión efectiva; `typescript-sast-toolchain.json` registra Python 3.12.3 y SHA-256 del lock `8e93118487a04e96287ba455c0db092f90076f31d9d066ca06e47c4125a959d6`. El análisis utiliza reglas TypeScript locales acotadas; no acredita revisión exhaustiva de seguridad.
+
+El empaquetado exige backup real vacío, RESTORE VERIFYONLY y restore a otra base, CHECKDB, verificación de esquema/permisos y smoke creando/consultando una factura; esos pasos SQL pasaron en el run10. La generación y verificación final del ZIP, SBOM/manifiesto/checksums y escaneo del paquete siguen condicionados a los gates. El script PrepareOnly no acredita estas verificaciones.
 
 Registrar por comprobación: comando, commit, herramienta/versión, fecha, resultado y artifact. Las categorías son aprobado, fallido, pendiente u omitido con motivo. No transformar omitido/bloqueado en aprobado. Antes de entrega se debe probar Windows con Docker a partir del ZIP descargado, además de CI Linux.

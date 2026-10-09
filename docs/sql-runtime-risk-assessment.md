@@ -1,6 +1,6 @@
 # Evaluación del riesgo de la imagen SQL Server
 
-Fecha de corte: 9 de octubre de 2026, después de la CI 37991580284 (run8). Estado: la entrega sigue bloqueada por la imagen SQL; el gate ZAP y la corrección CSS/CSP ya pasaron en el run8. Semgrep no pudo ejecutarse por HTTP 429 del registro de imágenes. **No se aplicaron exclusiones, excepciones ni cambios de umbral al análisis SQL.** La revisión confirma versiones y símbolos afectados presentes, pero no demuestra explotabilidad ni ausencia de riesgo.
+Fecha de corte: 9 de octubre de 2026, después de la CI 37994136672 (run10). Estado: SQL 2022 mantiene el único gate previo a empaquetado bloqueante; funcionalidad, CSP/CSS, OpenAPI, ZAP y Semgrep pasaron. **No se aplicaron exclusiones, excepciones ni cambios de umbral al análisis SQL.** La revisión confirma versiones y símbolos afectados presentes, pero no demuestra explotabilidad ni ausencia de riesgo.
 
 ## Imagen y evidencia de origen
 
@@ -39,6 +39,10 @@ La [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/
 El run8, [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37991580284), commit `8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2`, vuelve a analizar los mismos digests literales anteriores. Los JSON registran SQL 2022 a las 21:16:10 UTC, SQL 2025 a las 21:16:22 UTC y ASP.NET a las 21:15:06 UTC: cada imagen SQL conserva **71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL**; ASP.NET, 0 HIGH/CRITICAL. No se sustituye el análisis de símbolos histórico del run7 por una afirmación de explotabilidad.
 
 El TRX run8 confirma **159/159 aprobadas, 0 omitidas**, incluidas cinco SQL. El recibo funcional, los reportes del smoke/OpenAPI y el navegador real acreditan backup/restore, CHECKDB, migradores, API/no-store y nonce/CSS corregidos. `zap-gate.json` indica passed, exit 2 del escáner revisado, sólo informativos risk 0 aceptados y ninguna alerta rechazada. Semgrep no se ejecutó por el 429; no es un hallazgo del código ni una aprobación. `functional-evidence.json` se identifica como `functional-verified-not-authorized-for-release`: ZIP final y Windows con Docker siguen pendientes.
+
+El cierre [run10 / CI 37994136672](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37994136672), commit `b0b7e25eb93f93b2870281bc2bc716a38ff2b463`, confirma el mismo conjunto de 24 CVE y los mismos digests SQL. Los informes registran SQL 2022 a las 21:39:30 UTC y SQL 2025 a las 21:39:42 UTC: **71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL por imagen**. ASP.NET, a las 21:38:47 UTC, conserva 0 HIGH/CRITICAL. SQL 2025 sigue siendo sólo diagnóstico y no sustituye el runtime requerido.
+
+El TRX confirma **159/159 aprobadas y 0 omitidas**, incluidas cinco SQL. También pasaron 28 unitarias Angular, 4 proxy, 7 navegador controladas y 1 live; ambos checks OpenAPI, backup/restore/CHECKDB, migradores, siete respuestas API/no-store, nonce/CSS y gate ZAP. Semgrep 1.179.0 se ejecutó desde PyPI con hashes en venv Python 3.12.3: **31 archivos, 0 hallazgos y 0 errores**. El bloqueo de disponibilidad de SAST quedó resuelto sin relajar reglas. El recibo funcional del run10 conserva `functional-verified-not-authorized-for-release`; no hay ZIP final aprobado ni prueba de instalación Windows.
 
 ## OpenSSL: paquete afectado y condición de activación
 

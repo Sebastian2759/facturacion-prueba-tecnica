@@ -68,7 +68,7 @@ Se conservan campos de ResponseBase y se añaden code/fieldErrors/traceId. Probl
 
 Build no equivale a tests; mocks no equivalen a SQL; YAML no equivale a CI ejecutado; VERIFYONLY no sustituye restore. Un escáner/feed fallido bloquea. NuGet Audit transitivo y NU1900–NU1905, npm, analizadores, Gitleaks, Semgrep, Trivy, SBOM y ZAP local tienen evidencia separada.
 
-La release final sólo procede desde commit/árbol limpio y gates aprobados. No se modifica WDAC. [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37991580284) (`8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2`) aprobó 159 tests .NET, incluidas cinco integraciones SQL, y Gitleaks/NuGet/npm/Trivy filesystem/ASP.NET. Semgrep no se ejecutó porque Docker Hub respondió 429 al descargar la imagen. Backup/restore, CHECKDB, migradores, smoke API/no-store, OpenAPI del contenedor, 1 E2E live API/SQL y gate ZAP pasaron. SQL mantiene 71 ocurrencias HIGH, 24 CVE únicos por imagen, sin excepción; el diagnóstico binario previo confirmó símbolos de 9 CVE Go HIGH sin restricción Windows, sin demostrar explotabilidad remota. El ZIP final y Windows con Docker siguen pendientes.
+La release final sólo procede desde commit/árbol limpio y gates aprobados. No se modifica WDAC. [CI 37994136672](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37994136672) (`b0b7e25eb93f93b2870281bc2bc716a38ff2b463`) aprobó 159 tests .NET, incluidas cinco integraciones SQL, y Gitleaks/NuGet/npm/Semgrep/Trivy filesystem/ASP.NET. Backup/restore, CHECKDB, migradores, siete respuestas API/no-store, ambos OpenAPI, 1 E2E live API/SQL y gate ZAP pasaron. SQL 2022 mantiene el único gate previo a empaquetado bloqueante: 71 ocurrencias HIGH, 24 CVE únicos; el candidato SQL 2025 tiene el mismo resultado. No se aplica excepción. El diagnóstico binario previo confirmó símbolos de 9 CVE Go HIGH sin restricción Windows, sin demostrar explotabilidad remota. El ZIP final y Windows con Docker siguen pendientes.
 
 ## D13. Node LTS fijado
 
@@ -81,3 +81,7 @@ La captura del run7 reveló CSS global bloqueado pese a aprobar guardado/consult
 ## D15. Evaluar informativos ZAP con condiciones verificables
 
 Exit 2 del baseline no se interpreta automáticamente como éxito. El gate examina JSON válido del origen loopback, severidad/subtipo y evidencia API no-store; sólo permite informativos conocidos y caché de assets públicos publicados por ruta exacta. Las excepciones HTTP-loopback 10035-1/10011 están limitadas a sus referencias y riesgo bajo. El run8 sólo aceptó risk 0, sin alertas rechazadas. Una alerta desconocida, severidad distinta o reporte incompleto falla. Esta revisión no concede excepciones Trivy SQL ni equivale a pentest.
+
+## D16. Semgrep reproducible desde PyPI en entorno aislado
+
+La indisponibilidad de la imagen del escáner se resolvió sin relajar el análisis. Semgrep 1.179.0 se instala desde PyPI oficial en un venv exclusivo del runner con Python 3.12, versiones/hashes de todas las dependencias y sólo wheels. No instala globalmente ni actualiza pip. CI exige pip check, versión efectiva, reporte completo, archivos examinados y cero hallazgos/errores. Métricas desactivadas y reglas locales TypeScript acotadas. El run10 confirmó Python 3.12.3 y 31 archivos examinados, sin hallazgos ni errores; no equivale a un análisis exhaustivo.
