@@ -1,0 +1,26 @@
+rules:
+  - id: no-dynamic-code-execution
+    languages: [typescript, javascript]
+    message: No ejecutar cadenas como código; usar funciones y datos tipados.
+    severity: ERROR
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+  - id: no-angular-sanitizer-bypass
+    languages: [typescript, javascript]
+    message: Evitar bypass de sanitización Angular; revisar el origen de los datos y usar bindings seguros.
+    severity: ERROR
+    pattern-either:
+      - pattern: $S.bypassSecurityTrustHtml(...)
+      - pattern: $S.bypassSecurityTrustScript(...)
+      - pattern: $S.bypassSecurityTrustUrl(...)
+      - pattern: $S.bypassSecurityTrustResourceUrl(...)
+      - pattern: $S.bypassSecurityTrustStyle(...)
+  - id: no-direct-dom-html-injection
+    languages: [typescript, javascript]
+    message: Usar binding de texto o APIs DOM seguras en lugar de asignar HTML directamente.
+    severity: ERROR
+    pattern-either:
+      - pattern: $ELEMENT.innerHTML = $VALUE
+      - pattern: $ELEMENT.outerHTML = $VALUE
+      - pattern: document.write(...)

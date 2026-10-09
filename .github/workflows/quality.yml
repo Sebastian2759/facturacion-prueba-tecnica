@@ -1,0 +1,144 @@
+name: Quality and local delivery
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      CI: 'true'
+      DOTNET_NOLOGO: 'true'
+      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: Frontend/package.json
+          package-manager-cache: false
+      - name: Install security tools with verified checksums
+        run: ./scripts/install-ci-tools.ps1
+      - name: Bundle source for verified checkout recovery
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          git bundle create artifacts/source.bundle --all
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git bundle verify artifacts/source.bundle
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Detect secrets in Git history and working tree
+        run: |
+          New-Item -ItemType Directory -Force artifacts/security | Out-Null
+          gitleaks git . --redact --report-format json --report-path artifacts/security/git-secrets.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          gitleaks dir . --redact --report-format json --report-path artifacts/security/tree-secrets.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Restore locked dependencies
+        run: |
+          dotnet restore Example.sln --locked-mode
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm ci --prefix Frontend
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Audit dependencies without suppressing failed feeds
+        run: ./scripts/audit-dependencies.ps1
+      - name: Validate the actual evaluator Compose configuration
+        run: ./scripts/validate-compose.ps1
+      - name: TypeScript security rules, offline configuration and disabled metrics
+        run: |
+          $lock = Get-Content scripts/toolchain-lock.json -Raw | ConvertFrom-Json
+          docker run --rm -v "${PWD}:/src" --workdir /src $lock.images.semgrep semgrep scan --config scripts/security/semgrep.yml --metrics off --disable-version-check --error --json --output artifacts/security/typescript-sast.json Frontend/src
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Formatting and build with security analyzers
+        run: |
+          dotnet format Example.sln --no-restore --verify-no-changes
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build Example.sln --no-restore -c Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run format:check --prefix Frontend
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run build --prefix Frontend
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Start isolated SQL Server with a random CI-only password
+        run: ./scripts/start-ci-database.ps1
+      - name: Unit, authorization and real SQL integration tests
+        run: |
+          if (-not $env:FACTURACION_TEST_SQL_CONNECTION) { throw 'SQL integration tests cannot be skipped.' }
+          dotnet test Example.sln --no-build -c Release --logger 'trx;LogFileName=tests.trx' --results-directory artifacts/tests --collect:'XPlat Code Coverage'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm test --prefix Frontend
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run test:proxy --prefix Frontend
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Browser tests
+        working-directory: Frontend
+        run: |
+          npx --no-install playwright install --with-deps chromium
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run test:e2e
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Filesystem, configuration and official runtime image scans
+        run: |
+          trivy fs --scanners vuln,misconfig,secret --severity HIGH,CRITICAL --exit-code 1 --skip-dirs .git --skip-dirs .tools --skip-dirs artifacts .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $lock = Get-Content scripts/toolchain-lock.json -Raw | ConvertFrom-Json
+          foreach ($image in @($lock.images.aspnet, $lock.images.sqlserver)) {
+            trivy image --severity HIGH,CRITICAL --exit-code 1 $image
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+      - name: Build ZIP, restore backup, smoke containers and scan the extracted package
+        env:
+          CI_QUALITY_GATE: passed
+        run: ./scripts/build-release.ps1 -Version "1.0.0-ci.${{ github.run_number }}"
+      - name: Preserve redacted evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: quality-evidence-${{ github.run_number }}
+          path: |
+            artifacts/security/
+            artifacts/tests/
+            artifacts/openapi.json
+          retention-days: 7
+          if-no-files-found: error
+      - name: Preserve source bundle
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: source-bundle-${{ github.run_number }}
+          path: artifacts/source.bundle
+          retention-days: 7
+          if-no-files-found: error
+      - name: Preserve verified ZIP only after every required step succeeds
+        if: success()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: local-evaluation-${{ github.run_number }}
+          path: |
+            artifacts/Aplicacion-*.zip
+            artifacts/SHA256SUMS.txt
+          retention-days: 7
+          if-no-files-found: error
+      - name: Stop only containers created by this CI job
+        if: always()
+        run: |
+          docker rm -f facturacion-ci-app facturacion-ci-sql 2>$null
+          docker network rm facturacion-ci 2>$null
+          exit 0

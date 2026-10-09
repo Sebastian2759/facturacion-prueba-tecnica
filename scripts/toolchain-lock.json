@@ -1,0 +1,38 @@
+{
+  "verifiedAt": "2026-10-09",
+  "actions": {
+    "checkout": { "version": "v7.0.1", "commit": "3d3c42e5aac5ba805825da76410c181273ba90b1" },
+    "setupDotnet": { "version": "v6.0.0", "commit": "a98b56852c35b8e3190ac28c8c2271da59106c68" },
+    "setupNode": { "version": "v7.1.0", "commit": "949feb2413d6458794dcd2491c4babbbce0c15c1" },
+    "uploadArtifact": { "version": "v7.0.2", "commit": "cf430e030ddbb5b0abf93d22962f4752f3646cd9" }
+  },
+  "images": {
+    "aspnet": "mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4",
+    "sqlserver": "mcr.microsoft.com/mssql/server:2022-latest@sha256:f2874938b3ce7a3290887ba13daebd61fbdd790420950d2cf715e3c805d448ae",
+    "zap": "ghcr.io/zaproxy/zaproxy:stable@sha256:7aaa659b0d43078febd82e29bad112285c370727e86ab8340444220e17d9f0d2",
+    "semgrep": "semgrep/semgrep:latest@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b"
+  },
+  "tools": {
+    "gitleaks": {
+      "version": "8.30.1",
+      "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz",
+      "sha256": "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+    },
+    "trivy": {
+      "version": "0.75.0",
+      "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-64bit.tar.gz",
+      "sha256": "c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f"
+    }
+  },
+  "sources": [
+    "https://api.github.com/repos/actions/checkout/releases/latest",
+    "https://api.github.com/repos/actions/setup-dotnet/releases/latest",
+    "https://api.github.com/repos/actions/setup-node/releases/latest",
+    "https://api.github.com/repos/actions/upload-artifact/releases/latest",
+    "https://api.github.com/repos/gitleaks/gitleaks/releases/tags/v8.30.1",
+    "https://api.github.com/repos/aquasecurity/trivy/releases/tags/v0.75.0",
+    "https://mcr.microsoft.com/v2/dotnet/aspnet/manifests/10.0",
+    "https://mcr.microsoft.com/v2/mssql/server/manifests/2022-latest",
+    "https://ghcr.io/v2/zaproxy/zaproxy/manifests/stable"
+  ]
+}

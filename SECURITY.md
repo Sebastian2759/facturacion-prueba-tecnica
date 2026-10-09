@@ -1,0 +1,35 @@
+# Seguridad
+
+Esta entrega se limita al ZIP local, GitHub privado y distribución controlada. No es una publicación web ni una auditoría de seguridad concluida.
+
+## Perfil de confianza
+
+LocalEvaluation sirve Angular/API en http://127.0.0.1:5080; dentro de Docker escucha 0.0.0.0:8080. SQL no publica puerto al host. La instalación es una sola identidad local; no pretende aislar usuarios del mismo equipo ni procesos maliciosos con acceso al host.
+
+La cookie de sesión es HttpOnly/SameSite=Strict, con nombre y protección de datos por instalación. El HTTP loopback requiere cookie sin Secure; no debe exponerse en LAN/internet. Las escrituras requieren sesión, Host/Origin exactos y X-CSRF-TOKEN. CORS por sí solo no autentica. Los repositorios verifican propietario, las operaciones requieren permiso y Accounts real está bloqueado en local.
+
+Los ejemplos públicos son ficticios y no consultan SQL. La API no acepta propietario, fecha, número ni totales definitivos desde el navegador. Usa límites de cuerpo/detalles, rate limiting, errores estructurados y traceId.
+
+## Secretos y datos
+
+No versionar local.env, contraseñas SQL, cookies, credenciales/tokens Novasoft, PDF con credenciales, backups de usuarios ni logs con datos personales. El script genera claves de instalación y restringe su archivo. No adjuntar salidas completas de docker inspect o compose config.
+
+Migrador y API usan identidades SQL diferentes. Runtime sólo tiene DML de las tablas de factura; no DDL. En la red Docker aislada, Encrypt=True con TrustServerCertificate=True cifra la conexión pero no valida la identidad del certificado autofirmado. Esa excepción no se traslada a otros entornos.
+
+El backup de release será esquema vacío, restaurado y comprobado. Backups posteriores del evaluador son privados. Restore usa una base nueva y no sustituye la activa automáticamente.
+
+## Verificación y gates
+
+El workflow GitHub prepara NuGet/npm Audit, analizadores .NET, reglas TypeScript Semgrep, Gitleaks, Trivy, pruebas, SBOM, restore y ZAP baseline local. NuGet NU1900–NU1905 bloquean; npm moderate o superior y Trivy high/critical bloquean. Feeds/herramientas fallidos no son aprobaciones. ZAP baseline no equivale a pentest exhaustivo.
+
+Las pruebas de seguridad están en Test/Security y las de propiedad/persistencia en Test/Invoices. A 9 de octubre de 2026, build .NET compila pero WDAC impide ejecutar tests localmente; Docker/SQL y CI siguen pendientes. Los tests frontend aprobados no reemplazan esas evidencias. No hay certificado ni resultado de pentest realizado.
+
+El host web/JWT opcional no tiene IdP ni despliegue verificado y queda fuera de la entrega. El cliente real Novasoft tiene pruebas controladas escritas, sin prueba de conexión real; local fuerza simulación.
+
+## Reportar y responder
+
+Informar al propietario por el canal privado acordado para la evaluación, con versión/commit, pasos mínimos y traceId depurado. No publicar secretos ni datos personales en issues, capturas o reportes públicos. La identidad propietaria está documentada en el README.
+
+Ante filtración, detener distribución, revocar/rotar la credencial afectada, preservar evidencia depurada y publicar otra versión corregida. Borrar un secreto del historial no lo revoca. Para volver a una versión anterior, comprobar compatibilidad de esquema y conservar backup; no hacer restore destructivo implícito.
+
+Las políticas reales de rama, permisos del evaluador, cuota de CI y descarga desde SharePoint se verifican antes de cerrar la entrega. Un YAML y un hash no bastan para demostrar que esas condiciones ya se cumplieron.

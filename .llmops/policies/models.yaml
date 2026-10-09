@@ -1,0 +1,15 @@
+# Politica de modelos aprobados
+# ESTADO: placeholder. Hereda de Capa 1 (Gobernanza). Mecanismo de sync pendiente
+# (ver modelo-capas-llmops.md, Seccion 9.1). No editar manualmente sin registrar
+# la excepcion conforme a estandar-operacional-por-stack.md, Seccion 8.
+
+approved_models:
+  - id: gpt-5.5
+    role: referencia_alta_calidad
+    reasoning_effort: n/a
+
+  - id: gpt-5.6-luna
+    role: economico_alto_volumen
+    reasoning_effort: medium
+
+pricing_reference: pricing-gpt55-vs-gpt56-luna.md

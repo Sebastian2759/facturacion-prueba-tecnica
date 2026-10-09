@@ -1,0 +1,89 @@
+# Evaluación local — comenzar aquí
+
+Esta entrega se ejecuta en **Windows x64 con Docker Desktop en modo Linux**. La aplicación abre en `http://127.0.0.1:5080`. El paquete contiene Angular y .NET ya compilados: el evaluador no necesita Node, Visual Studio ni SDK de .NET.
+
+**Estado del repositorio:** los scripts y el pipeline definen la construcción y los controles. Un directorio de fuentes o un payload `prepared-not-verified` no constituye el ZIP final. Sólo un job de CI exitoso que adjunte `Aplicacion-<version>.zip`, su checksum y las evidencias del mismo commit acredita una entrega verificada. No se publica la aplicación en un servicio de alojamiento.
+
+## 1. Descargar desde SharePoint
+
+Descargue el ZIP completo y el archivo externo `SHA256SUMS.txt` de la carpeta de entrega. La cuenta del evaluador debe tener permiso de lectura **y descarga**. El README del repositorio privado, el HTML local y la documentación dentro del ZIP permiten revisar la solución sin depender de la vista previa de SharePoint.
+
+Antes de extraer, compare el SHA-256 del ZIP en PowerShell:
+
+```powershell
+Get-FileHash -LiteralPath '.\Aplicacion-<version>.zip' -Algorithm SHA256
+```
+
+Compare el valor completo con el publicado en `SHA256SUMS.txt`. La comparación detecta corrupción; la identidad de quien entrega depende del canal SharePoint autorizado y de la referencia Git del manifiesto.
+
+Windows puede marcar los archivos descargados. Después de comprobar su procedencia e integridad, abra **Propiedades del ZIP → Desbloquear → Aplicar** y luego extráigalo. Los lanzadores usan `RemoteSigned` únicamente para su propio proceso; no modifican la política global ni evaden una política organizacional. Si esa política impide ejecutar scripts, el administrador del equipo debe habilitar el mecanismo aprobado; no desactive controles del equipo.
+
+## 2. Preparar el equipo una sola vez
+
+- Windows x64, virtualización habilitada y Docker Desktop con motor Linux y Compose v2 funcionando. WSL 2 o la virtualización pueden requerir instalación previa y reinicio.
+- Internet para la descarga inicial de imágenes oficiales fijadas por digest. Después, las operaciones locales usan los contenedores descargados.
+- Memoria suficiente para SQL Server (límite de 2 GiB), la API (512 MiB), Docker y Windows. Se recomiendan al menos 6 GiB asignables al entorno Docker y 10 GiB de disco libre para imágenes, base y backups.
+- Puerto `5080` libre. SQL Server no publica ningún puerto hacia Windows en la entrega.
+
+Los scripts comprueban Docker y el perfil Linux; no instalan software de sistema ni aceptan configuraciones del equipo por usted.
+
+## 3. Extraer e iniciar
+
+Extraiga todo el ZIP en una carpeta local, por ejemplo `C:\Evaluacion\Facturacion`. Evite ejecutar dentro del ZIP o de una carpeta sincronizada por OneDrive/SharePoint. Las rutas con espacios se manejan con argumentos de archivo y comillas.
+
+Abra `LEEME.html` para la guía visual sin conexión. Luego ejecute:
+
+```text
+iniciar.cmd
+```
+
+El comando verifica los archivos, genera credenciales aleatorias de esta instalación, descarga los runtimes, inicia SQL, aplica la inicialización con el migrador separado, inicia la aplicación y abre el navegador. La primera ejecución tarda más por la descarga y el arranque de SQL Server. Una segunda ejecución conserva las facturas y el identificador de instalación.
+
+En `local.env` se guardan únicamente secretos de esta instalación. El archivo recibe permisos restringidos al usuario y nunca debe adjuntarse a SharePoint ni al repositorio. Conservarlo permite conservar el propietario de las facturas. No lo sustituya por el archivo de otra instalación.
+
+## 4. Recorrido de evaluación
+
+1. Consulte los ejemplos fijos y abra el formulario de factura.
+2. Añada detalles, pruebe valores vacíos/no válidos y el umbral de descuento de `500000`.
+3. Guarde una factura, compruebe el número asignado y consulte su detalle en el listado.
+4. Abra Accounts y pruebe crear/listar/consultar una cuenta simulada. La pantalla identifica el modo; los datos creados en esta simulación se pierden al reiniciar la API y caducan a los siete días. Las facturas sí se almacenan en SQL.
+5. Detenga y vuelva a iniciar: las facturas deben permanecer disponibles.
+
+La sesión local se establece al abrir la aplicación y las escrituras requieren antiforgery. No necesita una cuenta cloud. Accounts real permanece bloqueado en este host incluso si se configura accidentalmente una bandera de activación.
+
+## 5. Detener, diagnosticar y respaldar
+
+| Acción | Comando | Efecto |
+|---|---|---|
+| Detener | `detener.cmd` | Detiene contenedores; conserva volumen SQL y configuración. |
+| Diagnosticar | `diagnosticar.cmd` | Muestra estado de servicios, integridad y salud sin imprimir secretos. |
+| Crear backup | `backup.cmd` | Genera y verifica un `.bak` en `backups/`. Contiene los datos locales actuales. |
+| Restaurar una copia | `restaurar.cmd -BackupPath "C:\ruta\backup.bak"` | Crea una base nueva; no sustituye la base usada por la aplicación. |
+
+El backup `database/demo.bak` de la entrega contiene **el esquema migrado vacío**, sin facturas ni datos personales. Los ejemplos públicos viven como fixtures fuera de SQL. CI restaura este backup en una base diferente, comprueba sus tablas, historial de migraciones, ausencia de datos y consistencia; después crea y consulta una factura ficticia mediante la API conectada a esa restauración.
+
+Para cambiar a una copia restaurada, haga primero un backup, detenga la aplicación y cambie únicamente `DATABASE_NAME` en `local.env` por el nombre nuevo mostrado por el comando de restauración. Ejecute `iniciar.cmd`. Las facturas conservan su propietario original: restaurar un backup de otra instalación no transfiere la titularidad de sus registros.
+
+## Contenido de la entrega
+
+```text
+README.md / LEEME.html             Inicio y guía visual
+iniciar.cmd / detener.cmd         Operación cotidiana
+diagnosticar.cmd                  Comprobaciones sin secretos
+backup.cmd / restaurar.cmd        Respaldo y copia independiente
+compose.yaml / scripts/           Contenedores y automatización
+app/                             Angular y .NET compilados
+database/migrator/ / demo.bak     Migrador y backup vacío verificado
+source/                          Fuentes del mismo commit, incluidos tests y CI
+docs/                            Arquitectura, decisiones, requisitos, seguridad y operación
+release.json / SBOM.cdx.json      Trazabilidad e inventario de componentes
+SHA256SUMS.txt                    Integridad de los archivos extraídos
+```
+
+Los resultados de CI, sus limitaciones y las incidencias pendientes se revisan junto con la entrega. Un análisis estático o ZAP baseline no equivale a una auditoría completa ni acredita ausencia de vulnerabilidades.
+
+## Entrega por SharePoint
+
+La carpeta de entrega debe incluir el ZIP, checksum externo, guía inicial/documentación y enlaces al repositorio privado y a la ejecución de CI. El usuario cargará esa carpeta en SharePoint; no se presupone un sitio ni permisos existentes. Antes de enviarla, pruebe descargar con los permisos del evaluador, extraer fuera de carpetas sincronizadas y seguir el arranque en un Windows limpio con los prerrequisitos indicados. La revisión de código en GitHub exige invitación separada; las fuentes también están dentro del ZIP.
+
+Consulte `docs/operations.md` para soporte, actualizaciones controladas y detalles técnicos.

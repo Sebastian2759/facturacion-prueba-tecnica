@@ -1,0 +1,7 @@
+{
+  "id": "testing",
+  "dimension": "arquitectura",
+  "instructions": "Verificar que el PR incluya pruebas para el codigo nuevo o modificado, siguiendo la convencion de Test/ y build-results.tool.json.",
+  "tools": ["diff-reader", "build-results"],
+  "output_schema": "../schemas/finding.schema.json"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "synthesis",
+  "dimension": "negocio",
+  "instructions": "Consolidar los findings de security, architecture y testing en un unico pr-analysis-result.schema.json, evaluando ademas el impacto de negocio del cambio.",
+  "tools": ["pr-publisher"],
+  "output_schema": "../schemas/pr-analysis-result.schema.json"
+}

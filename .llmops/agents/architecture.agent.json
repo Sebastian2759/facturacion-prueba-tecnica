@@ -1,0 +1,7 @@
+{
+  "id": "architecture",
+  "dimension": "arquitectura",
+  "instructions": "Revisar el diff del PR contra la regla de dependencia y patron de casos de uso definidos en estandar-operacional-por-stack.md Secciones 5.3 a 5.9. Reportar findings con dimension=arquitectura segun finding.schema.json.",
+  "tools": ["diff-reader", "repository-search", "graph-query"],
+  "output_schema": "../schemas/finding.schema.json"
+}

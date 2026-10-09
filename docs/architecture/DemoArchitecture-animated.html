@@ -1,0 +1,1920 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Graphify · Clean Architecture .NET 10</title>
+  <style>
+    :root {
+      --canvas: #071018;
+      --surface: #0b1621;
+      --surface-2: #101e2b;
+      --surface-3: #152636;
+      --border: #264056;
+      --border-soft: #1a3042;
+      --text: #edf6ff;
+      --muted: #8fa9bd;
+      --quiet: #607b91;
+      --focus: #f8c15c;
+      --api: #43a5ff;
+      --application: #b883ff;
+      --domain: #49d6a6;
+      --adapters: #ff9e64;
+      --persistence: #38d5e8;
+      --infrastructure: #f16f9f;
+      --quality: #f6cc5c;
+      --danger: #ff6b76;
+      --success: #4cdb92;
+      --shadow: 0 18px 48px rgba(0, 0, 0, .34);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--canvas);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button,
+    select,
+    input {
+      color: var(--text);
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: fixed;
+      z-index: 100;
+      top: 12px;
+      left: 12px;
+      padding: 10px 14px;
+      color: #08111a;
+      background: var(--focus);
+      border-radius: 8px;
+      font-weight: 800;
+      transform: translateY(-160%);
+      transition: transform .2s ease;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .shell {
+      min-height: 100vh;
+      padding: 22px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 22px;
+      max-width: 1840px;
+      margin: 0 auto 16px;
+      padding: 8px 2px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 8px;
+      color: #8ccaff;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: 9px;
+      height: 9px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 0 5px rgba(76, 219, 146, .1);
+      animation: live 1.8s ease-in-out infinite;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(26px, 3vw, 44px);
+      line-height: 1.04;
+      letter-spacing: -.04em;
+    }
+
+    .subtitle {
+      max-width: 850px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(88px, 1fr));
+      gap: 8px;
+      min-width: min(100%, 430px);
+    }
+
+    .metric {
+      min-height: 72px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+    }
+
+    .metric strong {
+      display: block;
+      color: #fff;
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      max-width: 1840px;
+      min-height: 730px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .workspace {
+      position: relative;
+      min-width: 0;
+      min-height: 730px;
+      background-color: #08131d;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M24 0H0V24' fill='none' stroke='%2357819e' stroke-opacity='.08'/%3E%3C/svg%3E");
+      background-size: 24px 24px;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      position: absolute;
+      z-index: 10;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 8px;
+      background: rgba(8, 19, 29, .94);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .28);
+      backdrop-filter: blur(12px);
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toolbar-separator {
+      width: 1px;
+      align-self: stretch;
+      margin: 0 3px;
+      background: var(--border);
+    }
+
+    .control,
+    .icon-control,
+    .chip {
+      min-height: 34px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color .16s ease, background-color .16s ease, transform .16s ease;
+    }
+
+    .control {
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .icon-control {
+      display: inline-grid;
+      width: 34px;
+      padding: 0;
+      place-items: center;
+      font-size: 17px;
+    }
+
+    .control:hover,
+    .icon-control:hover,
+    .chip:hover {
+      background: var(--surface-3);
+      border-color: #46718f;
+    }
+
+    .control:active,
+    .icon-control:active,
+    .chip:active {
+      transform: translateY(1px);
+    }
+
+    .control.primary {
+      color: #06131d;
+      background: #72c3ff;
+      border-color: #72c3ff;
+    }
+
+    .control.primary:hover {
+      background: #9bd5ff;
+    }
+
+    .filter-select {
+      min-height: 34px;
+      max-width: 180px;
+      padding: 0 30px 0 10px;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .search {
+      width: min(22vw, 210px);
+      min-height: 34px;
+      padding: 0 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .search::placeholder {
+      color: var(--quiet);
+    }
+
+    .zoom-controls {
+      margin-left: auto;
+    }
+
+    .graph-viewport {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .graph-viewport.dragging {
+      cursor: grabbing;
+    }
+
+    #architectureGraph {
+      width: 100%;
+      height: 100%;
+      min-height: 730px;
+      user-select: none;
+    }
+
+    .layer-region {
+      fill: rgba(13, 29, 42, .72);
+      stroke: var(--region-color);
+      stroke-width: 1.25;
+      stroke-dasharray: 7 7;
+      opacity: .82;
+      transition: opacity .25s ease;
+    }
+
+    .layer-label {
+      fill: var(--region-color);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .edge {
+      fill: none;
+      stroke: #5c7890;
+      stroke-width: 2;
+      stroke-linecap: round;
+      opacity: .42;
+      marker-end: url(#arrow);
+      transition: opacity .25s ease, stroke .25s ease, stroke-width .25s ease;
+    }
+
+    .edge[data-kind="happy"] {
+      stroke: #5cbcff;
+    }
+
+    .edge[data-kind="security"] {
+      stroke: #62d7aa;
+    }
+
+    .edge[data-kind="error"] {
+      stroke: var(--danger);
+      stroke-dasharray: 7 5;
+    }
+
+    .edge[data-kind="di"] {
+      stroke: #dd9cff;
+      stroke-dasharray: 4 6;
+    }
+
+    .edge[data-kind="quality"] {
+      stroke: var(--quality);
+      stroke-dasharray: 10 5;
+    }
+
+    .edge.is-active {
+      stroke-width: 3.3;
+      opacity: .95;
+      filter: drop-shadow(0 0 5px currentColor);
+    }
+
+    .edge.is-dimmed {
+      opacity: .06;
+    }
+
+    .particle {
+      pointer-events: none;
+      fill: #fff;
+      stroke: #8fd6ff;
+      stroke-width: 2;
+      filter: drop-shadow(0 0 6px #68c4ff);
+    }
+
+    .node {
+      cursor: pointer;
+      opacity: 1;
+      transition: opacity .22s ease, filter .22s ease;
+    }
+
+    .node rect {
+      fill: #10202e;
+      stroke: var(--node-color);
+      stroke-width: 1.6;
+      rx: 10;
+      filter: drop-shadow(0 8px 9px rgba(0, 0, 0, .22));
+      transition: fill .2s ease, stroke-width .2s ease;
+    }
+
+    .node:hover rect,
+    .node:focus rect,
+    .node.is-selected rect {
+      fill: #183044;
+      stroke-width: 3;
+    }
+
+    .node.is-active {
+      filter: drop-shadow(0 0 11px var(--node-color));
+    }
+
+    .node.is-dimmed {
+      opacity: .14;
+    }
+
+    .node.is-filtered {
+      display: none;
+    }
+
+    .node .node-kicker {
+      fill: var(--node-color);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .node .node-title {
+      fill: #f6fbff;
+      font-size: 11px;
+      font-weight: 780;
+    }
+
+    .node .node-subtitle {
+      fill: #9ab0c1;
+      font-size: 8.5px;
+      font-weight: 600;
+    }
+
+    .node.status rect {
+      fill: #24141a;
+      stroke: var(--danger);
+    }
+
+    .node.status .node-title {
+      fill: #ffb0b7;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .node.status .node-subtitle {
+      fill: #d88c94;
+    }
+
+    .scene-card {
+      position: absolute;
+      z-index: 8;
+      left: 18px;
+      bottom: 18px;
+      width: min(550px, calc(100% - 36px));
+      padding: 15px 18px;
+      background: rgba(8, 19, 29, .94);
+      border: 1px solid var(--border);
+      border-left: 4px solid #72c3ff;
+      border-radius: 10px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, .32);
+      backdrop-filter: blur(12px);
+    }
+
+    .scene-card .scene-count {
+      color: #72c3ff;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .scene-card h2 {
+      margin: 4px 0 4px;
+      font-size: 17px;
+      letter-spacing: -.02em;
+    }
+
+    .scene-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .scene-progress {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      overflow: hidden;
+      border-radius: 0 0 10px 10px;
+    }
+
+    .scene-progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: #72c3ff;
+    }
+
+    .scene-progress.is-running span {
+      animation: progress 5.5s linear forwards;
+    }
+
+    .inspector {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: #0c1823;
+      border-left: 1px solid var(--border);
+    }
+
+    .inspector-header {
+      padding: 21px 20px 17px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .inspector-header .label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .inspector-header h2 {
+      margin: 6px 0 0;
+      font-size: 20px;
+      letter-spacing: -.03em;
+    }
+
+    .inspector-body {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .empty-inspector {
+      display: grid;
+      min-height: 310px;
+      color: var(--muted);
+      text-align: center;
+      place-items: center;
+    }
+
+    .empty-inspector strong {
+      display: block;
+      margin-bottom: 7px;
+      color: #d8e9f5;
+      font-size: 15px;
+    }
+
+    .empty-icon {
+      display: grid;
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 15px;
+      color: #72c3ff;
+      background: rgba(67, 165, 255, .08);
+      border: 1px solid rgba(67, 165, 255, .28);
+      border-radius: 14px;
+      place-items: center;
+      font-size: 24px;
+    }
+
+    .detail-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 9px;
+      color: var(--detail-color);
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid var(--detail-color);
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .detail-title {
+      margin: 14px 0 5px;
+      font-size: 22px;
+      letter-spacing: -.03em;
+    }
+
+    .detail-subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .detail-section {
+      margin-top: 19px;
+      padding-top: 17px;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .detail-section h3 {
+      margin: 0 0 8px;
+      color: #b9cddd;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .detail-section p {
+      margin: 0;
+      color: #d9e6ef;
+      font-size: 12px;
+      line-height: 1.58;
+    }
+
+    .evidence {
+      display: block;
+      margin-top: 9px;
+      padding: 9px 10px;
+      color: #93c9ed;
+      background: #08131d;
+      border: 1px solid var(--border-soft);
+      border-radius: 7px;
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 10px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .legend {
+      padding: 17px 20px 19px;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .legend h3 {
+      margin: 0 0 11px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #aec2d2;
+      font-size: 10px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      background: var(--legend-color);
+      border-radius: 2px;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--legend-color) 15%, transparent);
+    }
+
+    .layers-panel {
+      max-width: 1840px;
+      margin: 12px auto 0;
+      padding: 13px 15px;
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 13px;
+    }
+
+    .layers-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .layers-label {
+      margin-right: 6px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 32px;
+      padding: 0 11px;
+      color: #b8cada;
+      font-size: 10px;
+      font-weight: 780;
+      white-space: nowrap;
+    }
+
+    .chip .dot {
+      width: 7px;
+      height: 7px;
+      background: var(--chip-color);
+      border-radius: 50%;
+    }
+
+    .chip[aria-pressed="true"] {
+      color: #fff;
+      background: #183044;
+      border-color: var(--chip-color);
+    }
+
+    .keyboard-help {
+      max-width: 1840px;
+      margin: 10px auto 0;
+      color: var(--quiet);
+      font-size: 10px;
+      text-align: right;
+    }
+
+    kbd {
+      display: inline-block;
+      min-width: 20px;
+      margin: 0 2px;
+      padding: 2px 5px;
+      color: #bcd0df;
+      background: #0e1c28;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      font: 9px "Cascadia Code", Consolas, monospace;
+      text-align: center;
+    }
+
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    @keyframes live {
+      0%,
+      100% {
+        opacity: .65;
+        transform: scale(.9);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.08);
+      }
+    }
+
+    @keyframes progress {
+      from {
+        width: 0;
+      }
+      to {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .topbar {
+        flex-direction: column;
+      }
+
+      .metrics {
+        width: 100%;
+      }
+
+      .stage {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .inspector {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        border-top: 1px solid var(--border);
+        border-left: 0;
+      }
+
+      .inspector-header {
+        grid-column: 1 / -1;
+      }
+
+      .inspector-body {
+        min-height: 260px;
+        max-height: 400px;
+      }
+
+      .legend {
+        border-top: 0;
+        border-left: 1px solid var(--border-soft);
+      }
+    }
+
+    @media (max-width: 780px) {
+      .shell {
+        padding: 10px;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .workspace,
+      #architectureGraph {
+        min-height: 660px;
+      }
+
+      .toolbar {
+        align-items: stretch;
+        overflow-x: auto;
+      }
+
+      .toolbar-separator {
+        display: none;
+      }
+
+      .search {
+        width: 155px;
+      }
+
+      .zoom-controls {
+        margin-left: 0;
+      }
+
+      .inspector {
+        display: block;
+      }
+
+      .legend {
+        border-top: 1px solid var(--border-soft);
+        border-left: 0;
+      }
+
+      .keyboard-help {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+
+      .particle {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#architectureGraph">Ir al grafo</a>
+  <div class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Graphify · Architecture intelligence</p>
+        <h1>Clean Architecture .NET 10</h1>
+        <p class="subtitle">
+          Mapa vivo del flujo transversal <strong>DemoArchitecture</strong>: desde la autenticación HTTP hasta Entity Framework,
+          mapeo por convención, respuesta estándar, manejo de errores, composición DI y calidad continua.
+        </p>
+      </div>
+      <div class="metrics" aria-label="Resumen de arquitectura">
+        <div class="metric"><strong>7</strong><span>capas</span></div>
+        <div class="metric"><strong>11/11</strong><span>pruebas</span></div>
+        <div class="metric"><strong>.NET 10</strong><span>runtime</span></div>
+        <div class="metric"><strong>CQRS</strong><span>MediatR</span></div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="stage" aria-label="Visualización interactiva de la arquitectura">
+        <div class="workspace">
+          <div class="toolbar" aria-label="Controles del grafo">
+            <div class="toolbar-group">
+              <button id="playButton" class="control primary" type="button" aria-pressed="false" title="Reproducir o pausar (Espacio)">
+                ▶ Reproducir
+              </button>
+              <button id="previousButton" class="icon-control" type="button" aria-label="Escena anterior" title="Escena anterior (←)">‹</button>
+              <button id="nextButton" class="icon-control" type="button" aria-label="Escena siguiente" title="Escena siguiente (→)">›</button>
+            </div>
+            <span class="toolbar-separator" aria-hidden="true"></span>
+            <label class="sr-only" for="flowFilter">Filtrar por flujo</label>
+            <select id="flowFilter" class="filter-select" title="Filtrar por flujo">
+              <option value="all">Todos los flujos</option>
+              <option value="happy">Happy path</option>
+              <option value="security">Seguridad</option>
+              <option value="error">Rutas de error</option>
+              <option value="di">Composición DI</option>
+              <option value="quality">Pruebas y CI</option>
+            </select>
+            <label class="sr-only" for="nodeSearch">Buscar nodo</label>
+            <input id="nodeSearch" class="search" type="search" placeholder="Buscar nodo…  Ctrl K" autocomplete="off">
+            <div class="toolbar-group zoom-controls" aria-label="Zoom">
+              <button id="zoomOutButton" class="icon-control" type="button" aria-label="Alejar" title="Alejar">−</button>
+              <button id="resetViewButton" class="control" type="button" title="Restablecer vista">Ajustar</button>
+              <button id="zoomInButton" class="icon-control" type="button" aria-label="Acercar" title="Acercar">+</button>
+            </div>
+          </div>
+
+          <div id="graphViewport" class="graph-viewport">
+            <svg id="architectureGraph" viewBox="-20 -75 1750 1009" role="img" aria-labelledby="graphTitle graphDescription">
+              <title id="graphTitle">Grafo animado de la arquitectura Clean Architecture .NET 10</title>
+              <desc id="graphDescription">
+                Visualización interactiva de API, Application, Domain, Adapters, Persistence, Infrastructure,
+                pruebas y pipeline del caso de uso DemoArchitecture.
+              </desc>
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#7895aa"></path>
+                </marker>
+              </defs>
+              <g id="layerRegions"></g>
+              <g id="edges"></g>
+              <g id="particles" aria-hidden="true"></g>
+              <g id="nodes"></g>
+            </svg>
+          </div>
+
+          <article class="scene-card" aria-live="polite">
+            <span id="sceneCount" class="scene-count">Escena 1 de 8</span>
+            <h2 id="sceneTitle">Panorama de la solución</h2>
+            <p id="sceneDescription">Las dependencias apuntan hacia el núcleo; los detalles técnicos permanecen en los bordes.</p>
+            <div id="sceneProgress" class="scene-progress"><span></span></div>
+          </article>
+        </div>
+
+        <aside class="inspector" aria-label="Inspector de nodos">
+          <header class="inspector-header">
+            <span class="label">Inspector de evidencia</span>
+            <h2>Detalle del nodo</h2>
+          </header>
+          <div id="inspectorBody" class="inspector-body">
+            <div class="empty-inspector">
+              <div>
+                <span class="empty-icon" aria-hidden="true">⌁</span>
+                <strong>Selecciona un nodo</strong>
+                Haz clic o navega con <kbd>Tab</kbd> y pulsa <kbd>Enter</kbd> para ver su responsabilidad y archivo fuente.
+              </div>
+            </div>
+          </div>
+          <section class="legend" aria-label="Leyenda">
+            <h3>Leyenda de capas</h3>
+            <div class="legend-grid">
+              <span class="legend-item"><i class="legend-dot" style="--legend-color:var(--api)"></i>API</span>
+              <span class="legend-item"><i class="legend-dot" style="--legend-color:var(--application)"></i>Application</span>
+              <span class="legend-item"><i class="legend-dot" style="--legend-color:var(--domain)"></i>Domain</span>
+              <span class="legend-item"><i class="legend-dot" style="--legend-color:var(--adapters)"></i>Adapters</span>
+              <span class="legend-item"><i class="legend-dot" style="--legend-color:var(--persistence)"></i>Persistence</span>
+              <span class="legend-item"><i class="legend-dot" style="--legend-color:var(--infrastructure)"></i>Infrastructure</span>
+              <span class="legend-item"><i class="legend-dot" style="--legend-color:var(--quality)"></i>Tests + CI</span>
+              <span class="legend-item"><i class="legend-dot" style="--legend-color:var(--danger)"></i>Error HTTP</span>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="layers-panel" aria-label="Filtros por capa">
+        <div id="layerFilters" class="layers-row">
+          <span class="layers-label">Capas visibles</span>
+          <button class="chip" type="button" data-layer="api" aria-pressed="true" style="--chip-color:var(--api)"><span class="dot"></span>API</button>
+          <button class="chip" type="button" data-layer="application" aria-pressed="true" style="--chip-color:var(--application)"><span class="dot"></span>Application</button>
+          <button class="chip" type="button" data-layer="domain" aria-pressed="true" style="--chip-color:var(--domain)"><span class="dot"></span>Domain</button>
+          <button class="chip" type="button" data-layer="adapters" aria-pressed="true" style="--chip-color:var(--adapters)"><span class="dot"></span>Adapters</button>
+          <button class="chip" type="button" data-layer="persistence" aria-pressed="true" style="--chip-color:var(--persistence)"><span class="dot"></span>Persistence</button>
+          <button class="chip" type="button" data-layer="infrastructure" aria-pressed="true" style="--chip-color:var(--infrastructure)"><span class="dot"></span>Infrastructure</button>
+          <button class="chip" type="button" data-layer="quality" aria-pressed="true" style="--chip-color:var(--quality)"><span class="dot"></span>Tests + CI</button>
+        </div>
+      </section>
+      <p class="keyboard-help">
+        Atajos: <kbd>Espacio</kbd> reproducir · <kbd>←</kbd><kbd>→</kbd> escenas · <kbd>Ctrl</kbd>+<kbd>K</kbd> buscar ·
+        <kbd>+</kbd><kbd>−</kbd> zoom · <kbd>Esc</kbd> restablecer
+      </p>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const SVG_NS = "http://www.w3.org/2000/svg";
+      const colors = {
+        external: "#91a9ba",
+        api: "#43a5ff",
+        application: "#b883ff",
+        domain: "#49d6a6",
+        adapters: "#ff9e64",
+        persistence: "#38d5e8",
+        infrastructure: "#f16f9f",
+        quality: "#f6cc5c",
+        error: "#ff6b76"
+      };
+
+      const layers = [
+        { id: "api", label: "API · Presentación", x: 145, y: 105, width: 260, height: 440, color: colors.api },
+        { id: "application", label: "Application · Use cases", x: 430, y: 105, width: 390, height: 440, color: colors.application },
+        { id: "domain", label: "Domain · Núcleo", x: 845, y: 105, width: 235, height: 440, color: colors.domain },
+        { id: "adapters", label: "Adapters · Mapping", x: 1105, y: 105, width: 235, height: 440, color: colors.adapters },
+        { id: "persistence", label: "Persistence · EF Core", x: 1365, y: 105, width: 300, height: 440, color: colors.persistence },
+        { id: "infrastructure", label: "Infrastructure", x: 1105, y: 575, width: 235, height: 150, color: colors.infrastructure },
+        { id: "quality", label: "Tests + CI · Quality gate", x: 430, y: 575, width: 1235, height: 330, color: colors.quality }
+      ];
+
+      const nodes = [
+        {
+          id: "client", label: "Cliente", subtitle: "GET /api/v1/…", kicker: "HTTP", layer: "external",
+          x: 18, y: 245, w: 105, h: 62, tags: ["happy", "security"],
+          description: "Inicia la consulta GET y recibe una respuesta HTTP tipada. El identificador viaja por query string.",
+          evidence: "GET /api/v1/demo-architectures?Id={guid}"
+        },
+        {
+          id: "auth", label: "Bearer / API Key", subtitle: "BearerOrApiKey", kicker: "AUTH", layer: "api",
+          x: 170, y: 155, w: 205, h: 62, tags: ["happy", "security"],
+          description: "La política reutilizable acepta JWT Bearer o API Key y exige un usuario autenticado. No se exponen valores secretos en este grafo.",
+          evidence: "Api/Api/Program.cs · AddAuthentication + AddAuthorization"
+        },
+        {
+          id: "controller", label: "DemoArchitecturesController", subtitle: "[FromQuery] Request", kicker: "ENDPOINT", layer: "api",
+          x: 170, y: 245, w: 205, h: 62, tags: ["happy"],
+          description: "Controlador delgado: recibe GetDemoArchitectureByIdRequest, delega a MediatR y convierte la respuesta con ToResult.",
+          evidence: "Api/Api/Controllers/v1/DemoArchitecturesController.cs"
+        },
+        {
+          id: "toResult", label: "ApiControllerBase.ToResult", subtitle: "StatusCode + ResponseBase", kicker: "HTTP RESULT", layer: "api",
+          x: 170, y: 335, w: 205, h: 62, tags: ["happy"],
+          description: "Centraliza la traducción de ResponseBase<T> a IActionResult para evitar la repetición de Ok(await mediator.Send(...)).",
+          evidence: "Api/Api/Controllers/ApiControllerBase.cs"
+        },
+        {
+          id: "exceptionHandler", label: "GlobalExceptionHandler", subtitle: "ProblemDetails RFC 9457", kicker: "ERROR BOUNDARY", layer: "api",
+          x: 170, y: 425, w: 205, h: 62, tags: ["error"],
+          description: "Convierte ValidationException en 400, DomainException en 422 y fallos inesperados en 500 mediante ProblemDetails.",
+          evidence: "Api/Api/Handlers/GlobalExceptionHandler.cs"
+        },
+        {
+          id: "request", label: "Get…Request", subtitle: "Id : Guid", kicker: "REQUEST", layer: "application",
+          x: 455, y: 155, w: 150, h: 62, tags: ["happy"],
+          description: "Contrato de entrada del caso de uso. Implementa IRequest<ResponseBase<GetDemoArchitectureByIdResponse>>.",
+          evidence: "Core/Application/UseCases/DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdRequest.cs"
+        },
+        {
+          id: "mediator", label: "MediatR.Send", subtitle: "Dispatch desacoplado", kicker: "MEDIATOR", layer: "application",
+          x: 455, y: 245, w: 150, h: 62, tags: ["happy"],
+          description: "Despacha el request hacia el pipeline de behaviors y al handler registrado desde el ensamblado Application.",
+          evidence: "Core/Application/ApplicationServiceRegistration.cs"
+        },
+        {
+          id: "validation", label: "ValidationBehavior", subtitle: "FluentValidation async", kicker: "PIPELINE", layer: "application",
+          x: 635, y: 245, w: 160, h: 62, tags: ["happy", "error"],
+          description: "Ejecuta todos los validadores de forma asíncrona antes del handler; detiene el flujo mediante ValidationException si existen fallos.",
+          evidence: "Core/Application/Behaviors/ValidationBehavior.cs"
+        },
+        {
+          id: "validator", label: "Get…Validator", subtitle: "Id.NotEmpty()", kicker: "VALIDATOR", layer: "application",
+          x: 635, y: 155, w: 160, h: 62, tags: ["happy", "error"],
+          description: "Valida que el identificador no sea Guid.Empty. Se descubre por escaneo del ensamblado Application.",
+          evidence: "Core/Application/UseCases/DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdValidator.cs"
+        },
+        {
+          id: "query", label: "Query + Handle", subtitle: "Handler en la misma clase", kicker: "USE CASE", layer: "application",
+          x: 635, y: 345, w: 160, h: 62, tags: ["happy", "error"],
+          description: "Orquesta el caso de uso: consulta el repositorio genérico, responde 404 si no existe, mapea Entity a DTO y construye ResponseBase.Ok.",
+          evidence: "Core/Application/UseCases/DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs"
+        },
+        {
+          id: "dto", label: "DemoArchitectureDto", subtitle: "Modelo de salida", kicker: "DTO", layer: "application",
+          x: 635, y: 445, w: 160, h: 62, tags: ["happy"],
+          description: "Modelo de transferencia de salida. No expone directamente la entidad persistida.",
+          evidence: "Core/Application/Dtos/DemoArchitectureDto.cs"
+        },
+        {
+          id: "response", label: "Response + ResponseBase", subtitle: "Ok / NotFound", kicker: "RESPONSE", layer: "application",
+          x: 455, y: 445, w: 150, h: 62, tags: ["happy", "error"],
+          description: "GetDemoArchitectureByIdResponse encapsula el DTO; ResponseBase<T> estandariza estado, mensaje, datos y errores.",
+          evidence: "Core/Application/UseCases/DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdResponse.cs"
+        },
+        {
+          id: "repoPort", label: "IRepositoryGeneric<T>", subtitle: "Puerto de persistencia", kicker: "CONTRACT", layer: "domain",
+          x: 870, y: 245, w: 185, h: 62, tags: ["happy"],
+          description: "Contrato genérico definido en Domain. El caso de uso depende de esta abstracción y no de Entity Framework.",
+          evidence: "Core/Domain/Base/Interface/IRepositoryGeneric.cs"
+        },
+        {
+          id: "entity", label: "DemoArchitectureEntity", subtitle: "Entidad persistida", kicker: "ENTITY", layer: "domain",
+          x: 870, y: 345, w: 185, h: 62, tags: ["happy"],
+          description: "Entidad de dominio que hereda EntityBase y representa la tabla DemoArchitectures.",
+          evidence: "Core/Domain/Entities/DemoArchitectureEntity.cs"
+        },
+        {
+          id: "mapperPort", label: "IMapperAdapter", subtitle: "Puerto de mapeo", kicker: "CONTRACT", layer: "domain",
+          x: 870, y: 445, w: 185, h: 62, tags: ["happy"],
+          description: "Abstracción de mapeo ubicada en Domain; mantiene AutoMapper fuera de las capas internas.",
+          evidence: "Core/Domain/Contracts/Adapter/Mapper/IMapperAdapter.cs"
+        },
+        {
+          id: "domainException", label: "DomainException", subtitle: "Reglas de dominio", kicker: "DOMAIN ERROR", layer: "domain",
+          x: 870, y: 155, w: 185, h: 62, tags: ["error"],
+          description: "Excepción de dominio traducida globalmente a HTTP 422 sin filtrar detalles internos inesperados.",
+          evidence: "Core/Domain/Base/DomainException.cs"
+        },
+        {
+          id: "mapper", label: "AutoMapperAdapter", subtitle: "IMapperAdapter", kicker: "ADAPTER", layer: "adapters",
+          x: 1130, y: 345, w: 185, h: 62, tags: ["happy"],
+          description: "Implementa el puerto IMapperAdapter usando IMapper como detalle técnico.",
+          evidence: "Infraestructure/Adapters/Mapper/AutoMapperAdapter.cs"
+        },
+        {
+          id: "profile", label: "AutoConventionProfile", subtitle: "Entity → *Dto", kicker: "CONVENTION", layer: "adapters",
+          x: 1130, y: 445, w: 185, h: 62, tags: ["happy"],
+          description: "Descubre entidades y DTO por convención de nombres; evita registrar un perfil específico por cada entidad.",
+          evidence: "Infraestructure/Adapters/Mapper/AutoConventionProfile.cs"
+        },
+        {
+          id: "repository", label: "RepositoryGeneric<T>", subtitle: "EF Core adapter", kicker: "REPOSITORY", layer: "persistence",
+          x: 1390, y: 245, w: 245, h: 62, tags: ["happy"],
+          description: "Implementación genérica Scoped del contrato. FindAsync delega a DbSet<T>.FindAsync.",
+          evidence: "Infraestructure/Persistence/Base/RepositoryGeneric.cs"
+        },
+        {
+          id: "dbContext", label: "AppDbContext", subtitle: "DbSet + ModelBuilder", kicker: "EF CORE", layer: "persistence",
+          x: 1390, y: 335, w: 245, h: 62, tags: ["happy"],
+          description: "Contexto EF Core. Define el esquema dbo y aplica todas las IEntityTypeConfiguration del ensamblado.",
+          evidence: "Infraestructure/Persistence/Context/AppDbContext.cs"
+        },
+        {
+          id: "configuration", label: "DemoArchitectureConfiguration", subtitle: "Tabla, claves y longitudes", kicker: "EF CONFIG", layer: "persistence",
+          x: 1390, y: 425, w: 245, h: 62, tags: ["happy"],
+          description: "Configura la entidad sin migraciones embebidas: nombre de tabla, PK, campos requeridos, longitudes y valor por defecto.",
+          evidence: "Infraestructure/Persistence/Configuration/DemoArchitectureConfiguration.cs"
+        },
+        {
+          id: "table", label: "dbo.DemoArchitectures", subtitle: "SQL Server", kicker: "TABLE", layer: "persistence",
+          x: 1390, y: 515, w: 245, h: 62, tags: ["happy"],
+          description: "Tabla física configurada por el ORM. El flujo de ejemplo no contiene consultas SQL construidas como texto.",
+          evidence: "DemoArchitectureConfiguration.TableName = \"DemoArchitectures\""
+        },
+        {
+          id: "program", label: "Program", subtitle: "Composition root", kicker: "DI ROOT", layer: "api",
+          x: 870, y: 605, w: 185, h: 62, tags: ["di"],
+          description: "Punto de composición: registra las capas mediante métodos de extensión y configura el pipeline HTTP.",
+          evidence: "Api/Api/Program.cs"
+        },
+        {
+          id: "appRegistration", label: "AddApplicationServices", subtitle: "MediatR + validators", kicker: "REGISTRATION", layer: "application",
+          x: 455, y: 650, w: 170, h: 62, tags: ["di"],
+          description: "Registra MediatR, validadores FluentValidation y ValidationBehavior; las dependencias opcionales se agregan cuando un caso de uso real las consume.",
+          evidence: "Core/Application/ApplicationServiceRegistration.cs"
+        },
+        {
+          id: "adapterRegistration", label: "AddAdapterServices", subtitle: "AutoMapper + convention", kicker: "REGISTRATION", layer: "adapters",
+          x: 1130, y: 605, w: 185, h: 62, tags: ["di"],
+          description: "Registra AutoMapper y resuelve implementaciones de interfaces Domain por convención.",
+          evidence: "Infraestructure/Adapters/AdapterServiceRegistration.cs"
+        },
+        {
+          id: "diHelper", label: "DependencyInjectionHelper", subtitle: "Registro por convención", kicker: "SHARED HELPER", layer: "infrastructure",
+          x: 1130, y: 650, w: 185, h: 62, tags: ["di"],
+          description: "Helper compartido que descubre implementaciones de contratos Domain. Lo reutilizan exclusivamente los registros de Adapters y Persistence; no existe un registro Infrastructure adicional.",
+          evidence: "Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs"
+        },
+        {
+          id: "persistenceRegistration", label: "AddPersistenceServices", subtitle: "SQL Server + Scoped repo", kicker: "REGISTRATION", layer: "persistence",
+          x: 1390, y: 650, w: 245, h: 62, tags: ["di"],
+          description: "Registra AppDbContext con SQL Server y IRepositoryGeneric<> → RepositoryGeneric<> como Scoped.",
+          evidence: "Infraestructure/Persistence/PersistenceServiceRegistration.cs"
+        },
+        {
+          id: "tests", label: "xUnit · 7 clases", subtitle: "11/11 pruebas", kicker: "TEST SUITE", layer: "quality",
+          x: 455, y: 760, w: 170, h: 68, tags: ["quality"],
+          description: "La plantilla valida controlador, query, validator, mapping, persistencia, behavior asíncrono y registros DI.",
+          evidence: "Test/ · 7 archivos de prueba · 11 casos"
+        },
+        {
+          id: "sdk", label: "UseDotNet 10.x", subtitle: "windows-latest", kicker: "CI", layer: "quality",
+          x: 665, y: 760, w: 105, h: 62, tags: ["quality"],
+          description: "El pipeline instala el SDK .NET 10 en un agente Windows.",
+          evidence: "azure-pipelines.yml · UseDotNet@2"
+        },
+        {
+          id: "restore", label: "Restore + audit", subtitle: "NuGetAuditMode=all", kicker: "CI", layer: "quality",
+          x: 790, y: 760, w: 115, h: 62, tags: ["quality"],
+          description: "Restaura y audita las dependencias directas y transitivas. Directory.Build.props eleva NU1901, NU1902, NU1903 y NU1904 a errores de restore.",
+          evidence: "azure-pipelines.yml · restore + Directory.Build.props"
+        },
+        {
+          id: "build", label: "Build Release", subtitle: "--no-restore", kicker: "CI", layer: "quality",
+          x: 925, y: 760, w: 110, h: 62, tags: ["quality"],
+          description: "Compila la solución completa en configuración Release.",
+          evidence: "DotNetCoreCLI@2 · build"
+        },
+        {
+          id: "format", label: "Format gate", subtitle: "--verify-no-changes", kicker: "CI", layer: "quality",
+          x: 1055, y: 760, w: 115, h: 62, tags: ["quality"],
+          description: "Rechaza el pipeline cuando el formato de la solución no coincide con las reglas de dotnet format.",
+          evidence: "azure-pipelines.yml · dotnet format --verify-no-changes"
+        },
+        {
+          id: "testStep", label: "Test", subtitle: "--no-build", kicker: "CI", layer: "quality",
+          x: 1190, y: 760, w: 95, h: 62, tags: ["quality"],
+          description: "Ejecuta el conjunto de pruebas como quality gate del pipeline.",
+          evidence: "DotNetCoreCLI@2 · test"
+        },
+        {
+          id: "audit", label: "NU1901–NU1904", subtitle: "WarningsAsErrors", kicker: "RESTORE GATE", layer: "quality",
+          x: 1305, y: 760, w: 110, h: 62, tags: ["quality"],
+          description: "Gate integrado en restore: cualquier vulnerabilidad NU1901–NU1904 falla la ejecución. El pipeline no transforma archivos ni inyecta secretos mediante FileTransform.",
+          evidence: "Directory.Build.props · NuGetAudit=true · NuGetAuditMode=all"
+        },
+        {
+          id: "publish", label: "Publish API", subtitle: "Release ZIP", kicker: "CI", layer: "quality",
+          x: 1435, y: 760, w: 100, h: 62, tags: ["quality"],
+          description: "Publica exclusivamente el proyecto API y genera un paquete ZIP.",
+          evidence: "DotNetCoreCLI@2 · publish · Api/Api/Api.csproj"
+        },
+        {
+          id: "artifact", label: "artifactDrop", subtitle: "Pipeline artifact", kicker: "OUTPUT", layer: "quality",
+          x: 1555, y: 760, w: 105, h: 62, tags: ["quality"],
+          description: "Entrega el resultado publicable como artefacto del pipeline.",
+          evidence: "PublishPipelineArtifact@1 · artifactDrop"
+        },
+        ...[
+          ["status400", "400", "Validation", 445],
+          ["status401", "401", "Sin autenticación", 535],
+          ["status403", "403", "Sin autorización", 625],
+          ["status404", "404", "No encontrado", 715],
+          ["status422", "422", "Dominio", 805],
+          ["status500", "500", "Inesperado", 895]
+        ].map(([id, label, subtitle, x]) => ({
+          id, label, subtitle, kicker: "HTTP", layer: "error", x, y: 25, w: 76, h: 52,
+          tags: ["error"], status: true,
+          description: `Ruta HTTP ${label}: ${subtitle}.`,
+          evidence: label === "404"
+            ? "ResponseBase.NotFound"
+            : "Api/Api/Handlers/GlobalExceptionHandler.cs"
+        }))
+      ];
+
+      const edges = [
+        ["client", "auth", "security"],
+        ["auth", "controller", "happy"],
+        ["controller", "request", "happy"],
+        ["request", "mediator", "happy"],
+        ["mediator", "validation", "happy"],
+        ["validator", "validation", "happy"],
+        ["validation", "query", "happy"],
+        ["query", "repoPort", "happy"],
+        ["repoPort", "repository", "happy"],
+        ["repository", "dbContext", "happy"],
+        ["dbContext", "configuration", "happy"],
+        ["configuration", "table", "happy"],
+        ["table", "entity", "happy"],
+        ["entity", "mapperPort", "happy"],
+        ["mapperPort", "mapper", "happy"],
+        ["profile", "mapper", "happy"],
+        ["mapper", "dto", "happy"],
+        ["dto", "response", "happy"],
+        ["response", "toResult", "happy"],
+        ["toResult", "client", "happy"],
+        ["auth", "status401", "error"],
+        ["auth", "status403", "error"],
+        ["validation", "exceptionHandler", "error"],
+        ["exceptionHandler", "status400", "error"],
+        ["query", "status404", "error"],
+        ["query", "domainException", "error"],
+        ["domainException", "exceptionHandler", "error"],
+        ["exceptionHandler", "status422", "error"],
+        ["exceptionHandler", "status500", "error"],
+        ["program", "appRegistration", "di"],
+        ["program", "adapterRegistration", "di"],
+        ["program", "persistenceRegistration", "di"],
+        ["appRegistration", "mediator", "di"],
+        ["appRegistration", "validator", "di"],
+        ["adapterRegistration", "diHelper", "di"],
+        ["adapterRegistration", "mapper", "di"],
+        ["adapterRegistration", "profile", "di"],
+        ["persistenceRegistration", "diHelper", "di"],
+        ["persistenceRegistration", "repository", "di"],
+        ["persistenceRegistration", "dbContext", "di"],
+        ["tests", "controller", "quality"],
+        ["tests", "validation", "quality"],
+        ["tests", "query", "quality"],
+        ["tests", "mapper", "quality"],
+        ["tests", "repository", "quality"],
+        ["sdk", "restore", "quality"],
+        ["restore", "build", "quality"],
+        ["build", "format", "quality"],
+        ["format", "testStep", "quality"],
+        ["restore", "audit", "quality"],
+        ["testStep", "publish", "quality"],
+        ["publish", "artifact", "quality"],
+        ["tests", "testStep", "quality"]
+      ].map(([from, to, kind], index) => ({ id: `edge-${index}`, from, to, kind }));
+
+      const scenes = [
+        {
+          title: "Panorama de la solución",
+          description: "Siete capas explícitas rodean el núcleo. Las abstracciones viven hacia dentro; EF Core, AutoMapper y HTTP quedan en los bordes.",
+          tags: ["happy", "security", "di", "quality", "error"],
+          nodes: ["client", "controller", "query", "repoPort", "mapperPort", "repository", "program", "tests"],
+          particles: ["happy"]
+        },
+        {
+          title: "1 · Seguridad antes del caso de uso",
+          description: "BearerOrApiKey acepta JWT o API Key. Un fallo de autenticación/autorización finaliza en 401 o 403 antes del controlador.",
+          tags: ["security", "error"],
+          nodes: ["client", "auth", "controller", "status401", "status403"],
+          particles: ["security", "error"]
+        },
+        {
+          title: "2 · Entrada CQRS y validación",
+          description: "El controlador recibe Request por query string, MediatR lo despacha y ValidationBehavior ejecuta FluentValidation de forma asíncrona.",
+          tags: ["happy", "error"],
+          nodes: ["controller", "request", "mediator", "validator", "validation", "query", "exceptionHandler", "status400"],
+          particles: ["happy", "error"]
+        },
+        {
+          title: "3 · Use case contra un puerto",
+          description: "Query + Handle viven juntos. El handler depende de IRepositoryGeneric<DemoArchitectureEntity>, no de EF Core, y resuelve el 404 de manera explícita.",
+          tags: ["happy", "error"],
+          nodes: ["query", "repoPort", "repository", "status404"],
+          particles: ["happy", "error"]
+        },
+        {
+          title: "4 · Persistencia configurada por entidad",
+          description: "RepositoryGeneric usa AppDbContext; EF aplica DemoArchitectureConfiguration y consulta dbo.DemoArchitectures sin SQL literal en el caso de uso.",
+          tags: ["happy"],
+          nodes: ["repoPort", "repository", "dbContext", "configuration", "table", "entity"],
+          particles: ["happy"]
+        },
+        {
+          title: "5 · Mapping y respuesta estándar",
+          description: "La entidad cruza el puerto IMapperAdapter. AutoConventionProfile descubre el DTO y ResponseBase vuelve por ToResult con el status correcto.",
+          tags: ["happy"],
+          nodes: ["entity", "mapperPort", "mapper", "profile", "dto", "response", "toResult", "client"],
+          particles: ["happy"]
+        },
+        {
+          title: "6 · Composición por capa",
+          description: "Program compone Application, Adapters y Persistence. Adapters y Persistence reutilizan DependencyInjectionHelper; no existe un registro Infrastructure adicional.",
+          tags: ["di"],
+          nodes: ["program", "appRegistration", "adapterRegistration", "diHelper", "persistenceRegistration", "mediator", "mapper", "repository", "dbContext"],
+          particles: ["di"]
+        },
+        {
+          title: "7 · Quality gate reproducible",
+          description: "Once pruebas cubren el flujo. Azure Pipelines instala .NET 10; restore audita transitivas y falla ante NU1901–NU1904; luego compila, verifica formato, prueba, publica y entrega artifactDrop, sin FileTransform de secretos.",
+          tags: ["quality"],
+          nodes: ["tests", "sdk", "restore", "build", "format", "testStep", "audit", "publish", "artifact"],
+          particles: ["quality"]
+        }
+      ];
+
+      const state = {
+        sceneIndex: 0,
+        playing: false,
+        timer: null,
+        selectedNode: null,
+        flow: "all",
+        layers: new Set(["api", "application", "domain", "adapters", "persistence", "infrastructure", "quality"]),
+        search: "",
+        reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+        viewBox: { x: -20, y: -75, width: 1750, height: 1009 },
+        defaultViewBox: { x: -20, y: -75, width: 1750, height: 1009 },
+        dragging: false,
+        dragStart: null,
+        animationFrame: null
+      };
+
+      const nodeMap = new Map(nodes.map(node => [node.id, node]));
+      const nodeElements = new Map();
+      const edgeElements = new Map();
+      const layerElements = new Map();
+
+      const layerRegions = document.getElementById("layerRegions");
+      const edgesGroup = document.getElementById("edges");
+      const particlesGroup = document.getElementById("particles");
+      const nodesGroup = document.getElementById("nodes");
+      const graph = document.getElementById("architectureGraph");
+      const viewport = document.getElementById("graphViewport");
+      const playButton = document.getElementById("playButton");
+      const previousButton = document.getElementById("previousButton");
+      const nextButton = document.getElementById("nextButton");
+      const flowFilter = document.getElementById("flowFilter");
+      const nodeSearch = document.getElementById("nodeSearch");
+      const inspectorBody = document.getElementById("inspectorBody");
+      const sceneProgress = document.getElementById("sceneProgress");
+
+      function svgElement(name, attributes = {}) {
+        const element = document.createElementNS(SVG_NS, name);
+        Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+        return element;
+      }
+
+      function renderLayers() {
+        layers.forEach(layer => {
+          const group = svgElement("g");
+          const region = svgElement("rect", {
+            class: "layer-region",
+            x: layer.x,
+            y: layer.y,
+            width: layer.width,
+            height: layer.height,
+            rx: 14
+          });
+          region.style.setProperty("--region-color", layer.color);
+          const label = svgElement("text", {
+            class: "layer-label",
+            x: layer.x + 14,
+            y: layer.y + 24
+          });
+          label.style.setProperty("--region-color", layer.color);
+          label.textContent = layer.label;
+          group.append(region, label);
+          layerRegions.appendChild(group);
+          layerElements.set(layer.id, group);
+        });
+      }
+
+      function splitLabel(label, maxLength = 23) {
+        if (label.length <= maxLength) return [label];
+        const words = label.split(" ");
+        const lines = [""];
+        words.forEach(word => {
+          const current = lines[lines.length - 1];
+          if ((current + " " + word).trim().length > maxLength && lines.length < 2) {
+            lines.push(word);
+          } else {
+            lines[lines.length - 1] = (current + " " + word).trim();
+          }
+        });
+        return lines;
+      }
+
+      function renderNodes() {
+        nodes.forEach(node => {
+          const group = svgElement("g", {
+            class: `node${node.status ? " status" : ""}`,
+            "data-id": node.id,
+            "data-layer": node.layer,
+            tabindex: "0",
+            role: "button",
+            "aria-label": `${node.kicker}: ${node.label}. ${node.subtitle}`
+          });
+          group.style.setProperty("--node-color", colors[node.layer] || colors.external);
+
+          const rect = svgElement("rect", {
+            x: node.x,
+            y: node.y,
+            width: node.w,
+            height: node.h
+          });
+          const kicker = svgElement("text", {
+            class: "node-kicker",
+            x: node.x + 12,
+            y: node.y + 15
+          });
+          kicker.textContent = node.kicker;
+
+          const title = svgElement("text", {
+            class: "node-title",
+            x: node.x + 12,
+            y: node.y + (node.status ? 29 : 34)
+          });
+          const lines = splitLabel(node.label, node.w < 140 ? 17 : 25);
+          lines.forEach((line, index) => {
+            const tspan = svgElement("tspan", {
+              x: node.x + 12,
+              dy: index === 0 ? 0 : 12
+            });
+            tspan.textContent = line;
+            title.appendChild(tspan);
+          });
+
+          const subtitle = svgElement("text", {
+            class: "node-subtitle",
+            x: node.x + 12,
+            y: node.y + node.h - 9
+          });
+          subtitle.textContent = node.subtitle;
+
+          group.append(rect, kicker, title, subtitle);
+          group.addEventListener("click", event => {
+            event.stopPropagation();
+            selectNode(node.id);
+          });
+          group.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              selectNode(node.id);
+            }
+          });
+          nodesGroup.appendChild(group);
+          nodeElements.set(node.id, group);
+        });
+      }
+
+      function anchorPoints(from, to) {
+        const start = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
+        const end = { x: to.x + to.w / 2, y: to.y + to.h / 2 };
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+
+        if (Math.abs(dx) >= Math.abs(dy)) {
+          start.x = dx >= 0 ? from.x + from.w : from.x;
+          end.x = dx >= 0 ? to.x : to.x + to.w;
+        } else {
+          start.y = dy >= 0 ? from.y + from.h : from.y;
+          end.y = dy >= 0 ? to.y : to.y + to.h;
+        }
+        return { start, end, dx, dy };
+      }
+
+      function edgePath(edge) {
+        const from = nodeMap.get(edge.from);
+        const to = nodeMap.get(edge.to);
+        const { start, end, dx, dy } = anchorPoints(from, to);
+        if (Math.abs(dx) >= Math.abs(dy)) {
+          const bend = Math.max(40, Math.abs(end.x - start.x) * .45);
+          const direction = end.x >= start.x ? 1 : -1;
+          return `M ${start.x} ${start.y} C ${start.x + bend * direction} ${start.y}, ${end.x - bend * direction} ${end.y}, ${end.x} ${end.y}`;
+        }
+        const bend = Math.max(35, Math.abs(end.y - start.y) * .42);
+        const direction = end.y >= start.y ? 1 : -1;
+        return `M ${start.x} ${start.y} C ${start.x} ${start.y + bend * direction}, ${end.x} ${end.y - bend * direction}, ${end.x} ${end.y}`;
+      }
+
+      function renderEdges() {
+        edges.forEach(edge => {
+          const path = svgElement("path", {
+            id: edge.id,
+            class: "edge",
+            d: edgePath(edge),
+            "data-kind": edge.kind,
+            "data-from": edge.from,
+            "data-to": edge.to
+          });
+          edgesGroup.appendChild(path);
+          edgeElements.set(edge.id, path);
+        });
+      }
+
+      function renderParticles() {
+        particlesGroup.replaceChildren();
+        if (state.reducedMotion) return;
+
+        const scene = scenes[state.sceneIndex];
+        const eligibleEdges = edges.filter(edge => {
+          const path = edgeElements.get(edge.id);
+          return scene.particles.includes(edge.kind) &&
+            path &&
+            !path.classList.contains("is-dimmed") &&
+            path.style.display !== "none";
+        }).slice(0, 18);
+
+        eligibleEdges.forEach((edge, index) => {
+          const particle = svgElement("circle", {
+            class: "particle",
+            r: edge.kind === "error" ? 3.4 : 3,
+            "data-edge": edge.id,
+            "data-offset": (index / Math.max(1, eligibleEdges.length)).toFixed(3)
+          });
+          if (edge.kind === "error") {
+            particle.style.stroke = colors.error;
+            particle.style.filter = `drop-shadow(0 0 6px ${colors.error})`;
+          } else if (edge.kind === "di") {
+            particle.style.stroke = colors.application;
+          } else if (edge.kind === "quality") {
+            particle.style.stroke = colors.quality;
+          }
+          particlesGroup.appendChild(particle);
+        });
+      }
+
+      function animateParticles(timestamp) {
+        particlesGroup.querySelectorAll(".particle").forEach(particle => {
+          const path = edgeElements.get(particle.dataset.edge);
+          if (!path || path.style.display === "none") return;
+          const length = path.getTotalLength();
+          const offset = Number(particle.dataset.offset);
+          const speed = 0.00009;
+          const progress = (timestamp * speed + offset) % 1;
+          const point = path.getPointAtLength(length * progress);
+          particle.setAttribute("cx", point.x);
+          particle.setAttribute("cy", point.y);
+        });
+        state.animationFrame = requestAnimationFrame(animateParticles);
+      }
+
+      function isNodeVisible(node) {
+        if (!["external", "error"].includes(node.layer) && !state.layers.has(node.layer)) return false;
+        if (state.flow !== "all" && !node.tags.includes(state.flow)) return false;
+        if (state.search && !`${node.label} ${node.subtitle} ${node.kicker}`.toLowerCase().includes(state.search)) return false;
+        return true;
+      }
+
+      function applyFilters() {
+        const scene = scenes[state.sceneIndex];
+        const sceneNodes = new Set(scene.nodes);
+
+        nodes.forEach(node => {
+          const element = nodeElements.get(node.id);
+          const visible = isNodeVisible(node);
+          element.classList.toggle("is-filtered", !visible);
+          element.classList.toggle("is-active", visible && sceneNodes.has(node.id));
+          element.classList.toggle("is-dimmed", visible && !sceneNodes.has(node.id));
+        });
+
+        edges.forEach(edge => {
+          const element = edgeElements.get(edge.id);
+          const endpointsVisible = isNodeVisible(nodeMap.get(edge.from)) && isNodeVisible(nodeMap.get(edge.to));
+          const flowVisible = state.flow === "all" || edge.kind === state.flow;
+          const sceneVisible = scene.tags.includes(edge.kind);
+          element.style.display = endpointsVisible && flowVisible ? "" : "none";
+          element.classList.toggle("is-active", endpointsVisible && flowVisible && sceneVisible);
+          element.classList.toggle("is-dimmed", !sceneVisible);
+        });
+
+        layers.forEach(layer => {
+          const visible = state.layers.has(layer.id) &&
+            (state.flow === "all" || nodes.some(node => node.layer === layer.id && node.tags.includes(state.flow)));
+          layerElements.get(layer.id).style.display = visible ? "" : "none";
+        });
+
+        renderParticles();
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function selectNode(nodeId) {
+        const node = nodeMap.get(nodeId);
+        if (!node) return;
+        if (state.selectedNode && nodeElements.has(state.selectedNode)) {
+          nodeElements.get(state.selectedNode).classList.remove("is-selected");
+          nodeElements.get(state.selectedNode).setAttribute("aria-pressed", "false");
+        }
+        state.selectedNode = nodeId;
+        const element = nodeElements.get(nodeId);
+        element.classList.add("is-selected");
+        element.setAttribute("aria-pressed", "true");
+
+        const color = colors[node.layer] || colors.external;
+        inspectorBody.innerHTML = `
+          <span class="detail-badge" style="--detail-color:${color}">
+            <span aria-hidden="true">●</span>${escapeHtml(node.kicker)}
+          </span>
+          <h3 class="detail-title">${escapeHtml(node.label)}</h3>
+          <p class="detail-subtitle">${escapeHtml(node.subtitle)} · Capa ${escapeHtml(node.layer)}</p>
+          <section class="detail-section">
+            <h3>Responsabilidad</h3>
+            <p>${escapeHtml(node.description)}</p>
+          </section>
+          <section class="detail-section">
+            <h3>Evidencia en código</h3>
+            <code class="evidence">${escapeHtml(node.evidence)}</code>
+          </section>
+          <section class="detail-section">
+            <h3>Flujos relacionados</h3>
+            <p>${node.tags.map(tag => escapeHtml({
+              happy: "Happy path",
+              security: "Seguridad",
+              error: "Rutas de error",
+              di: "Composición DI",
+              quality: "Pruebas y CI"
+            }[tag] || tag)).join(" · ")}</p>
+          </section>
+        `;
+      }
+
+      function clearSelection() {
+        if (state.selectedNode && nodeElements.has(state.selectedNode)) {
+          nodeElements.get(state.selectedNode).classList.remove("is-selected");
+          nodeElements.get(state.selectedNode).setAttribute("aria-pressed", "false");
+        }
+        state.selectedNode = null;
+        inspectorBody.innerHTML = `
+          <div class="empty-inspector">
+            <div>
+              <span class="empty-icon" aria-hidden="true">⌁</span>
+              <strong>Selecciona un nodo</strong>
+              Haz clic o navega con <kbd>Tab</kbd> y pulsa <kbd>Enter</kbd> para ver su responsabilidad y archivo fuente.
+            </div>
+          </div>`;
+      }
+
+      function updateScene(index, fromAutoplay = false) {
+        state.sceneIndex = (index + scenes.length) % scenes.length;
+        const scene = scenes[state.sceneIndex];
+        document.getElementById("sceneCount").textContent = `Escena ${state.sceneIndex + 1} de ${scenes.length}`;
+        document.getElementById("sceneTitle").textContent = scene.title;
+        document.getElementById("sceneDescription").textContent = scene.description;
+        applyFilters();
+
+        sceneProgress.classList.remove("is-running");
+        void sceneProgress.offsetWidth;
+        if (state.playing && !state.reducedMotion) sceneProgress.classList.add("is-running");
+
+        if (!fromAutoplay && state.playing) scheduleNext();
+      }
+
+      function scheduleNext() {
+        window.clearTimeout(state.timer);
+        if (!state.playing) return;
+        state.timer = window.setTimeout(() => {
+          updateScene(state.sceneIndex + 1, true);
+          scheduleNext();
+        }, 5500);
+      }
+
+      function setPlaying(playing) {
+        state.playing = Boolean(playing) && !state.reducedMotion;
+        playButton.setAttribute("aria-pressed", String(state.playing));
+        playButton.textContent = state.playing ? "❚❚ Pausar" : "▶ Reproducir";
+        sceneProgress.classList.toggle("is-running", state.playing);
+        if (state.playing) {
+          scheduleNext();
+        } else {
+          window.clearTimeout(state.timer);
+        }
+      }
+
+      function setViewBox(next) {
+        const minWidth = 520;
+        const maxWidth = 2500;
+        const ratio = 1009 / 1750;
+        const width = Math.min(maxWidth, Math.max(minWidth, next.width));
+        const height = width * ratio;
+        state.viewBox = { x: next.x, y: next.y, width, height };
+        graph.setAttribute("viewBox", `${state.viewBox.x} ${state.viewBox.y} ${state.viewBox.width} ${state.viewBox.height}`);
+      }
+
+      function zoom(factor, centerX = state.viewBox.x + state.viewBox.width / 2, centerY = state.viewBox.y + state.viewBox.height / 2) {
+        const newWidth = state.viewBox.width * factor;
+        const scale = newWidth / state.viewBox.width;
+        setViewBox({
+          x: centerX - (centerX - state.viewBox.x) * scale,
+          y: centerY - (centerY - state.viewBox.y) * scale,
+          width: newWidth
+        });
+      }
+
+      function resetView() {
+        setViewBox({ ...state.defaultViewBox });
+        state.flow = "all";
+        flowFilter.value = "all";
+        state.search = "";
+        nodeSearch.value = "";
+        state.layers = new Set(["api", "application", "domain", "adapters", "persistence", "infrastructure", "quality"]);
+        document.querySelectorAll(".chip[data-layer]").forEach(button => button.setAttribute("aria-pressed", "true"));
+        clearSelection();
+        updateScene(0);
+      }
+
+      function clientToSvg(clientX, clientY) {
+        const point = graph.createSVGPoint();
+        point.x = clientX;
+        point.y = clientY;
+        return point.matrixTransform(graph.getScreenCTM().inverse());
+      }
+
+      playButton.addEventListener("click", () => setPlaying(!state.playing));
+      previousButton.addEventListener("click", () => updateScene(state.sceneIndex - 1));
+      nextButton.addEventListener("click", () => updateScene(state.sceneIndex + 1));
+      document.getElementById("zoomInButton").addEventListener("click", () => zoom(.82));
+      document.getElementById("zoomOutButton").addEventListener("click", () => zoom(1.2));
+      document.getElementById("resetViewButton").addEventListener("click", resetView);
+
+      flowFilter.addEventListener("change", () => {
+        state.flow = flowFilter.value;
+        applyFilters();
+      });
+
+      nodeSearch.addEventListener("input", () => {
+        state.search = nodeSearch.value.trim().toLowerCase();
+        applyFilters();
+      });
+
+      document.getElementById("layerFilters").addEventListener("click", event => {
+        const button = event.target.closest(".chip[data-layer]");
+        if (!button) return;
+        const layer = button.dataset.layer;
+        const enabled = button.getAttribute("aria-pressed") !== "true";
+        button.setAttribute("aria-pressed", String(enabled));
+        if (enabled) state.layers.add(layer);
+        else state.layers.delete(layer);
+        applyFilters();
+      });
+
+      graph.addEventListener("click", event => {
+        if (event.target === graph || event.target.closest("#layerRegions")) clearSelection();
+      });
+
+      viewport.addEventListener("wheel", event => {
+        event.preventDefault();
+        const point = clientToSvg(event.clientX, event.clientY);
+        zoom(event.deltaY < 0 ? .88 : 1.14, point.x, point.y);
+      }, { passive: false });
+
+      viewport.addEventListener("pointerdown", event => {
+        if (event.target.closest(".node")) return;
+        state.dragging = true;
+        viewport.classList.add("dragging");
+        viewport.setPointerCapture(event.pointerId);
+        state.dragStart = {
+          clientX: event.clientX,
+          clientY: event.clientY,
+          x: state.viewBox.x,
+          y: state.viewBox.y
+        };
+      });
+
+      viewport.addEventListener("pointermove", event => {
+        if (!state.dragging || !state.dragStart) return;
+        const rect = graph.getBoundingClientRect();
+        const dx = (event.clientX - state.dragStart.clientX) * state.viewBox.width / rect.width;
+        const dy = (event.clientY - state.dragStart.clientY) * state.viewBox.height / rect.height;
+        setViewBox({
+          x: state.dragStart.x - dx,
+          y: state.dragStart.y - dy,
+          width: state.viewBox.width
+        });
+      });
+
+      function endDrag(event) {
+        if (!state.dragging) return;
+        state.dragging = false;
+        state.dragStart = null;
+        viewport.classList.remove("dragging");
+        if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+      }
+
+      viewport.addEventListener("pointerup", endDrag);
+      viewport.addEventListener("pointercancel", endDrag);
+
+      document.addEventListener("keydown", event => {
+        const tag = document.activeElement?.tagName?.toLowerCase();
+        const isTyping = tag === "input" || tag === "select" || tag === "textarea";
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+          event.preventDefault();
+          nodeSearch.focus();
+          nodeSearch.select();
+          return;
+        }
+        if (isTyping) {
+          if (event.key === "Escape") {
+            document.activeElement.blur();
+            resetView();
+          }
+          return;
+        }
+        if (event.key === " ") {
+          event.preventDefault();
+          setPlaying(!state.playing);
+        } else if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          updateScene(state.sceneIndex - 1);
+        } else if (event.key === "ArrowRight") {
+          event.preventDefault();
+          updateScene(state.sceneIndex + 1);
+        } else if (event.key === "+" || event.key === "=") {
+          event.preventDefault();
+          zoom(.82);
+        } else if (event.key === "-") {
+          event.preventDefault();
+          zoom(1.2);
+        } else if (event.key === "Escape") {
+          resetView();
+        }
+      });
+
+      const motionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
+      motionMedia.addEventListener("change", event => {
+        state.reducedMotion = event.matches;
+        if (event.matches) setPlaying(false);
+        renderParticles();
+      });
+
+      renderLayers();
+      renderEdges();
+      renderNodes();
+      updateScene(0);
+      if (!state.reducedMotion) state.animationFrame = requestAnimationFrame(animateParticles);
+    })();
+  </script>
+</body>
+</html>

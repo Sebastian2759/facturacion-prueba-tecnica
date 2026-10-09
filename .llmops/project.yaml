@@ -1,0 +1,8 @@
+project: Plantilla
+stack: dotnet-api
+standards_version: {{STANDARDS_VERSION}}
+scaffolded_from: {{STANDARDS_VERSION}}
+created_at: {{CREATED_AT}}
+compliance_level: 4
+active_agents: []
+active_workflows: []

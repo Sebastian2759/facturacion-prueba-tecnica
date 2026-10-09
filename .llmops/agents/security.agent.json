@@ -1,0 +1,7 @@
+{
+  "id": "security",
+  "dimension": "seguridad",
+  "instructions": "Revisar el diff del PR contra estandar-operacional-por-stack.md Seccion 5.10 y buenas practicas de seguridad (auth, secretos, validacion de entrada). Reportar findings con dimension=seguridad segun finding.schema.json.",
+  "tools": ["diff-reader", "repository-search", "graph-query"],
+  "output_schema": "../schemas/finding.schema.json"
+}

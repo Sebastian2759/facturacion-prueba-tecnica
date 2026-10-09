@@ -1,0 +1,330 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">INTEGRACIONES / ACCOUNTS</div>
+    <h1>Cuentas</h1>
+    <p>Consulta y registra cuentas a través de Novasoft.</p>
+  </div>
+  <span class="badge" [class.positive]="mode() === 'real'" [class.amber]="mode() === 'simulated'">{{
+    mode() === 'real' ? 'Modo real seleccionado' : 'Modo demostración'
+  }}</span>
+</div>
+<div class="panel integration-toolbar">
+  <div>
+    <strong>Origen de los datos</strong>
+    <p>Cuentas ficticias de esta instalación. La simulación se reinicia con el servidor.</p>
+  </div>
+  <span class="badge amber">SIMULACIÓN LOCAL</span>
+</div>
+<p class="helper-text">
+  Este paquete no llama al servicio Novasoft real. La respuesta identifica su origen simulado; las
+  facturas sí se guardan en SQL Server.
+</p>
+<nav class="tabs" aria-label="Operaciones de cuentas">
+  <button
+    [class.active]="tab() === 'list'"
+    [attr.aria-pressed]="tab() === 'list'"
+    (click)="tab.set('list')"
+    [disabled]="saving()"
+  >
+    Consultar cuentas</button
+  ><button
+    [class.active]="tab() === 'create'"
+    [attr.aria-pressed]="tab() === 'create'"
+    (click)="tab.set('create')"
+    [disabled]="saving()"
+  >
+    Crear cuenta
+  </button>
+</nav>
+<app-feedback [error]="error()" />
+@if (error() && mode() === 'real' && tab() === 'create') {
+  <p class="helper-text">
+    Antes de reenviar una creación, consulta el código para comprobar si el proveedor ya la aceptó.
+    No cambiamos a simulación cuando falla el servicio.
+  </p>
+}
+@if (tab() === 'list') {
+  <section class="panel table-panel">
+    <div class="panel-title">
+      <h2>Directorio de cuentas</h2>
+      <form class="search-form" (submit)="$event.preventDefault(); load()">
+        <label class="sr-only" for="account-search">Código de cuenta</label
+        ><input
+          id="account-search"
+          [formControl]="code"
+          maxlength="15"
+          placeholder="Buscar por código"
+        /><button type="submit" class="button secondary small" [disabled]="loading()">
+          <app-icon name="search" />Consultar
+        </button>
+      </form>
+    </div>
+    @if (code.touched && code.invalid) {
+      <p class="field-error">Usa hasta 15 letras, números, guiones o guiones bajos.</p>
+    }
+    <app-feedback [loading]="loading()" />
+    @if (result(); as data) {
+      <div class="data-origin">
+        <span
+          class="badge"
+          [class.amber]="data.mode === 'simulated'"
+          [class.positive]="data.mode === 'real'"
+          >{{
+            data.mode === 'simulated' ? 'Respuesta simulada' : 'Respuesta del servicio real'
+          }}</span
+        ><span>{{ data.accounts.length }} resultados</span>
+      </div>
+      @if (data.accounts.length) {
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only">
+              Cuentas consultadas
+            </caption>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Cuenta</th>
+                <th>Documento</th>
+                <th>Contacto</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (account of data.accounts; track account.code) {
+                <tr>
+                  <td class="invoice-number">{{ account.code }}</td>
+                  <td>
+                    <strong>{{ account.name }}</strong
+                    ><small>{{ account.cityCode }} · {{ account.countryCode }}</small>
+                  </td>
+                  <td>{{ account.document }}</td>
+                  <td>
+                    {{ account.email }}<small>{{ account.phone || 'Sin teléfono' }}</small>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <app-icon name="accounts" />
+          <h3>No encontramos cuentas</h3>
+          <p>Prueba otro código o crea una cuenta ficticia en modo simulado.</p>
+        </div>
+      }
+    }
+  </section>
+} @else {
+  @if (accepted(); as result) {
+    <div class="alert success" role="status">
+      <app-icon name="check" />
+      <div>
+        <strong>Solicitud aceptada: {{ result.code }}</strong>
+        <p>
+          {{
+            result.mode === 'real'
+              ? 'El servicio real aceptó la solicitud. Consulta el código para verificar su resultado.'
+              : 'La cuenta fue aceptada en la simulación de tu sesión.'
+          }}
+        </p>
+        <button type="button" class="button secondary small" (click)="consultAccepted()">
+          Consultar esta cuenta
+        </button>
+        <button type="button" class="button secondary small" (click)="startAnother()">
+          Crear otra cuenta
+        </button>
+      </div>
+    </div>
+  }
+  <form [formGroup]="form" (ngSubmit)="create()" novalidate>
+    <fieldset class="panel" [disabled]="saving() || !!accepted()">
+      <legend class="sr-only">Nueva cuenta</legend>
+      <div class="section-heading">
+        <span class="step">01</span>
+        <div>
+          <h2>Información de la cuenta</h2>
+          <p>Los campos con * son obligatorios. Utiliza datos ficticios.</p>
+        </div>
+      </div>
+      <div class="fields-grid three-columns">
+        <app-form-field
+          fieldId="account-code"
+          label="Código"
+          [control]="form.controls.code"
+          [required]="true"
+          [maxLength]="15"
+          [serverError]="field('code')"
+          placeholder="DEMO001"
+        />
+        <app-form-field
+          fieldId="identificationType"
+          label="Tipo de identificación"
+          [control]="form.controls.identificationType"
+          [required]="true"
+          [maxLength]="2"
+          [serverError]="field('identificationType')"
+          placeholder="06"
+          hint="Código definido por el proveedor"
+        />
+        <app-form-field
+          fieldId="account-document"
+          label="Documento"
+          [control]="form.controls.document"
+          [required]="true"
+          [maxLength]="15"
+          [serverError]="field('document')"
+        />
+        <app-form-field
+          fieldId="account-name"
+          label="Nombre de la cuenta"
+          [control]="form.controls.name"
+          [required]="true"
+          [maxLength]="200"
+          [serverError]="field('name')"
+        />
+        <app-form-field
+          fieldId="email"
+          label="Correo electrónico"
+          type="email"
+          [control]="form.controls.email"
+          [required]="true"
+          [maxLength]="100"
+          [serverError]="field('email')"
+          placeholder="ejemplo@example.test"
+        />
+        <app-form-field
+          fieldId="registeredAt"
+          label="Fecha de ingreso"
+          type="date"
+          [control]="form.controls.registeredAt"
+          [required]="true"
+          [serverError]="field('registeredAt')"
+        />
+        <div class="select-field">
+          <label for="personType">Tipo de persona *</label
+          ><select id="personType" formControlName="personType">
+            <option [ngValue]="1">Código 1</option>
+            <option [ngValue]="2">Código 2</option></select
+          ><span class="field-hint">Clasificación del proveedor</span
+          ><span class="field-error">{{ field('personType') }}</span>
+        </div>
+        <div class="select-field">
+          <label for="customerType">Tipo de cliente *</label
+          ><select id="customerType" formControlName="customerType">
+            @for (value of [1, 2, 3, 4, 5]; track value) {
+              <option [ngValue]="value">Código {{ value }}</option>
+            }</select
+          ><span class="field-hint">Clasificación del proveedor</span
+          ><span class="field-error">{{ field('customerType') }}</span>
+        </div>
+      </div>
+      <div class="section-heading margin-top">
+        <span class="step">02</span>
+        <div>
+          <h2>Ubicación</h2>
+          <p>Códigos numéricos de país, departamento y ciudad.</p>
+        </div>
+      </div>
+      <div class="fields-grid three-columns">
+        <app-form-field
+          fieldId="countryCode"
+          label="País"
+          [control]="form.controls.countryCode"
+          [required]="true"
+          [maxLength]="3"
+          [serverError]="field('countryCode')"
+          placeholder="057"
+          inputMode="numeric"
+        />
+        <app-form-field
+          fieldId="departmentCode"
+          label="Departamento"
+          [control]="form.controls.departmentCode"
+          [required]="true"
+          [maxLength]="2"
+          [serverError]="field('departmentCode')"
+          placeholder="11"
+          inputMode="numeric"
+        />
+        <app-form-field
+          fieldId="cityCode"
+          label="Ciudad"
+          [control]="form.controls.cityCode"
+          [required]="true"
+          [maxLength]="5"
+          [serverError]="field('cityCode')"
+          placeholder="11001"
+          inputMode="numeric"
+        />
+      </div>
+      <details class="optional-fields">
+        <summary>Datos adicionales <span>Opcionales</span></summary>
+        <div class="fields-grid three-columns">
+          <app-form-field
+            fieldId="account-firstName"
+            label="Primer nombre"
+            [control]="form.controls.firstName"
+            [maxLength]="50"
+            [serverError]="field('firstName')"
+          />
+          <app-form-field
+            fieldId="account-lastName"
+            label="Apellido"
+            [control]="form.controls.lastName"
+            [maxLength]="50"
+            [serverError]="field('lastName')"
+          />
+          <app-form-field
+            fieldId="account-phone"
+            label="Teléfono"
+            [control]="form.controls.phone"
+            [maxLength]="15"
+            [serverError]="field('phone')"
+          />
+          <app-form-field
+            fieldId="account-address"
+            label="Dirección"
+            [control]="form.controls.address"
+            [maxLength]="100"
+            [serverError]="field('address')"
+          />
+          <app-form-field
+            fieldId="additionalAddress"
+            label="Dirección adicional"
+            [control]="form.controls.additionalAddress"
+            [maxLength]="100"
+            [serverError]="field('additionalAddress')"
+          />
+          <app-form-field
+            fieldId="website"
+            label="Sitio web"
+            type="url"
+            [control]="form.controls.website"
+            [maxLength]="2048"
+            [serverError]="field('website')"
+            placeholder="https://example.test"
+          />
+          <app-form-field
+            fieldId="externalCode"
+            label="Código externo"
+            [control]="form.controls.externalCode"
+            [maxLength]="50"
+            [serverError]="field('externalCode')"
+          />
+        </div>
+      </details>
+      <div class="form-actions">
+        <p class="helper-text">
+          {{
+            mode() === 'real'
+              ? 'Esta acción enviará datos al servicio Novasoft real.'
+              : 'Esta acción sólo creará un registro simulado.'
+          }}
+        </p>
+        <button class="button primary" type="submit" [disabled]="saving() || !!accepted()">
+          <app-icon name="plus" />{{ saving() ? 'Enviando…' : 'Crear cuenta' }}
+        </button>
+      </div>
+    </fieldset>
+  </form>
+}

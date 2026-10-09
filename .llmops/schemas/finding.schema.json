@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "finding.schema.json",
+  "title": "Finding — Piloto de Análisis de PR",
+  "description": "Formato único de salida para una observación reportada por el agente sobre un Pull Request, en cualquiera de las tres dimensiones evaluadas (seguridad, arquitectura, negocio).",
+  "type": "object",
+  "required": ["id", "dimension", "severity", "file", "description", "confidence"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identificador único del finding dentro del análisis de un PR.",
+      "pattern": "^F-[0-9]{3,}$"
+    },
+    "dimension": {
+      "type": "string",
+      "enum": ["seguridad", "arquitectura", "negocio"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["alta", "media", "baja"]
+    },
+    "file": {
+      "type": "string",
+      "description": "Ruta del archivo afectado, relativa a la raíz del repo."
+    },
+    "line": {
+      "type": ["integer", "null"],
+      "description": "Línea puntual afectada. Puede ser null para findings de arquitectura que no apuntan a una línea específica."
+    },
+    "description": {
+      "type": "string",
+      "description": "Explicación concreta del hallazgo."
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["alta", "media", "baja"]
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Sugerencia de corrección (opcional)."
+    },
+    "category": {
+      "type": "string",
+      "description": "Solo para dimension=seguridad. Ej: auth, injection, secrets, access-control."
+    },
+    "cwe_id": {
+      "type": "string",
+      "description": "Solo para dimension=seguridad. Referencia CWE/OWASP si aplica (opcional)."
+    },
+    "principle_violated": {
+      "type": "string",
+      "description": "Solo para dimension=arquitectura. Ej: separación de responsabilidades, inversión de dependencias."
+    },
+    "affected_layer": {
+      "type": "string",
+      "description": "Solo para dimension=arquitectura. Ej: API, dominio, infraestructura."
+    },
+    "business_area": {
+      "type": "string",
+      "description": "Solo para dimension=negocio. Ej: facturación, autenticación, reportes."
+    },
+    "impact_type": {
+      "type": "string",
+      "description": "Solo para dimension=negocio. Ej: breaking_change, integridad_de_datos, regulatorio."
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,12 @@
+{
+  "id": "pr-contextual-review",
+  "description": "Analiza un Pull Request en las dimensiones seguridad, arquitectura e impacto de negocio",
+  "trigger": "pull_request.opened_or_updated",
+  "steps": [
+    { "agent": "security.agent.json" },
+    { "agent": "architecture.agent.json" },
+    { "agent": "testing.agent.json" },
+    { "agent": "synthesis.agent.json", "consumes": ["security", "architecture", "testing"] }
+  ],
+  "output_schema": "../schemas/pr-analysis-result.schema.json"
+}

@@ -1,0 +1,106 @@
+<a href="#main" class="skip-link">Saltar al contenido</a>
+@if (mobileMenu()) {
+  <button
+    class="nav-overlay"
+    aria-label="Cerrar navegación"
+    (click)="mobileMenu.set(false)"
+  ></button>
+}
+<aside
+  class="sidebar"
+  [class.open]="mobileMenu()"
+  [attr.inert]="isMobile() && !mobileMenu() ? '' : null"
+  [cdkTrapFocus]="mobileMenu()"
+  [cdkTrapFocusAutoCapture]="mobileMenu()"
+>
+  <button
+    class="icon-button sidebar-close"
+    aria-label="Cerrar menú"
+    (click)="mobileMenu.set(false)"
+  >
+    ×
+  </button>
+  <a class="brand" routerLink="/" aria-label="Nexo, inicio"
+    ><span class="brand-mark">n.</span
+    ><span>nexo<span class="brand-description">FACTURACIÓN</span></span></a
+  >
+  <div class="nav-label">ESPACIO DE TRABAJO</div>
+  <nav aria-label="Navegación principal">
+    <a
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      ariaCurrentWhenActive="page"
+      (click)="mobileMenu.set(false)"
+      ><app-icon name="dashboard" />Vista general</a
+    >
+    <a
+      routerLink="/facturas"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      (click)="mobileMenu.set(false)"
+      ><app-icon name="invoice" />Facturas</a
+    >
+    <a
+      routerLink="/cuentas"
+      routerLinkActive="active"
+      ariaCurrentWhenActive="page"
+      (click)="mobileMenu.set(false)"
+      ><app-icon name="accounts" />Cuentas<span class="nav-tag">API</span></a
+    >
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="sidebar-note">
+      <app-icon name="shield" /><strong>Diseñado para evaluar</strong>
+      <p>Utiliza datos ficticios durante todas tus pruebas.</p>
+    </div>
+    <span class="sidebar-version">NEXO · APLICACIÓN DE EVALUACIÓN</span>
+  </div>
+</aside>
+<div class="workspace" [attr.inert]="mobileMenu() ? '' : null">
+  <header class="topbar">
+    <div class="topbar-start">
+      <button
+        class="icon-button menu-toggle"
+        aria-label="Abrir navegación"
+        [attr.aria-expanded]="mobileMenu()"
+        (click)="mobileMenu.set(!mobileMenu())"
+      >
+        <app-icon name="menu" /></button
+      ><span class="breadcrumb">Aplicación <span>/</span> <strong>Facturación</strong></span>
+    </div>
+    <div class="session-area">
+      <span class="session-mode"
+        ><span class="status-dot" [class.verified]="auth.canEvaluate()"></span
+        >{{ auth.canEvaluate() ? 'Evaluación local' : 'Sin conexión verificada' }}</span
+      >
+      @if (auth.canEvaluate()) {
+        <span class="avatar" aria-label="Sesión de evaluación local">EV</span>
+      } @else {
+        <a class="button secondary small" routerLink="/acceso">Conectar</a>
+      }
+    </div>
+  </header>
+  <main id="main" tabindex="-1">
+    @if (config.error(); as error) {
+      <div class="alert error" role="alert">{{ error }}</div>
+    }
+    @if (auth.error(); as error) {
+      <div class="alert info" role="status">
+        <span>{{ error }}</span
+        ><button
+          class="button secondary small"
+          (click)="auth.initialize()"
+          [disabled]="auth.busy()"
+        >
+          Reconectar
+        </button>
+      </div>
+    }
+    <router-outlet (activate)="onRouteChange()" />
+  </main>
+  <footer class="app-footer">
+    <span>Información clara. Operaciones bajo control.</span
+    ><span>Entorno de evaluación · COP</span>
+  </footer>
+</div>

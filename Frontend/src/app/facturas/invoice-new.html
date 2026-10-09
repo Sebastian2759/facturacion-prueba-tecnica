@@ -1,0 +1,204 @@
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">FACTURAS / NUEVA</div>
+    <h1>Nueva factura</h1>
+    <p>Completa los datos del cliente y agrega los artículos.</p>
+  </div>
+  <a class="button secondary" routerLink="/facturas">Ver mis facturas</a>
+</div>
+<form [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <app-feedback [error]="error()" />
+  <fieldset class="form-layout" [disabled]="saving()">
+    <legend class="sr-only">Datos de la factura</legend>
+    <div class="form-main">
+      <section class="panel">
+        <div class="section-heading">
+          <span class="step">01</span>
+          <div>
+            <h2>Datos del cliente</h2>
+            <p>Todos los campos son obligatorios. Utiliza datos ficticios.</p>
+          </div>
+        </div>
+        <div class="fields-grid">
+          <app-form-field
+            fieldId="document"
+            label="Documento"
+            [control]="form.controls.document"
+            [required]="true"
+            [maxLength]="15"
+            [serverError]="field('document')"
+            placeholder="Ej. 1020304050"
+          />
+          <app-form-field
+            fieldId="phone"
+            label="Teléfono"
+            [control]="form.controls.phone"
+            [required]="true"
+            [maxLength]="30"
+            inputMode="tel"
+            [serverError]="field('phone')"
+            placeholder="Ej. 300 123 4567"
+          />
+          <app-form-field
+            fieldId="firstName"
+            label="Nombres"
+            [control]="form.controls.firstName"
+            [required]="true"
+            [maxLength]="100"
+            [serverError]="field('firstName')"
+            placeholder="Nombres del cliente"
+          />
+          <app-form-field
+            fieldId="lastName"
+            label="Apellidos"
+            [control]="form.controls.lastName"
+            [required]="true"
+            [maxLength]="100"
+            [serverError]="field('lastName')"
+            placeholder="Apellidos del cliente"
+          />
+          <app-form-field
+            class="span-2"
+            fieldId="address"
+            label="Dirección"
+            [control]="form.controls.address"
+            [required]="true"
+            [maxLength]="200"
+            [serverError]="field('address')"
+            placeholder="Dirección de contacto"
+          />
+        </div>
+      </section>
+      <section class="panel">
+        <div class="section-heading">
+          <span class="step">02</span>
+          <div>
+            <h2>Artículos</h2>
+            <p>De 1 a 100 artículos · precios en pesos colombianos.</p>
+          </div>
+          <span class="badge neutral push-right">{{ form.controls.details.length }} artículos</span>
+        </div>
+        <div class="line-editor" formArrayName="details">
+          <div class="line-head" aria-hidden="true">
+            <span>Código</span><span>Cantidad</span><span>Precio unitario</span><span></span>
+          </div>
+          @for (line of form.controls.details.controls; track line; let i = $index) {
+            <div class="line-row" [formGroupName]="i">
+              <div>
+                <label class="mobile-label" [for]="'code-' + i">Código</label
+                ><input
+                  [id]="'code-' + i"
+                  type="number"
+                  inputmode="numeric"
+                  min="1"
+                  step="1"
+                  formControlName="code"
+                  placeholder="1001"
+                  [attr.aria-label]="'Código del artículo ' + (i + 1)"
+                  [attr.aria-invalid]="line.controls.code.touched && line.controls.code.invalid"
+                  [attr.aria-describedby]="'line-error-' + i"
+                />
+              </div>
+              <div>
+                <label class="mobile-label" [for]="'quantity-' + i">Cantidad</label
+                ><input
+                  [id]="'quantity-' + i"
+                  type="number"
+                  inputmode="numeric"
+                  min="1"
+                  step="1"
+                  formControlName="quantity"
+                  [attr.aria-label]="'Cantidad del artículo ' + (i + 1)"
+                  [attr.aria-invalid]="
+                    line.controls.quantity.touched && line.controls.quantity.invalid
+                  "
+                  [attr.aria-describedby]="'line-error-' + i"
+                />
+              </div>
+              <div>
+                <label class="mobile-label" [for]="'price-' + i">Precio unitario</label
+                ><input
+                  [id]="'price-' + i"
+                  type="number"
+                  inputmode="decimal"
+                  min="0.01"
+                  step="0.01"
+                  formControlName="unitPrice"
+                  placeholder="0,00"
+                  [attr.aria-label]="'Precio del artículo ' + (i + 1)"
+                  [attr.aria-invalid]="
+                    line.controls.unitPrice.touched && line.controls.unitPrice.invalid
+                  "
+                  [attr.aria-describedby]="'line-error-' + i"
+                />
+              </div>
+              <button
+                class="icon-button danger"
+                type="button"
+                (click)="removeLine(i)"
+                [disabled]="form.controls.details.length === 1"
+                [attr.aria-label]="'Eliminar artículo ' + (i + 1)"
+              >
+                <app-icon name="trash" />
+              </button>
+              <div class="field-error line-error" [id]="'line-error-' + i">
+                @if (line.touched && line.invalid) {
+                  Código y cantidad deben ser enteros positivos; el precio, mayor que cero y con
+                  hasta 2 decimales.
+                }
+                {{ field('details[' + i + '].code') }} {{ field('details[' + i + '].quantity') }}
+                {{ field('details[' + i + '].unitPrice') }}
+              </div>
+            </div>
+          }
+        </div>
+        <button
+          type="button"
+          class="button secondary small"
+          (click)="addLine()"
+          [disabled]="form.controls.details.length >= 100"
+        >
+          <app-icon name="plus" />Agregar artículo
+        </button>
+      </section>
+    </div>
+    <aside class="invoice-summary panel">
+      <div class="section-heading">
+        <span class="step">03</span>
+        <div>
+          <h2>Resumen</h2>
+          <p>Calculado por el servidor</p>
+        </div>
+      </div>
+      <div class="invoice-meta">
+        <div><span>Factura</span><strong>Se asignará al guardar</strong></div>
+        <div>
+          <span>Fecha de hoy</span><strong>{{ today }}</strong>
+        </div>
+      </div>
+      <app-feedback
+        [loading]="previewing()"
+        loadingText="Actualizando importes…"
+        [error]="previewError()"
+      />
+      @if (previewError()) {
+        <button type="button" class="button secondary small" (click)="retryPreview()">
+          Reintentar cálculo
+        </button>
+      }
+      <app-invoice-totals [totals]="totals()" />
+      <p class="helper-text">
+        El IVA se aplica al valor bruto menos el descuento. La fecha y el número definitivos se
+        generan al guardar.
+      </p>
+      <button
+        class="button primary full-width"
+        type="submit"
+        [disabled]="saving() || previewing() || !!previewError()"
+      >
+        <app-icon name="check" />{{ saving() ? 'Guardando…' : 'Grabar factura' }}
+      </button>
+      <span class="secure-note"><app-icon name="shield" />Visible sólo para tu identidad</span>
+    </aside>
+  </fieldset>
+</form>

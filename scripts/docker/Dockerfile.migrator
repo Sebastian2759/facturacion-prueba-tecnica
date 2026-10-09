@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4
+WORKDIR /app
+COPY --chown=1654:1654 database/migrator/ ./
+ENV DOTNET_EnableDiagnostics=0
+USER 1654:1654
+ENTRYPOINT ["dotnet", "DatabaseMigrator.dll"]

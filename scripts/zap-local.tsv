@@ -1,0 +1,4 @@
+# Local-only HTTP is a deliberate loopback profile, not a public TLS deployment.
+# No global ignore: these two rules are inapplicable to 127.0.0.1 HTTP and documented in operations.md.
+10035	IGNORE	Strict-Transport-Security is inapplicable to HTTP loopback
+10011	IGNORE	Secure cookie flag is inapplicable to HTTP loopback; HttpOnly/SameSite/CSRF remain enforced

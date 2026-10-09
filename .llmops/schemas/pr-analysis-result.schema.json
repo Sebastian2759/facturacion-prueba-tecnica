@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pr-analysis-result.schema.json",
+  "title": "Resultado de análisis de PR — Piloto",
+  "description": "Respuesta completa de un modelo al analizar un PR: lista de findings + consumo de tokens, para poder comparar calidad y costo entre modelos.",
+  "type": "object",
+  "required": ["pr_id", "model", "findings", "tokens_used"],
+  "properties": {
+    "pr_id": {
+      "type": "string",
+      "description": "Identificador del PR analizado, debe coincidir con el del dataset de referencia."
+    },
+    "model": {
+      "type": "string",
+      "description": "Modelo y snapshot exacto usado. Ej: gpt-5.5-2025-11-13, gpt-5.6-luna-2026-07-30."
+    },
+    "reasoning_effort": {
+      "type": "string",
+      "description": "Nivel de esfuerzo de razonamiento usado (relevante para GPT-5.6 Luna).",
+      "enum": ["none", "low", "medium", "high", "xhigh", "max"]
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "finding.schema.json" }
+    },
+    "tokens_used": {
+      "type": "object",
+      "required": ["input", "output"],
+      "properties": {
+        "input": { "type": "integer" },
+        "output": { "type": "integer" },
+        "reasoning": { "type": "integer", "description": "Tokens de razonamiento interno, si el modelo los reporta por separado." }
+      }
+    },
+    "latency_ms": {
+      "type": "integer",
+      "description": "Tiempo de respuesta en milisegundos (opcional, para completar la comparación de rendimiento)."
+    }
+  },
+  "additionalProperties": false
+}

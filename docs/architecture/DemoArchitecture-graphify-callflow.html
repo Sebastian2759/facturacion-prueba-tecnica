@@ -1,0 +1,2753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DemoArchitecture · Clean Architecture .NET 10 · Graphify Call Flow</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #0f172a; --surface: #1e293b; --border: #334155;
+  --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+  --warn: #fbbf24; --err: #f87171; --ok: #34d399;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+h1 { font-size: 2.4rem; margin-bottom: 8px; background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+h2 { font-size: 1.7rem; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+h3 { font-size: 1.25rem; margin: 32px 0 12px; color: var(--accent); }
+h4 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--warn); }
+p { margin: 8px 0; color: var(--muted); }
+.subtitle { color: var(--muted); font-size: 1.1rem; margin-bottom: 32px; }
+.mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 20px 0; overflow-x: auto; position: relative; }
+.mermaid.is-enhanced { padding: 0; overflow: hidden; min-height: 260px; }
+.mermaid-viewport { padding: 54px 24px 24px; overflow: hidden; cursor: grab; touch-action: none; min-height: 260px; }
+.mermaid-viewport.is-dragging { cursor: grabbing; }
+.mermaid-viewport svg { max-width: none !important; height: auto; transform-origin: 0 0; transition: transform 120ms ease; }
+.mermaid-toolbar { position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px; background: rgba(15,23,42,0.92); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+.mermaid-toolbar button, .mermaid-toolbar .zoom-level { height: 28px; min-width: 32px; border: 1px solid var(--border); border-radius: 6px; background: #1e293b; color: var(--text); font: 600 0.78rem system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: center; }
+.mermaid-toolbar button { cursor: pointer; }
+.mermaid-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+.mermaid-toolbar .zoom-level { min-width: 52px; color: var(--muted); background: transparent; }
+.call-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92rem; }
+.call-table th { background: #1a2744; color: var(--accent); text-align: left; padding: 10px 14px; border: 1px solid var(--border); }
+.call-table td { padding: 8px 14px; border: 1px solid var(--border); vertical-align: top; }
+.call-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+.tag-async { background: #7c3aed33; color: #a78bfa; }
+.tag-class { background: #05966933; color: var(--ok); }
+.tag-func { background: #2563eb33; color: var(--accent); }
+.tag-cmd { background: #d9770633; color: var(--warn); }
+.tag-endpoint { background: #dc262633; color: var(--err); }
+.tag-hook { background: #db277733; color: #f472b6; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 16px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin: 16px 0; }
+.arrow-chain { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--accent); padding: 10px; background: rgba(56,189,248,0.06); border-radius: 6px; }
+code { font-family: 'Fira Code', 'Cascadia Code', monospace; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 3px; font-size: 0.88em; }
+ul, ol { margin: 8px 0 8px 24px; color: var(--muted); }
+li { margin: 4px 0; }
+a { color: var(--accent); }
+hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+.nav { position: sticky; top: 0; background: var(--bg); z-index: 10; padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.9rem; }
+.nav a { text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+@media (max-width: 768px) { .container { padding: 16px; } h1 { font-size: 1.8rem; } }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>DemoArchitecture · Clean Architecture .NET 10</h1>
+<p class="subtitle">Graphify call flow derived from 314 nodes and 441 directed relationships, curated into 11 architecture views.</p>
+
+<div class="nav">
+    <a href="#overview">Plantilla Backend Clean Architecture</a>
+    <a href="#api">API · transporte, seguridad y composición</a>
+    <a href="#application">Application · CQRS, validación y respuestas</a>
+    <a href="#domain">Domain · entidades y contratos</a>
+    <a href="#persistence">Persistence · repositorio genérico y EF Core</a>
+    <a href="#adapters">Adapters · AutoMapper por convención</a>
+    <a href="#infrastructure">Infrastructure · helper DI reutilizable</a>
+    <a href="#tests">Tests · cobertura transversal</a>
+    <a href="#ci">CI · quality gates y artifactDrop</a>
+    <a href="#documentation">Documentación · decisiones de arquitectura</a>
+    <a href="#solution">Solución · topología de proyectos</a>
+</div>
+
+<!-- ====== Architecture Overview ====== -->
+<h2 id="overview">1. Plantilla Backend Clean Architecture</h2>
+
+<div class="mermaid">
+
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    API_A033A528("API · transporte, seguridad y composición<br/><small>53 nodes</small>")
+    class API_A033A528 module;
+    APPLICATION_D2005CC2("Application · CQRS, validación y respuestas<br/><small>37 nodes</small>")
+    class APPLICATION_D2005CC2 module;
+    DOMAIN_9120580E("Domain · entidades y contratos<br/><small>30 nodes</small>")
+    class DOMAIN_9120580E module;
+    PERSISTENCE_0AAD6CBB("Persistence · repositorio genérico y EF Core<br/><small>32 nodes</small>")
+    class PERSISTENCE_0AAD6CBB module;
+    ADAPTERS_75A50C51("Adapters · AutoMapper por convención<br/><small>15 nodes</small>")
+    class ADAPTERS_75A50C51 module;
+    INFRASTRUCTURE_35F8B746("Infrastructure · helper DI reutilizable<br/><small>8 nodes</small>")
+    class INFRASTRUCTURE_35F8B746 module;
+    TESTS_04D13FD0("Tests · cobertura transversal<br/><small>39 nodes</small>")
+    class TESTS_04D13FD0 module;
+    CI_5A4FE083("CI · quality gates y artifactDrop<br/><small>3 nodes</small>")
+    class CI_5A4FE083 module;
+    DOCUMENTATION_BA2A1650("Documentación · decisiones de arquitectura<br/><small>10 nodes</small>")
+    class DOCUMENTATION_BA2A1650 module;
+    SOLUTION_00F97CB5("Solución · topología de proyectos<br/><small>1 nodes</small>")
+    class SOLUTION_00F97CB5 module;
+    TESTS_04D13FD0 -->|imports x14| DOMAIN_9120580E
+    TESTS_04D13FD0 -->|imports x13| APPLICATION_D2005CC2
+    PERSISTENCE_0AAD6CBB -->|imports x11| DOMAIN_9120580E
+    API_A033A528 -->|imports x7| APPLICATION_D2005CC2
+    ADAPTERS_75A50C51 -->|imports x5| DOMAIN_9120580E
+    TESTS_04D13FD0 -->|imports x5| PERSISTENCE_0AAD6CBB
+    DOCUMENTATION_BA2A1650 -->|references x5| API_A033A528
+    APPLICATION_D2005CC2 -->|imports x4| DOMAIN_9120580E
+    ADAPTERS_75A50C51 -->|imports x3| INFRASTRUCTURE_35F8B746
+    PERSISTENCE_0AAD6CBB -->|imports x3| INFRASTRUCTURE_35F8B746
+    DOCUMENTATION_BA2A1650 -->|references x3| APPLICATION_D2005CC2
+    API_A033A528 -->|imports x2| DOMAIN_9120580E
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h4>Architecture Layers</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>Layer</th><th>Nodes</th><th>Communities</th></tr>
+      <tr><td>API · transporte, seguridad y composición</td><td>53</td><td><code>0</code></td></tr><tr><td>Application · CQRS, validación y respuestas</td><td>37</td><td><code>1</code></td></tr><tr><td>Domain · entidades y contratos</td><td>30</td><td><code>2</code></td></tr><tr><td>Persistence · repositorio genérico y EF Core</td><td>32</td><td><code>4</code></td></tr><tr><td>Adapters · AutoMapper por convención</td><td>15</td><td><code>3</code></td></tr><tr><td>Infrastructure · helper DI reutilizable</td><td>8</td><td><code>5</code></td></tr><tr><td>Tests · cobertura transversal</td><td>39</td><td><code>6</code></td></tr><tr><td>CI · quality gates y artifactDrop</td><td>3</td><td><code>7</code></td></tr><tr><td>Documentación · decisiones de arquitectura</td><td>10</td><td><code>8</code></td></tr><tr><td>Solución · topología de proyectos</td><td>1</td><td><code>9</code></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Runtime &amp; Dependency Flow</h4>
+    <div class="arrow-chain">HTTP request &rarr; API &rarr; Application (MediatR + ValidationBehavior) &rarr; Domain contracts &rarr; Persistence / Adapters &rarr; HTTP response. Infrastructure supports outer-layer registration; Tests and CI validate the complete flow.</div>
+  </div>
+</div>
+<div class="grid">
+  <div class="card">
+    <h4>Graph Report Highlights</h4>
+    <ul>
+      <li>314 nodes · 441 edges · 21 communities</li>
+      <li>Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.8)</li>
+      <li>Token cost: 0 input · 0 output</li>
+      <li>1. `ResponseBase` - 19 edges</li>
+      <li>2. `RepositoryGeneric` - 14 edges</li>
+      <li>3. `IRepositoryGeneric` - 13 edges</li>
+    </ul>
+  </div>
+</div>
+<hr>
+<!-- ====== 2. API · transporte, seguridad y composición ====== -->
+<h2 id="api">2. API · transporte, seguridad y composición</h2>
+<p>API · transporte, seguridad y composición groups implementation around api, launchsettingsjson, properties, apicsproj, mostly in Api/Properties/launchSettings.json, Api/Api/Api.csproj, Api/Authentication/ApiKeyAuthHandler.cs. This section covers 53 nodes and 52 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: API · transporte, seguridad y composición (53 nodes, 52 edges)
+    subgraph api_Api_Api_Api_csproj_ee21937c["Api/Api/Api.csproj"]
+        api_api_api_75f76879("Api.csproj")
+        api_api_api_csproj_nuget_fluentvalidation_5b4cf4d1("FluentValidation (12.1.1)<br/><small>Api/Api/Api.csproj</small>")
+        nuget_asp_versioning_mvc_24fe0b27("Asp.Versioning.Mvc (10.0.0)<br/><small>Api/Api/Api.csproj</small>")
+        nuget_asp_versioning_mvc_apiexplorer_45e7440e("Asp.Versioning.Mvc.ApiExplorer (10.0.0)<br/><small>Api/Api/Api.csproj</small>")
+        nuget_microsoft_aspnetcore_authentication_jwtbea_4aa7ede8("Microsoft.AspNetCore.Authentication.Jwt...<br/><small>Api/Api/Api.csproj</small>")
+        nuget_microsoft_aspnetcore_openapi_f78a7ca0("Microsoft.AspNetCore.OpenApi (10.0.10)<br/><small>Api/Api/Api.csproj</small>")
+        nuget_microsoft_openapi_09b0e7f4("Microsoft.OpenApi (2.11.0)<br/><small>Api/Api/Api.csproj</small>")
+        nuget_scalar_aspnetcore_bfc5062c("Scalar.AspNetCore (2.16.16)<br/><small>Api/Api/Api.csproj</small>")
+    end
+    subgraph api_Api_Authentication_ApiKeyAuthHandler_cs_2fbf4890["Api/Authentication/ApiKeyAuthHandler.cs"]
+        api_api_authentication_apikeyauthhandler_api_aut_6347c6a0("ApiKeyAuthHandler<br/><small>Api/Authentication/ApiKeyAuthHandler.cs</small>")
+        api_api_authentication_apikeyauthhandler_api_aut_d122c72d("HandleAuthenticateAsync()<br/><small>Api/Authentication/ApiKeyAuthHandler.cs</small>")
+    end
+    subgraph api_Api_Controllers_ApiControllerBase_cs_e0cb4ce8["Api/Controllers/ApiControllerBase.cs"]
+        api_api_controllers_apicontrollerbase_api_contro_9ec9fa3d("ApiControllerBase<br/><small>Api/Controllers/ApiControllerBase.cs</small>")
+        api_api_controllers_apicontrollerbase_api_contro_303e03c1("ToResult()<br/><small>Api/Controllers/ApiControllerBase.cs</small>")
+    end
+    subgraph api_Api_Handlers_GlobalExceptionHandler_cs_61577280["Api/Handlers/GlobalExceptionHandler.cs"]
+        api_api_handlers_globalexceptionhandler_api_hand_5d17c391("GlobalExceptionHandler<br/><small>Api/Handlers/GlobalExceptionHandler.cs</small>")
+        api_api_handlers_globalexceptionhandler_api_hand_450a1bb8("TryHandleAsync()<br/><small>Api/Handlers/GlobalExceptionHandler.cs</small>")
+    end
+    subgraph api_Controllers_v1_DemoArchitecturesController_c_6b4d22d9["Controllers/v1/DemoArchitecturesController.cs"]
+        api_api_controllers_v1_demoarchitecturescontroll_5ef3c04c("DemoArchitecturesController<br/><small>Controllers/v1/DemoArchitecturesController.cs</small>")
+        api_api_controllers_v1_demoarchitecturescontroll_600027ea("GetById()<br/><small>Controllers/v1/DemoArchitecturesController.cs</small>")
+    end
+    api_api_program_ef04892e("Program.cs")
+    api_api_authentication_apikeyoptions_api_authent_7cfe619c("ApiKeyOptions<br/><small>Api/Authentication/ApiKeyOptions.cs</small>")
+    api_api_authentication_apikeyauthhandler_api_aut_6347c6a0 -->|method| api_api_authentication_apikeyauthhandler_api_aut_d122c72d
+    api_api_controllers_apicontrollerbase_api_contro_9ec9fa3d -->|method| api_api_controllers_apicontrollerbase_api_contro_303e03c1
+    api_api_controllers_v1_demoarchitecturescontroll_5ef3c04c -->|method| api_api_controllers_v1_demoarchitecturescontroll_600027ea
+    api_api_handlers_globalexceptionhandler_api_hand_5d17c391 -->|method| api_api_handlers_globalexceptionhandler_api_hand_450a1bb8
+    api_api_api_75f76879 -->|imports| api_api_api_csproj_nuget_fluentvalidation_5b4cf4d1
+    api_api_api_75f76879 -->|imports| nuget_asp_versioning_mvc_24fe0b27
+    api_api_api_75f76879 -->|imports| nuget_asp_versioning_mvc_apiexplorer_45e7440e
+    api_api_api_75f76879 -->|imports| nuget_microsoft_aspnetcore_authentication_jwtbea_4aa7ede8
+    api_api_api_75f76879 -->|imports| nuget_microsoft_aspnetcore_openapi_f78a7ca0
+    api_api_api_75f76879 -->|imports| nuget_microsoft_openapi_09b0e7f4
+    api_api_api_75f76879 -->|imports| nuget_scalar_aspnetcore_bfc5062c
+    api_api_program_ef04892e -->|imports| api_api_authentication_apikeyoptions_api_authent_7cfe619c
+    %% Omitted for readability: 35 nodes, 0 edges
+    class api_api_api_75f76879 api;
+    class api_api_api_csproj_nuget_fluentvalidation_5b4cf4d1 klass;
+    class nuget_asp_versioning_mvc_24fe0b27 klass;
+    class nuget_asp_versioning_mvc_apiexplorer_45e7440e api;
+    class nuget_microsoft_aspnetcore_authentication_jwtbea_4aa7ede8 klass;
+    class nuget_microsoft_aspnetcore_openapi_f78a7ca0 api;
+    class nuget_microsoft_openapi_09b0e7f4 api;
+    class nuget_scalar_aspnetcore_bfc5062c klass;
+    class api_api_authentication_apikeyauthhandler_api_aut_6347c6a0 api;
+    class api_api_authentication_apikeyauthhandler_api_aut_d122c72d async;
+    class api_api_controllers_apicontrollerbase_api_contro_9ec9fa3d api;
+    class api_api_controllers_apicontrollerbase_api_contro_303e03c1 function;
+    class api_api_handlers_globalexceptionhandler_api_hand_5d17c391 klass;
+    class api_api_handlers_globalexceptionhandler_api_hand_450a1bb8 async;
+    class api_api_controllers_v1_demoarchitecturescontroll_5ef3c04c klass;
+    class api_api_controllers_v1_demoarchitecturescontroll_600027ea function;
+    class api_api_program_ef04892e klass;
+    class api_api_authentication_apikeyoptions_api_authent_7cfe619c api;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Api.csproj</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Asp.Versioning.Mvc (10.0.0)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small><br><code>Asp.Versioning.Mvc.ApiExplorer (10.0.0)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small><br><code>FluentValidation (12.1.1)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small><br>+4 more</td>
+  <td>Api.csproj node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>net10.0</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>net10.0 node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Asp.Versioning.Mvc (10.0.0)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Api.csproj</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Asp.Versioning.Mvc (10.0.0) node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>Asp.Versioning.Mvc.ApiExplorer (10.0.0)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td><code>Api.csproj</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Asp.Versioning.Mvc.ApiExplorer (10.0.0) node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>FluentValidation (12.1.1)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Api.csproj</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>FluentValidation (12.1.1) node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Microsoft.AspNetCore.Authentication.JwtBearer (10.0.10)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Api.csproj</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.AspNetCore.Authentication.JwtBearer (10.0.10) node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>Microsoft.AspNetCore.OpenApi (10.0.10)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td><code>Api.csproj</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.AspNetCore.OpenApi (10.0.10) node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>Microsoft.OpenApi (2.11.0)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td><code>Api.csproj</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.OpenApi (2.11.0) node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>Scalar.AspNetCore (2.16.16)</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Api.csproj</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Scalar.AspNetCore (2.16.16) node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>Microsoft.NET.Sdk.Web</code><br><small style="color:var(--muted)">Api/Api/Api.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.NET.Sdk.Web node in Api/Api/Api.csproj.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>ApiKeyAuthHandler.cs</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyAuthHandler.cs</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ApiKeyAuthHandler.cs node in Api/Authentication/ApiKeyAuthHandler.cs.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>Api.Authentication</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyAuthHandler.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>Program.cs</code><br><small style="color:var(--muted)">Api/Api/Program.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Api.Authentication node in Api/Authentication/ApiKeyAuthHandler.cs.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>ApiKeyAuthHandler</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyAuthHandler.cs</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>HandleAuthenticateAsync()</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyAuthHandler.cs</small></td>
+  <td>ApiKeyAuthHandler node in Api/Authentication/ApiKeyAuthHandler.cs.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>.HandleAuthenticateAsync()</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyAuthHandler.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>ApiKeyAuthHandler</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyAuthHandler.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.HandleAuthenticateAsync() node in Api/Authentication/ApiKeyAuthHandler.cs.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>ApiKeyDefaults</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyAuthHandler.cs</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ApiKeyDefaults node in Api/Authentication/ApiKeyAuthHandler.cs.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>ApiKeyOptions.cs</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyOptions.cs</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ApiKeyOptions.cs node in Api/Authentication/ApiKeyOptions.cs.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>ApiKeyOptions</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyOptions.cs</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td><code>Program.cs</code><br><small style="color:var(--muted)">Api/Api/Program.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>ApiKeyOptions node in Api/Authentication/ApiKeyOptions.cs.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>ApiControllerBase.cs</code><br><small style="color:var(--muted)">Api/Controllers/ApiControllerBase.cs</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ApiControllerBase.cs node in Api/Controllers/ApiControllerBase.cs.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>Api.Controllers</code><br><small style="color:var(--muted)">Api/Controllers/ApiControllerBase.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Api.Controllers node in Api/Controllers/ApiControllerBase.cs.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>ApiControllerBase</code><br><small style="color:var(--muted)">Api/Controllers/ApiControllerBase.cs</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>ToResult()</code><br><small style="color:var(--muted)">Api/Controllers/ApiControllerBase.cs</small></td>
+  <td>ApiControllerBase node in Api/Controllers/ApiControllerBase.cs.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>.ToResult()</code><br><small style="color:var(--muted)">Api/Controllers/ApiControllerBase.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ApiControllerBase</code><br><small style="color:var(--muted)">Api/Controllers/ApiControllerBase.cs</small><br><code>GetById()</code><br><small style="color:var(--muted)">Controllers/v1/DemoArchitecturesController.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.ToResult() node in Api/Controllers/ApiControllerBase.cs.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>DemoArchitecturesController.cs</code><br><small style="color:var(--muted)">Controllers/v1/DemoArchitecturesController.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DemoArchitecturesController.cs node in Controllers/v1/DemoArchitecturesController.cs.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>Api.Controllers.v1</code><br><small style="color:var(--muted)">Controllers/v1/DemoArchitecturesController.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Api.Controllers.v1 node in Controllers/v1/DemoArchitecturesController.cs.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>DemoArchitecturesController</code><br><small style="color:var(--muted)">Controllers/v1/DemoArchitecturesController.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>GetById()</code><br><small style="color:var(--muted)">Controllers/v1/DemoArchitecturesController.cs</small></td>
+  <td>DemoArchitecturesController node in Controllers/v1/DemoArchitecturesController.cs.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>.GetById()</code><br><small style="color:var(--muted)">Controllers/v1/DemoArchitecturesController.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>DemoArchitecturesController</code><br><small style="color:var(--muted)">Controllers/v1/DemoArchitecturesController.cs</small></td>
+  <td><code>ToResult()</code><br><small style="color:var(--muted)">Api/Controllers/ApiControllerBase.cs</small></td>
+  <td>.GetById() node in Controllers/v1/DemoArchitecturesController.cs.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>GlobalExceptionHandler.cs</code><br><small style="color:var(--muted)">Api/Handlers/GlobalExceptionHandler.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GlobalExceptionHandler.cs node in Api/Handlers/GlobalExceptionHandler.cs.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>Api.Handlers</code><br><small style="color:var(--muted)">Api/Handlers/GlobalExceptionHandler.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>Program.cs</code><br><small style="color:var(--muted)">Api/Api/Program.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Api.Handlers node in Api/Handlers/GlobalExceptionHandler.cs.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>GlobalExceptionHandler</code><br><small style="color:var(--muted)">Api/Handlers/GlobalExceptionHandler.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>TryHandleAsync()</code><br><small style="color:var(--muted)">Api/Handlers/GlobalExceptionHandler.cs</small></td>
+  <td>GlobalExceptionHandler node in Api/Handlers/GlobalExceptionHandler.cs.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>.TryHandleAsync()</code><br><small style="color:var(--muted)">Api/Handlers/GlobalExceptionHandler.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>GlobalExceptionHandler</code><br><small style="color:var(--muted)">Api/Handlers/GlobalExceptionHandler.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.TryHandleAsync() node in Api/Handlers/GlobalExceptionHandler.cs.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>Program.cs</code><br><small style="color:var(--muted)">Api/Api/Program.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Api.Authentication</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyAuthHandler.cs</small><br><code>Api.Handlers</code><br><small style="color:var(--muted)">Api/Handlers/GlobalExceptionHandler.cs</small><br><code>ApiKeyOptions</code><br><small style="color:var(--muted)">Api/Authentication/ApiKeyOptions.cs</small></td>
+  <td>Program.cs node in Api/Api/Program.cs.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>Api/Properties/launchSettings.json</code></td><td>22 nodes</td></tr>
+<tr><td><code>Api/Api/Api.csproj</code></td><td>10 nodes</td></tr>
+<tr><td><code>Api/Authentication/ApiKeyAuthHandler.cs</code></td><td>5 nodes</td></tr>
+<tr><td><code>Api/Controllers/ApiControllerBase.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Controllers/v1/DemoArchitecturesController.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Api/Handlers/GlobalExceptionHandler.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Api/Authentication/ApiKeyOptions.cs</code></td><td>2 nodes</td></tr>
+<tr><td><code>Api/Api/Program.cs</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x34, imports x10, method x4, references x3. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 3. Application · CQRS, validación y respuestas ====== -->
+<h2 id="application">3. Application · CQRS, validación y respuestas</h2>
+<p>Application · CQRS, validación y respuestas groups implementation around application, responsebasecs, usecases, demoarchitectures, mostly in Application/Base/ResponseBase.cs, Core/Application/Application.csproj, Core/Application/ApplicationServiceRegistration.cs. This section covers 37 nodes and 51 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Application · CQRS, validación y respuestas (37 nodes, 51 edges)
+    subgraph application_Application_Base_ResponseBase_cs_f36b86cc["Application/Base/ResponseBase.cs"]
+        core_application_base_responsebase_application_b_96b9cee3("ResponseBase<br/><small>Application/Base/ResponseBase.cs</small>")
+        core_application_base_responsebase_application_b_0c4174ae("BadRequest()<br/><small>Application/Base/ResponseBase.cs</small>")
+        core_application_base_responsebase_application_b_5752f48d("Conflict()<br/><small>Application/Base/ResponseBase.cs</small>")
+        core_application_base_responsebase_application_b_7290205d("Created()<br/><small>Application/Base/ResponseBase.cs</small>")
+        core_application_base_responsebase_application_b_3683bc29("NotFound()<br/><small>Application/Base/ResponseBase.cs</small>")
+        core_application_base_responsebase_application_b_3b70ea9c("Ok()<br/><small>Application/Base/ResponseBase.cs</small>")
+        core_application_base_responsebase_application_b_b22bafa5("UnprocessableEntity()<br/><small>Application/Base/ResponseBase.cs</small>")
+    end
+    subgraph application_Core_Application_Application_csproj_fdcaf2ea["Core/Application/Application.csproj"]
+        core_application_application_9e621c9b("Application.csproj")
+        core_application_application_csproj_nuget_fluent_9947c336("FluentValidation (12.1.1)<br/><small>Core/Application/Application.csproj</small>")
+        core_application_application_csproj_nuget_micros_57d6b841("Microsoft.Extensions.DependencyInjectio...<br/><small>Core/Application/Application.csproj</small>")
+    end
+    subgraph application_Core_Application_ApplicationServiceR_62da49c8["Core/Application/ApplicationServiceRegistration.cs"]
+        core_application_applicationserviceregistration_8d1e3ebf("ApplicationServiceRegistration.cs")
+        core_application_applicationserviceregistration_bbcec1ce("ApplicationServiceRegistration<br/><small>Core/Application/ApplicationServiceRegistration.cs</small>")
+        core_application_applicationserviceregistration_1eee37fe("AddApplicationServices()<br/><small>Core/Application/ApplicationServiceRegistration.cs</small>")
+    end
+    subgraph application_DemoArchitectures_GetDemoArchitectur_459aa724["DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs"]
+        core_application_usecases_demoarchitectures_getd_1522ba06("GetDemoArchitectureByIdQuery.cs")
+        core_application_usecases_demoarchitectures_getd_e89f5bc9("GetDemoArchitectureByIdQuery<br/><small>DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs</small>")
+        core_application_usecases_demoarchitectures_getd_89b2a696("Handle()<br/><small>DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs</small>")
+    end
+    subgraph application_Application_Behaviors_ValidationBeha_bc580268["Application/Behaviors/ValidationBehavior.cs"]
+        core_application_behaviors_validationbehavior_ap_5c33715a("ValidationBehavior<br/><small>Application/Behaviors/ValidationBehavior.cs</small>")
+        core_application_behaviors_validationbehavior_ap_e4712463("Handle()<br/><small>Application/Behaviors/ValidationBehavior.cs</small>")
+    end
+    core_application_applicationserviceregistration_bbcec1ce -->|method| core_application_applicationserviceregistration_1eee37fe
+    core_application_base_responsebase_application_b_96b9cee3 -->|method| core_application_base_responsebase_application_b_0c4174ae
+    core_application_base_responsebase_application_b_96b9cee3 -->|method| core_application_base_responsebase_application_b_5752f48d
+    core_application_base_responsebase_application_b_96b9cee3 -->|method| core_application_base_responsebase_application_b_7290205d
+    core_application_base_responsebase_application_b_96b9cee3 -->|method| core_application_base_responsebase_application_b_3683bc29
+    core_application_base_responsebase_application_b_96b9cee3 -->|method| core_application_base_responsebase_application_b_3b70ea9c
+    core_application_base_responsebase_application_b_96b9cee3 -->|method| core_application_base_responsebase_application_b_b22bafa5
+    core_application_behaviors_validationbehavior_ap_5c33715a -->|method| core_application_behaviors_validationbehavior_ap_e4712463
+    core_application_usecases_demoarchitectures_getd_e89f5bc9 -->|method| core_application_usecases_demoarchitectures_getd_89b2a696
+    core_application_application_9e621c9b -->|imports| core_application_application_csproj_nuget_fluent_9947c336
+    core_application_application_9e621c9b -->|imports| core_application_application_csproj_nuget_micros_57d6b841
+    %% Omitted for readability: 19 nodes, 0 edges
+    class core_application_base_responsebase_application_b_96b9cee3 klass;
+    class core_application_base_responsebase_application_b_0c4174ae function;
+    class core_application_base_responsebase_application_b_5752f48d function;
+    class core_application_base_responsebase_application_b_7290205d function;
+    class core_application_base_responsebase_application_b_3683bc29 function;
+    class core_application_base_responsebase_application_b_3b70ea9c function;
+    class core_application_base_responsebase_application_b_b22bafa5 function;
+    class core_application_application_9e621c9b klass;
+    class core_application_application_csproj_nuget_fluent_9947c336 klass;
+    class core_application_application_csproj_nuget_micros_57d6b841 klass;
+    class core_application_applicationserviceregistration_8d1e3ebf klass;
+    class core_application_applicationserviceregistration_bbcec1ce klass;
+    class core_application_applicationserviceregistration_1eee37fe function;
+    class core_application_usecases_demoarchitectures_getd_1522ba06 klass;
+    class core_application_usecases_demoarchitectures_getd_e89f5bc9 klass;
+    class core_application_usecases_demoarchitectures_getd_89b2a696 function;
+    class core_application_behaviors_validationbehavior_ap_5c33715a klass;
+    class core_application_behaviors_validationbehavior_ap_e4712463 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Application.csproj</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>FluentValidation (12.1.1)</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small><br><code>FluentValidation.DependencyInjectionExt...</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small><br><code>MediatR (14.2.0)</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small><br>+1 more</td>
+  <td>Application.csproj node in Core/Application/Application.csproj.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>net10.0</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>net10.0 node in Core/Application/Application.csproj.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>FluentValidation (12.1.1)</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Application.csproj</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>FluentValidation (12.1.1) node in Core/Application/Application.csproj.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>FluentValidation.DependencyInjectionExtensions (12.1.1)</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Application.csproj</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Builds dependency relationships and graph data.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>MediatR (14.2.0)</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Application.csproj</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>MediatR (14.2.0) node in Core/Application/Application.csproj.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Microsoft.Extensions.DependencyInjection.Abstractions (10.0.10)</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Application.csproj</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Builds dependency relationships and graph data.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>Microsoft.NET.Sdk</code><br><small style="color:var(--muted)">Core/Application/Application.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.NET.Sdk node in Core/Application/Application.csproj.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>ApplicationServiceRegistration.cs</code><br><small style="color:var(--muted)">Core/Application/ApplicationServiceRegistration.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Application.Behaviors</code><br><small style="color:var(--muted)">Application/Behaviors/ValidationBehavior.cs</small></td>
+  <td>ApplicationServiceRegistration.cs node in Core/Application/ApplicationServiceRegistration.cs.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>Application</code><br><small style="color:var(--muted)">Core/Application/ApplicationServiceRegistration.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Application node in Core/Application/ApplicationServiceRegistration.cs.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>ApplicationServiceRegistration</code><br><small style="color:var(--muted)">Core/Application/ApplicationServiceRegistration.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AddApplicationServices()</code><br><small style="color:var(--muted)">Core/Application/ApplicationServiceRegistration.cs</small></td>
+  <td>ApplicationServiceRegistration node in Core/Application/ApplicationServiceRegistration.cs.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>.AddApplicationServices()</code><br><small style="color:var(--muted)">Core/Application/ApplicationServiceRegistration.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ApplicationServiceRegistration</code><br><small style="color:var(--muted)">Core/Application/ApplicationServiceRegistration.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.AddApplicationServices() node in Core/Application/ApplicationServiceRegistration.cs.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>ResponseBase.cs</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ResponseBase.cs node in Application/Base/ResponseBase.cs.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>Application.Base</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>GetDemoArchitectureByIdQuery.cs</code><br><small style="color:var(--muted)">DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs</small><br><code>GetDemoArchitectureByIdRequest.cs</code><br><small style="color:var(--muted)">DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdRequest.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Application.Base node in Application/Base/ResponseBase.cs.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>ResponseBase</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>BadRequest()</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small><br><code>Conflict()</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small><br><code>Created()</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small><br>+3 more</td>
+  <td>ResponseBase node in Application/Base/ResponseBase.cs.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>.Ok()</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ResponseBase</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Ok() node in Application/Base/ResponseBase.cs.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>.Created()</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ResponseBase</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Created() node in Application/Base/ResponseBase.cs.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>.NotFound()</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ResponseBase</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.NotFound() node in Application/Base/ResponseBase.cs.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>.Conflict()</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ResponseBase</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Conflict() node in Application/Base/ResponseBase.cs.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>.BadRequest()</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ResponseBase</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.BadRequest() node in Application/Base/ResponseBase.cs.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>.UnprocessableEntity()</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ResponseBase</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.UnprocessableEntity() node in Application/Base/ResponseBase.cs.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>ValidationBehavior.cs</code><br><small style="color:var(--muted)">Application/Behaviors/ValidationBehavior.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ValidationBehavior.cs node in Application/Behaviors/ValidationBehavior.cs.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>Application.Behaviors</code><br><small style="color:var(--muted)">Application/Behaviors/ValidationBehavior.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>ApplicationServiceRegistration.cs</code><br><small style="color:var(--muted)">Core/Application/ApplicationServiceRegistration.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Application.Behaviors node in Application/Behaviors/ValidationBehavior.cs.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>ValidationBehavior</code><br><small style="color:var(--muted)">Application/Behaviors/ValidationBehavior.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Handle()</code><br><small style="color:var(--muted)">Application/Behaviors/ValidationBehavior.cs</small></td>
+  <td>ValidationBehavior node in Application/Behaviors/ValidationBehavior.cs.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>.Handle()</code><br><small style="color:var(--muted)">Application/Behaviors/ValidationBehavior.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ValidationBehavior</code><br><small style="color:var(--muted)">Application/Behaviors/ValidationBehavior.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Handle() node in Application/Behaviors/ValidationBehavior.cs.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>DemoArchitectureDto.cs</code><br><small style="color:var(--muted)">Application/Dtos/DemoArchitectureDto.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DemoArchitectureDto.cs node in Application/Dtos/DemoArchitectureDto.cs.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>Application.Dtos</code><br><small style="color:var(--muted)">Application/Dtos/DemoArchitectureDto.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>GetDemoArchitectureByIdQuery.cs</code><br><small style="color:var(--muted)">DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs</small><br><code>GetDemoArchitectureByIdResponse.cs</code><br><small style="color:var(--muted)">DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdResponse.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Application.Dtos node in Application/Dtos/DemoArchitectureDto.cs.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>DemoArchitectureDto</code><br><small style="color:var(--muted)">Application/Dtos/DemoArchitectureDto.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DemoArchitectureDto node in Application/Dtos/DemoArchitectureDto.cs.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>GetDemoArchitectureByIdQuery.cs</code><br><small style="color:var(--muted)">DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Application.Base</code><br><small style="color:var(--muted)">Application/Base/ResponseBase.cs</small><br><code>Application.Dtos</code><br><small style="color:var(--muted)">Application/Dtos/DemoArchitectureDto.cs</small></td>
+  <td>GetDemoArchitectureByIdQuery.cs node in DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>Application.UseCases.DemoArchitectures.GetDemoArchitectureById</code><br><small style="color:var(--muted)">DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Application.UseCases.DemoArchitectures.GetDemoArchitectureById node in DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>GetDemoArchitectureByIdQuery</code><br><small style="color:var(--muted)">DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Handle()</code><br><small style="color:var(--muted)">DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs</small></td>
+  <td>GetDemoArchitectureByIdQuery node in DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>Application/Base/ResponseBase.cs</code></td><td>9 nodes</td></tr>
+<tr><td><code>Core/Application/Application.csproj</code></td><td>7 nodes</td></tr>
+<tr><td><code>Core/Application/ApplicationServiceRegistration.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Application/Behaviors/ValidationBehavior.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdQuery.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Application/Dtos/DemoArchitectureDto.cs</code></td><td>3 nodes</td></tr>
+<tr><td><code>DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdRequest.cs</code></td><td>2 nodes</td></tr>
+<tr><td><code>DemoArchitectures/GetDemoArchitectureById/GetDemoArchitectureByIdResponse.cs</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: references x17, contains x16, imports x9, method x9. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 4. Domain · entidades y contratos ====== -->
+<h2 id="domain">4. Domain · entidades y contratos</h2>
+<p>Domain · entidades y contratos groups implementation around domain, base, irepositorygenericcs, interface, mostly in Base/Interface/IRepositoryGeneric.cs, Adapter/Mapper/IMapperAdapter.cs, Core/Domain/Domain.csproj. This section covers 30 nodes and 27 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Domain · entidades y contratos (30 nodes, 27 edges)
+    subgraph domain_Base_Interface_IRepositoryGeneric_cs_d0064a7d["Base/Interface/IRepositoryGeneric.cs"]
+        core_domain_base_interface_irepositorygeneric_do_0ad8e392("IRepositoryGeneric<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+        core_domain_base_interface_irepositorygeneric_do_a108058e("Add()<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+        core_domain_base_interface_irepositorygeneric_do_b198000d("AddRange()<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+        core_domain_base_interface_irepositorygeneric_do_23f0f1f4("CommitAsync()<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+        core_domain_base_interface_irepositorygeneric_do_7f43457c("Delete()<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+        core_domain_base_interface_irepositorygeneric_do_55750fa5("DeleteRange()<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+        core_domain_base_interface_irepositorygeneric_do_cce85e6b("Edit()<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+        core_domain_base_interface_irepositorygeneric_do_58d87f63("ExistsAsync()<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+        core_domain_base_interface_irepositorygeneric_do_20f81ccb("FindAsync()<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+        core_domain_base_interface_irepositorygeneric_do_6ef0d639("FindFirstOrDefaultAsync()<br/><small>Base/Interface/IRepositoryGeneric.cs</small>")
+    end
+    subgraph domain_Adapter_Mapper_IMapperAdapter_cs_35dfa9a9["Adapter/Mapper/IMapperAdapter.cs"]
+        core_domain_contracts_adapter_mapper_imapperadap_3f40c9ec("IMapperAdapter<br/><small>Adapter/Mapper/IMapperAdapter.cs</small>")
+        core_domain_contracts_adapter_mapper_imapperadap_def48374("Map()<br/><small>Adapter/Mapper/IMapperAdapter.cs</small>")
+        csharp_namespace_ad188497b5f4a2a8_403fa49b("Domain.Contracts.Adapter.Mapper<br/><small>Adapter/Mapper/IMapperAdapter.cs</small>")
+        core_domain_contracts_adapter_mapper_imapperadap_9c2b435d("IMapperAdapter.cs")
+    end
+    subgraph domain_Domain_Base_DomainValidation_cs_baba2057["Domain/Base/DomainValidation.cs"]
+        core_domain_base_domainvalidation_domain_base_do_a1e3fdde("DomainValidation<br/><small>Domain/Base/DomainValidation.cs</small>")
+        core_domain_base_domainvalidation_domain_base_do_97df54b5("AddFailed()<br/><small>Domain/Base/DomainValidation.cs</small>")
+    end
+    csharp_namespace_110e3bdd423cd516_b03e1e63("Domain.Base<br/><small>Domain/Base/DomainException.cs</small>")
+    core_domain_entities_demoarchitectureentity_cbffa4d2("DemoArchitectureEntity.cs")
+    core_domain_base_domainvalidation_domain_base_do_a1e3fdde -->|method| core_domain_base_domainvalidation_domain_base_do_97df54b5
+    core_domain_base_interface_irepositorygeneric_do_0ad8e392 -->|method| core_domain_base_interface_irepositorygeneric_do_a108058e
+    core_domain_base_interface_irepositorygeneric_do_0ad8e392 -->|method| core_domain_base_interface_irepositorygeneric_do_b198000d
+    core_domain_base_interface_irepositorygeneric_do_0ad8e392 -->|method| core_domain_base_interface_irepositorygeneric_do_23f0f1f4
+    core_domain_base_interface_irepositorygeneric_do_0ad8e392 -->|method| core_domain_base_interface_irepositorygeneric_do_7f43457c
+    core_domain_base_interface_irepositorygeneric_do_0ad8e392 -->|method| core_domain_base_interface_irepositorygeneric_do_55750fa5
+    core_domain_base_interface_irepositorygeneric_do_0ad8e392 -->|method| core_domain_base_interface_irepositorygeneric_do_cce85e6b
+    core_domain_base_interface_irepositorygeneric_do_0ad8e392 -->|method| core_domain_base_interface_irepositorygeneric_do_58d87f63
+    core_domain_base_interface_irepositorygeneric_do_0ad8e392 -->|method| core_domain_base_interface_irepositorygeneric_do_20f81ccb
+    core_domain_base_interface_irepositorygeneric_do_0ad8e392 -->|method| core_domain_base_interface_irepositorygeneric_do_6ef0d639
+    core_domain_contracts_adapter_mapper_imapperadap_3f40c9ec -->|method| core_domain_contracts_adapter_mapper_imapperadap_def48374
+    core_domain_entities_demoarchitectureentity_cbffa4d2 -->|imports| csharp_namespace_110e3bdd423cd516_b03e1e63
+    %% Omitted for readability: 12 nodes, 0 edges
+    class core_domain_base_interface_irepositorygeneric_do_0ad8e392 klass;
+    class core_domain_base_interface_irepositorygeneric_do_a108058e function;
+    class core_domain_base_interface_irepositorygeneric_do_b198000d function;
+    class core_domain_base_interface_irepositorygeneric_do_23f0f1f4 async;
+    class core_domain_base_interface_irepositorygeneric_do_7f43457c function;
+    class core_domain_base_interface_irepositorygeneric_do_55750fa5 function;
+    class core_domain_base_interface_irepositorygeneric_do_cce85e6b function;
+    class core_domain_base_interface_irepositorygeneric_do_58d87f63 async;
+    class core_domain_base_interface_irepositorygeneric_do_20f81ccb async;
+    class core_domain_base_interface_irepositorygeneric_do_6ef0d639 async;
+    class core_domain_contracts_adapter_mapper_imapperadap_3f40c9ec klass;
+    class core_domain_contracts_adapter_mapper_imapperadap_def48374 function;
+    class csharp_namespace_ad188497b5f4a2a8_403fa49b module;
+    class core_domain_contracts_adapter_mapper_imapperadap_9c2b435d klass;
+    class core_domain_base_domainvalidation_domain_base_do_a1e3fdde klass;
+    class core_domain_base_domainvalidation_domain_base_do_97df54b5 function;
+    class csharp_namespace_110e3bdd423cd516_b03e1e63 module;
+    class core_domain_entities_demoarchitectureentity_cbffa4d2 klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Domain.csproj</code><br><small style="color:var(--muted)">Core/Domain/Domain.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Domain.csproj node in Core/Domain/Domain.csproj.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>DomainException.cs</code><br><small style="color:var(--muted)">Domain/Base/DomainException.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DomainException.cs node in Domain/Base/DomainException.cs.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Domain.Base</code><br><small style="color:var(--muted)">Domain/Base/DomainException.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>DemoArchitectureEntity.cs</code><br><small style="color:var(--muted)">Domain/Entities/DemoArchitectureEntity.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Domain.Base node in Domain/Base/DomainException.cs.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>DomainException</code><br><small style="color:var(--muted)">Domain/Base/DomainException.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DomainException node in Domain/Base/DomainException.cs.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>DomainValidation.cs</code><br><small style="color:var(--muted)">Domain/Base/DomainValidation.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DomainValidation.cs node in Domain/Base/DomainValidation.cs.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>DomainValidation</code><br><small style="color:var(--muted)">Domain/Base/DomainValidation.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AddFailed()</code><br><small style="color:var(--muted)">Domain/Base/DomainValidation.cs</small></td>
+  <td>DomainValidation node in Domain/Base/DomainValidation.cs.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>.AddFailed()</code><br><small style="color:var(--muted)">Domain/Base/DomainValidation.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>DomainValidation</code><br><small style="color:var(--muted)">Domain/Base/DomainValidation.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.AddFailed() node in Domain/Base/DomainValidation.cs.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>EntityBase.cs</code><br><small style="color:var(--muted)">Domain/Base/EntityBase.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>EntityBase.cs node in Domain/Base/EntityBase.cs.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>EntityBase</code><br><small style="color:var(--muted)">Domain/Base/EntityBase.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>EntityBase node in Domain/Base/EntityBase.cs.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>IRepositoryGeneric.cs</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>IRepositoryGeneric.cs node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>Domain.Base.Interface</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Domain.Base.Interface node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Add()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small><br><code>AddRange()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small><br><code>CommitAsync()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small><br>+6 more</td>
+  <td>IRepositoryGeneric node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>.FindAsync()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.FindAsync() node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>.FindFirstOrDefaultAsync()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.FindFirstOrDefaultAsync() node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>.ExistsAsync()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.ExistsAsync() node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>.Add()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Add() node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>.AddRange()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.AddRange() node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>.Edit()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Edit() node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>.Delete()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Delete() node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>.DeleteRange()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.DeleteRange() node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>.CommitAsync()</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>IRepositoryGeneric</code><br><small style="color:var(--muted)">Base/Interface/IRepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.CommitAsync() node in Base/Interface/IRepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>IMapperAdapter.cs</code><br><small style="color:var(--muted)">Adapter/Mapper/IMapperAdapter.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>IMapperAdapter.cs node in Adapter/Mapper/IMapperAdapter.cs.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>Domain.Contracts.Adapter.Mapper</code><br><small style="color:var(--muted)">Adapter/Mapper/IMapperAdapter.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Domain.Contracts.Adapter.Mapper node in Adapter/Mapper/IMapperAdapter.cs.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>IMapperAdapter</code><br><small style="color:var(--muted)">Adapter/Mapper/IMapperAdapter.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Map()</code><br><small style="color:var(--muted)">Adapter/Mapper/IMapperAdapter.cs</small></td>
+  <td>IMapperAdapter node in Adapter/Mapper/IMapperAdapter.cs.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>.Map()</code><br><small style="color:var(--muted)">Adapter/Mapper/IMapperAdapter.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>IMapperAdapter</code><br><small style="color:var(--muted)">Adapter/Mapper/IMapperAdapter.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Map() node in Adapter/Mapper/IMapperAdapter.cs.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>net10.0</code><br><small style="color:var(--muted)">Core/Domain/Domain.csproj</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>net10.0 node in Core/Domain/Domain.csproj.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>Microsoft.NET.Sdk</code><br><small style="color:var(--muted)">Core/Domain/Domain.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.NET.Sdk node in Core/Domain/Domain.csproj.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>DemoArchitectureEntity.cs</code><br><small style="color:var(--muted)">Domain/Entities/DemoArchitectureEntity.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Domain.Base</code><br><small style="color:var(--muted)">Domain/Base/DomainException.cs</small></td>
+  <td>DemoArchitectureEntity.cs node in Domain/Entities/DemoArchitectureEntity.cs.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>Domain.Entities</code><br><small style="color:var(--muted)">Domain/Entities/DemoArchitectureEntity.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Domain.Entities node in Domain/Entities/DemoArchitectureEntity.cs.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>DemoArchitectureEntity</code><br><small style="color:var(--muted)">Domain/Entities/DemoArchitectureEntity.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DemoArchitectureEntity node in Domain/Entities/DemoArchitectureEntity.cs.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>Base/Interface/IRepositoryGeneric.cs</code></td><td>12 nodes</td></tr>
+<tr><td><code>Adapter/Mapper/IMapperAdapter.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Domain/Base/DomainException.cs</code></td><td>3 nodes</td></tr>
+<tr><td><code>Domain/Base/DomainValidation.cs</code></td><td>3 nodes</td></tr>
+<tr><td><code>Core/Domain/Domain.csproj</code></td><td>3 nodes</td></tr>
+<tr><td><code>Domain/Entities/DemoArchitectureEntity.cs</code></td><td>3 nodes</td></tr>
+<tr><td><code>Domain/Base/EntityBase.cs</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x12, method x11, references x2, imports x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 5. Persistence · repositorio genérico y EF Core ====== -->
+<h2 id="persistence">5. Persistence · repositorio genérico y EF Core</h2>
+<p>Persistence · repositorio genérico y EF Core groups implementation around persistence, infraestructure, repositorygenericcs, base, mostly in Persistence/Base/RepositoryGeneric.cs, Infraestructure/Persistence/Persistence.csproj, Persistence/Configuration/DemoArchitectureConfiguration.cs. This section covers 32 nodes and 31 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Persistence · repositorio genérico y EF Core (32 nodes, 31 edges)
+    subgraph persistence_Persistence_Base_RepositoryGeneric_c_ca073a7f["Persistence/Base/RepositoryGeneric.cs"]
+        infraestructure_persistence_base_repositorygener_6c2dd37a("RepositoryGeneric<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+        infraestructure_persistence_base_repositorygener_ee65b8e4("RepositoryGeneric.cs")
+        infraestructure_persistence_base_repositorygener_110a7cc4("Add()<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+        infraestructure_persistence_base_repositorygener_a2918d1d("AddRange()<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+        infraestructure_persistence_base_repositorygener_d7c570bb("CommitAsync()<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+        infraestructure_persistence_base_repositorygener_ddd52fc7("Delete()<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+        infraestructure_persistence_base_repositorygener_51386e38("DeleteRange()<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+        infraestructure_persistence_base_repositorygener_76d6c08c("Edit()<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+        infraestructure_persistence_base_repositorygener_2c4d2819("ExistsAsync()<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+        infraestructure_persistence_base_repositorygener_52c18a45("FindAsync()<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+        infraestructure_persistence_base_repositorygener_071e587e("FindFirstOrDefaultAsync()<br/><small>Persistence/Base/RepositoryGeneric.cs</small>")
+    end
+    subgraph persistence_Infraestructure_Persistence_Persiste_247e032f["Infraestructure/Persistence/PersistenceServiceRegistration.cs"]
+        infraestructure_persistence_persistenceservicere_68e9696d("PersistenceServiceRegistration.cs")
+        infraestructure_persistence_persistenceservicere_2208c213("PersistenceServiceRegistration<br/><small>Infraestructure/Persistence/PersistenceServiceRegistration.cs</small>")
+    end
+    subgraph persistence_Persistence_Configuration_DemoArchit_1e4ea62c["Persistence/Configuration/DemoArchitectureConfiguration.cs"]
+        infraestructure_persistence_configuration_demoar_4034c1ee("DemoArchitectureConfiguration<br/><small>Persistence/Configuration/DemoArchitectureConfiguration.cs</small>")
+        infraestructure_persistence_configuration_demoar_f55623d9("Configure()<br/><small>Persistence/Configuration/DemoArchitectureConfiguration.cs</small>")
+    end
+    subgraph persistence_Persistence_Context_AppDbContext_cs_0ed530d8["Persistence/Context/AppDbContext.cs"]
+        infraestructure_persistence_context_appdbcontext_d64dc775("AppDbContext<br/><small>Persistence/Context/AppDbContext.cs</small>")
+        infraestructure_persistence_context_appdbcontext_772afc2b("OnModelCreating()<br/><small>Persistence/Context/AppDbContext.cs</small>")
+    end
+    infraestructure_persistence_persistence_73c45cd0("Persistence.csproj")
+    infraestructure_persistence_base_repositorygener_6c2dd37a -->|method| infraestructure_persistence_base_repositorygener_110a7cc4
+    infraestructure_persistence_base_repositorygener_6c2dd37a -->|method| infraestructure_persistence_base_repositorygener_a2918d1d
+    infraestructure_persistence_base_repositorygener_6c2dd37a -->|method| infraestructure_persistence_base_repositorygener_d7c570bb
+    infraestructure_persistence_base_repositorygener_6c2dd37a -->|method| infraestructure_persistence_base_repositorygener_ddd52fc7
+    infraestructure_persistence_base_repositorygener_6c2dd37a -->|method| infraestructure_persistence_base_repositorygener_51386e38
+    infraestructure_persistence_base_repositorygener_6c2dd37a -->|method| infraestructure_persistence_base_repositorygener_76d6c08c
+    infraestructure_persistence_base_repositorygener_6c2dd37a -->|method| infraestructure_persistence_base_repositorygener_2c4d2819
+    infraestructure_persistence_base_repositorygener_6c2dd37a -->|method| infraestructure_persistence_base_repositorygener_52c18a45
+    infraestructure_persistence_base_repositorygener_6c2dd37a -->|method| infraestructure_persistence_base_repositorygener_071e587e
+    infraestructure_persistence_configuration_demoar_4034c1ee -->|method| infraestructure_persistence_configuration_demoar_f55623d9
+    infraestructure_persistence_context_appdbcontext_d64dc775 -->|method| infraestructure_persistence_context_appdbcontext_772afc2b
+    %% Omitted for readability: 14 nodes, 0 edges
+    class infraestructure_persistence_base_repositorygener_6c2dd37a klass;
+    class infraestructure_persistence_base_repositorygener_ee65b8e4 klass;
+    class infraestructure_persistence_base_repositorygener_110a7cc4 function;
+    class infraestructure_persistence_base_repositorygener_a2918d1d function;
+    class infraestructure_persistence_base_repositorygener_d7c570bb async;
+    class infraestructure_persistence_base_repositorygener_ddd52fc7 function;
+    class infraestructure_persistence_base_repositorygener_51386e38 function;
+    class infraestructure_persistence_base_repositorygener_76d6c08c function;
+    class infraestructure_persistence_base_repositorygener_2c4d2819 async;
+    class infraestructure_persistence_base_repositorygener_52c18a45 async;
+    class infraestructure_persistence_base_repositorygener_071e587e async;
+    class infraestructure_persistence_persistenceservicere_68e9696d klass;
+    class infraestructure_persistence_persistenceservicere_2208c213 klass;
+    class infraestructure_persistence_configuration_demoar_4034c1ee klass;
+    class infraestructure_persistence_configuration_demoar_f55623d9 function;
+    class infraestructure_persistence_context_appdbcontext_d64dc775 klass;
+    class infraestructure_persistence_context_appdbcontext_772afc2b function;
+    class infraestructure_persistence_persistence_73c45cd0 klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Persistence.csproj</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Microsoft.EntityFrameworkCore (10.0.10)</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small><br><code>Microsoft.EntityFrameworkCore.Relationa...</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small><br><code>Microsoft.EntityFrameworkCore.SqlServer...</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small><br>+2 more</td>
+  <td>Persistence.csproj node in Infraestructure/Persistence/Persistence.csproj.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>RepositoryGeneric.cs</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Persistence.Context</code><br><small style="color:var(--muted)">Persistence/Context/AppDbContext.cs</small></td>
+  <td>RepositoryGeneric.cs node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Persistence.Base</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>PersistenceServiceRegistration.cs</code><br><small style="color:var(--muted)">Infraestructure/Persistence/PersistenceServiceRegistration.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Persistence.Base node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Add()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small><br><code>AddRange()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small><br><code>CommitAsync()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small><br>+6 more</td>
+  <td>RepositoryGeneric node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>.FindAsync()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.FindAsync() node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>.FindFirstOrDefaultAsync()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.FindFirstOrDefaultAsync() node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>.ExistsAsync()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.ExistsAsync() node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>.Add()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Add() node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>.AddRange()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.AddRange() node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>.Edit()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Edit() node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>.Delete()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Delete() node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>.DeleteRange()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.DeleteRange() node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>.CommitAsync()</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>RepositoryGeneric</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.CommitAsync() node in Persistence/Base/RepositoryGeneric.cs.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>DemoArchitectureConfiguration.cs</code><br><small style="color:var(--muted)">Persistence/Configuration/DemoArchitectureConfiguration.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>Persistence.Configuration</code><br><small style="color:var(--muted)">Persistence/Configuration/DemoArchitectureConfiguration.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>DemoArchitectureConfiguration</code><br><small style="color:var(--muted)">Persistence/Configuration/DemoArchitectureConfiguration.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Configure()</code><br><small style="color:var(--muted)">Persistence/Configuration/DemoArchitectureConfiguration.cs</small></td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>.Configure()</code><br><small style="color:var(--muted)">Persistence/Configuration/DemoArchitectureConfiguration.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>DemoArchitectureConfiguration</code><br><small style="color:var(--muted)">Persistence/Configuration/DemoArchitectureConfiguration.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>AppDbContext.cs</code><br><small style="color:var(--muted)">Persistence/Context/AppDbContext.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AppDbContext.cs node in Persistence/Context/AppDbContext.cs.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>Persistence.Context</code><br><small style="color:var(--muted)">Persistence/Context/AppDbContext.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>PersistenceServiceRegistration.cs</code><br><small style="color:var(--muted)">Infraestructure/Persistence/PersistenceServiceRegistration.cs</small><br><code>RepositoryGeneric.cs</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Persistence.Context node in Persistence/Context/AppDbContext.cs.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>AppDbContext</code><br><small style="color:var(--muted)">Persistence/Context/AppDbContext.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>OnModelCreating()</code><br><small style="color:var(--muted)">Persistence/Context/AppDbContext.cs</small></td>
+  <td>AppDbContext node in Persistence/Context/AppDbContext.cs.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>.OnModelCreating()</code><br><small style="color:var(--muted)">Persistence/Context/AppDbContext.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>AppDbContext</code><br><small style="color:var(--muted)">Persistence/Context/AppDbContext.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.OnModelCreating() node in Persistence/Context/AppDbContext.cs.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>net10.0</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>net10.0 node in Infraestructure/Persistence/Persistence.csproj.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>Microsoft.EntityFrameworkCore (10.0.10)</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Persistence.csproj</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.EntityFrameworkCore (10.0.10) node in Infraestructure/Persistence/Persistence.csproj.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>Microsoft.EntityFrameworkCore.Relational (10.0.10)</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Persistence.csproj</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.EntityFrameworkCore.Relational (10.0.10) node in Infraestructure/Persistence/Persistence.csproj.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>Microsoft.EntityFrameworkCore.SqlServer (10.0.10)</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Persistence.csproj</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.EntityFrameworkCore.SqlServer (10.0.10) node in Infraestructure/Persistence/Persistence.csproj.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>Microsoft.Extensions.Configuration.Abstractions (10.0.10)</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Persistence.csproj</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>Microsoft.Extensions.DependencyInjection.Abstractions (10.0.10)</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Persistence.csproj</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Builds dependency relationships and graph data.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>Microsoft.NET.Sdk</code><br><small style="color:var(--muted)">Infraestructure/Persistence/Persistence.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.NET.Sdk node in Infraestructure/Persistence/Persistence.csproj.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>PersistenceServiceRegistration.cs</code><br><small style="color:var(--muted)">Infraestructure/Persistence/PersistenceServiceRegistration.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Persistence.Base</code><br><small style="color:var(--muted)">Persistence/Base/RepositoryGeneric.cs</small><br><code>Persistence.Context</code><br><small style="color:var(--muted)">Persistence/Context/AppDbContext.cs</small></td>
+  <td>PersistenceServiceRegistration.cs node in Infraestructure/Persistence/PersistenceServiceRegistration.cs.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>Persistence</code><br><small style="color:var(--muted)">Infraestructure/Persistence/PersistenceServiceRegistration.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Persistence node in Infraestructure/Persistence/PersistenceServiceRegistration.cs.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>Persistence/Base/RepositoryGeneric.cs</code></td><td>12 nodes</td></tr>
+<tr><td><code>Infraestructure/Persistence/Persistence.csproj</code></td><td>8 nodes</td></tr>
+<tr><td><code>Persistence/Configuration/DemoArchitectureConfiguration.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Persistence/Context/AppDbContext.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Infraestructure/Persistence/PersistenceServiceRegistration.cs</code></td><td>4 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: method x12, imports x8, contains x8, references x3. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 6. Adapters · AutoMapper por convención ====== -->
+<h2 id="adapters">6. Adapters · AutoMapper por convención</h2>
+<p>Adapters · AutoMapper por convención groups implementation around adapters, infraestructure, adapterscsproj, mapper, mostly in Infraestructure/Adapters/Adapters.csproj, Infraestructure/Adapters/AdapterServiceRegistration.cs, Adapters/Mapper/AutoConventionProfile.cs. This section covers 15 nodes and 12 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Adapters · AutoMapper por convención (15 nodes, 12 edges)
+    subgraph adapters_Infraestructure_Adapters_Adapters_cspro_6ec456f3["Infraestructure/Adapters/Adapters.csproj"]
+        infraestructure_adapters_adapters_216456fe("Adapters.csproj")
+        infraestructure_adapters_adapters_csproj_nuget_m_e28c7832("Microsoft.Extensions.DependencyInjectio...<br/><small>Infraestructure/Adapters/Adapters.csproj</small>")
+        nuget_automapper_b0529d62("AutoMapper (16.2.0)<br/><small>Infraestructure/Adapters/Adapters.csproj</small>")
+        infraestructure_adapters_adapters_csproj_sdk_mic_07780686("Microsoft.NET.Sdk<br/><small>Infraestructure/Adapters/Adapters.csproj</small>")
+        infraestructure_adapters_adapters_csproj_framewo_e8d81b35("net10.0<br/><small>Infraestructure/Adapters/Adapters.csproj</small>")
+    end
+    subgraph adapters_Infraestructure_Adapters_AdapterService_c3dbcf6d["Infraestructure/Adapters/AdapterServiceRegistration.cs"]
+        infraestructure_adapters_adapterserviceregistrat_b8279755("AdapterServiceRegistration<br/><small>Infraestructure/Adapters/AdapterServiceRegistration.cs</small>")
+        infraestructure_adapters_adapterserviceregistrat_39d232b3("AddAdapterServices()<br/><small>Infraestructure/Adapters/AdapterServiceRegistration.cs</small>")
+        infraestructure_adapters_adapterserviceregistrat_922a163f("AdapterServiceRegistration.cs")
+        csharp_namespace_e07a4acdd5cdd3ab_a351aa97("Adapters<br/><small>Infraestructure/Adapters/AdapterServiceRegistration.cs</small>")
+    end
+    subgraph adapters_Adapters_Mapper_AutoConventionProfile_c_459d2674["Adapters/Mapper/AutoConventionProfile.cs"]
+        csharp_namespace_9b9233d1e76df56e_cd04e086("Adapters.Mapper<br/><small>Adapters/Mapper/AutoConventionProfile.cs</small>")
+        infraestructure_adapters_mapper_autoconventionpr_79d649eb("AutoConventionProfile<br/><small>Adapters/Mapper/AutoConventionProfile.cs</small>")
+        infraestructure_adapters_mapper_autoconventionpr_8a2c2840("AutoConventionProfile.cs")
+    end
+    subgraph adapters_Adapters_Mapper_AutoMapperAdapter_cs_1d037473["Adapters/Mapper/AutoMapperAdapter.cs"]
+        infraestructure_adapters_mapper_automapperadapte_adef5cb0("AutoMapperAdapter<br/><small>Adapters/Mapper/AutoMapperAdapter.cs</small>")
+        infraestructure_adapters_mapper_automapperadapte_2311bb29("Map()<br/><small>Adapters/Mapper/AutoMapperAdapter.cs</small>")
+        infraestructure_adapters_mapper_automapperadapte_3874a51a("AutoMapperAdapter.cs")
+    end
+    infraestructure_adapters_adapterserviceregistrat_b8279755 -->|method| infraestructure_adapters_adapterserviceregistrat_39d232b3
+    infraestructure_adapters_mapper_automapperadapte_adef5cb0 -->|method| infraestructure_adapters_mapper_automapperadapte_2311bb29
+    infraestructure_adapters_adapters_216456fe -->|imports| infraestructure_adapters_adapters_csproj_nuget_m_e28c7832
+    infraestructure_adapters_adapters_216456fe -->|imports| nuget_automapper_b0529d62
+    class infraestructure_adapters_adapters_216456fe klass;
+    class infraestructure_adapters_adapters_csproj_nuget_m_e28c7832 klass;
+    class nuget_automapper_b0529d62 klass;
+    class infraestructure_adapters_adapters_csproj_sdk_mic_07780686 klass;
+    class infraestructure_adapters_adapters_csproj_framewo_e8d81b35 function;
+    class infraestructure_adapters_adapterserviceregistrat_b8279755 klass;
+    class infraestructure_adapters_adapterserviceregistrat_39d232b3 function;
+    class infraestructure_adapters_adapterserviceregistrat_922a163f klass;
+    class csharp_namespace_e07a4acdd5cdd3ab_a351aa97 module;
+    class csharp_namespace_9b9233d1e76df56e_cd04e086 module;
+    class infraestructure_adapters_mapper_autoconventionpr_79d649eb klass;
+    class infraestructure_adapters_mapper_autoconventionpr_8a2c2840 klass;
+    class infraestructure_adapters_mapper_automapperadapte_adef5cb0 klass;
+    class infraestructure_adapters_mapper_automapperadapte_2311bb29 function;
+    class infraestructure_adapters_mapper_automapperadapte_3874a51a klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Adapters.csproj</code><br><small style="color:var(--muted)">Infraestructure/Adapters/Adapters.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AutoMapper (16.2.0)</code><br><small style="color:var(--muted)">Infraestructure/Adapters/Adapters.csproj</small><br><code>Microsoft.Extensions.DependencyInjectio...</code><br><small style="color:var(--muted)">Infraestructure/Adapters/Adapters.csproj</small></td>
+  <td>Adapters.csproj node in Infraestructure/Adapters/Adapters.csproj.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>AdapterServiceRegistration.cs</code><br><small style="color:var(--muted)">Infraestructure/Adapters/AdapterServiceRegistration.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AdapterServiceRegistration.cs node in Infraestructure/Adapters/AdapterServiceRegistration.cs.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Adapters</code><br><small style="color:var(--muted)">Infraestructure/Adapters/AdapterServiceRegistration.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Adapters node in Infraestructure/Adapters/AdapterServiceRegistration.cs.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>AdapterServiceRegistration</code><br><small style="color:var(--muted)">Infraestructure/Adapters/AdapterServiceRegistration.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AddAdapterServices()</code><br><small style="color:var(--muted)">Infraestructure/Adapters/AdapterServiceRegistration.cs</small></td>
+  <td>AdapterServiceRegistration node in Infraestructure/Adapters/AdapterServiceRegistration.cs.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>.AddAdapterServices()</code><br><small style="color:var(--muted)">Infraestructure/Adapters/AdapterServiceRegistration.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>AdapterServiceRegistration</code><br><small style="color:var(--muted)">Infraestructure/Adapters/AdapterServiceRegistration.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.AddAdapterServices() node in Infraestructure/Adapters/AdapterServiceRegistration.cs.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>net10.0</code><br><small style="color:var(--muted)">Infraestructure/Adapters/Adapters.csproj</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>net10.0 node in Infraestructure/Adapters/Adapters.csproj.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>AutoMapper (16.2.0)</code><br><small style="color:var(--muted)">Infraestructure/Adapters/Adapters.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Adapters.csproj</code><br><small style="color:var(--muted)">Infraestructure/Adapters/Adapters.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>AutoMapper (16.2.0) node in Infraestructure/Adapters/Adapters.csproj.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>Microsoft.Extensions.DependencyInjection.Abstractions (10.0.10)</code><br><small style="color:var(--muted)">Infraestructure/Adapters/Adapters.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Adapters.csproj</code><br><small style="color:var(--muted)">Infraestructure/Adapters/Adapters.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Builds dependency relationships and graph data.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>Microsoft.NET.Sdk</code><br><small style="color:var(--muted)">Infraestructure/Adapters/Adapters.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.NET.Sdk node in Infraestructure/Adapters/Adapters.csproj.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>AutoConventionProfile.cs</code><br><small style="color:var(--muted)">Adapters/Mapper/AutoConventionProfile.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AutoConventionProfile.cs node in Adapters/Mapper/AutoConventionProfile.cs.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>Adapters.Mapper</code><br><small style="color:var(--muted)">Adapters/Mapper/AutoConventionProfile.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Adapters.Mapper node in Adapters/Mapper/AutoConventionProfile.cs.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>AutoConventionProfile</code><br><small style="color:var(--muted)">Adapters/Mapper/AutoConventionProfile.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AutoConventionProfile node in Adapters/Mapper/AutoConventionProfile.cs.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>AutoMapperAdapter.cs</code><br><small style="color:var(--muted)">Adapters/Mapper/AutoMapperAdapter.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AutoMapperAdapter.cs node in Adapters/Mapper/AutoMapperAdapter.cs.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>AutoMapperAdapter</code><br><small style="color:var(--muted)">Adapters/Mapper/AutoMapperAdapter.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Map()</code><br><small style="color:var(--muted)">Adapters/Mapper/AutoMapperAdapter.cs</small></td>
+  <td>AutoMapperAdapter node in Adapters/Mapper/AutoMapperAdapter.cs.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>.Map()</code><br><small style="color:var(--muted)">Adapters/Mapper/AutoMapperAdapter.cs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>AutoMapperAdapter</code><br><small style="color:var(--muted)">Adapters/Mapper/AutoMapperAdapter.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Map() node in Adapters/Mapper/AutoMapperAdapter.cs.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>Infraestructure/Adapters/Adapters.csproj</code></td><td>5 nodes</td></tr>
+<tr><td><code>Infraestructure/Adapters/AdapterServiceRegistration.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Adapters/Mapper/AutoConventionProfile.cs</code></td><td>3 nodes</td></tr>
+<tr><td><code>Adapters/Mapper/AutoMapperAdapter.cs</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x6, references x2, imports x2, method x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 7. Infrastructure · helper DI reutilizable ====== -->
+<h2 id="infrastructure">7. Infrastructure · helper DI reutilizable</h2>
+<p>Infrastructure · helper DI reutilizable groups implementation around infraestructure, infraestructurecsproj, dependencyinjectionhelpercs, dependencyinjection, mostly in Infraestructure/Infraestructure/Infraestructure.csproj, Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs. This section covers 8 nodes and 6 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Infrastructure · helper DI reutilizable (8 nodes, 6 edges)
+    subgraph infrastructure_Infraestructure_DependencyInjecti_58f50062["Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs"]
+        infraestructure_infraestructure_dependencyinject_5d44c128("DependencyInjectionHelper<br/><small>Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</small>")
+        infraestructure_infraestructure_dependencyinject_2c0b5c09("AddAssemblyServices()<br/><small>Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</small>")
+        infraestructure_infraestructure_dependencyinject_ef06dd7d("DependencyInjectionHelper.cs")
+        csharp_namespace_15bae54502312b6d_3199ee91("Infraestructure.DependencyInjection<br/><small>Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</small>")
+    end
+    subgraph infrastructure_Infraestructure_Infraestructure_I_4ddc4889["Infraestructure/Infraestructure/Infraestructure.csproj"]
+        infraestructure_infraestructure_infraestructure_1a8a5cc5("Infraestructure.csproj")
+        infraestructure_infraestructure_infraestructure_396c50f8("Microsoft.Extensions.DependencyInjectio...<br/><small>Infraestructure/Infraestructure/Infraestructure.csproj</small>")
+        infraestructure_infraestructure_infraestructure_d04ca897("Microsoft.NET.Sdk<br/><small>Infraestructure/Infraestructure/Infraestructure.csproj</small>")
+        infraestructure_infraestructure_infraestructure_55308d30("net10.0<br/><small>Infraestructure/Infraestructure/Infraestructure.csproj</small>")
+    end
+    infraestructure_infraestructure_dependencyinject_5d44c128 -->|method| infraestructure_infraestructure_dependencyinject_2c0b5c09
+    infraestructure_infraestructure_infraestructure_1a8a5cc5 -->|imports| infraestructure_infraestructure_infraestructure_396c50f8
+    class infraestructure_infraestructure_dependencyinject_5d44c128 klass;
+    class infraestructure_infraestructure_dependencyinject_2c0b5c09 async;
+    class infraestructure_infraestructure_dependencyinject_ef06dd7d klass;
+    class csharp_namespace_15bae54502312b6d_3199ee91 module;
+    class infraestructure_infraestructure_infraestructure_1a8a5cc5 klass;
+    class infraestructure_infraestructure_infraestructure_396c50f8 klass;
+    class infraestructure_infraestructure_infraestructure_d04ca897 klass;
+    class infraestructure_infraestructure_infraestructure_55308d30 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Infraestructure.csproj</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/Infraestructure.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Microsoft.Extensions.DependencyInjectio...</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/Infraestructure.csproj</small></td>
+  <td>Infraestructure.csproj node in Infraestructure/Infraestructure/Infraestructure.csproj.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>DependencyInjectionHelper.cs</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Builds dependency relationships and graph data.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Infraestructure.DependencyInjection</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Builds dependency relationships and graph data.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>DependencyInjectionHelper</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AddAssemblyServices()</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</small></td>
+  <td>Builds dependency relationships and graph data.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>.AddAssemblyServices()</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>DependencyInjectionHelper</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.AddAssemblyServices() node in Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>net10.0</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/Infraestructure.csproj</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>net10.0 node in Infraestructure/Infraestructure/Infraestructure.csproj.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>Microsoft.Extensions.DependencyInjection.Abstractions (10.0.10)</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/Infraestructure.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>Infraestructure.csproj</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/Infraestructure.csproj</small></td>
+  <td>No direct outbound edge</td>
+  <td>Builds dependency relationships and graph data.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>Microsoft.NET.Sdk</code><br><small style="color:var(--muted)">Infraestructure/Infraestructure/Infraestructure.csproj</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Microsoft.NET.Sdk node in Infraestructure/Infraestructure/Infraestructure.csproj.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>Infraestructure/Infraestructure/DependencyInjection/DependencyInjectionHelper.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Infraestructure/Infraestructure/Infraestructure.csproj</code></td><td>4 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: references x2, contains x2, imports x1, method x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 8. Tests · cobertura transversal ====== -->
+<h2 id="tests">8. Tests · cobertura transversal</h2>
+<p>Tests · cobertura transversal groups implementation around test, demoarchitectures, application, testcsproj, mostly in Test/Test.csproj, Test/Application/ApplicationServiceRegistrationTests.cs, Test/Application/ValidationBehaviorTests.cs. This section covers 39 nodes and 38 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Tests · cobertura transversal (39 nodes, 38 edges)
+    subgraph tests_Test_Application_ApplicationServiceRegistr_65f2944b["Test/Application/ApplicationServiceRegistrationTests.cs"]
+        test_application_applicationserviceregistrationt_a3d8f670("ApplicationServiceRegistrationTests<br/><small>Test/Application/ApplicationServiceRegistrationTests.cs</small>")
+        test_application_applicationserviceregistrationt_960e02c6("AddApplicationServices_InvalidRequest_StopsBeforeQuery()<br/><small>Test/Application/ApplicationServiceRegistrationTests.cs</small>")
+        test_application_applicationserviceregistrationt_79bf381b("AddApplicationServices_ValidRequest_DispatchesToRegisteredQuery()<br/><small>Test/Application/ApplicationServiceRegistrationTests.cs</small>")
+        test_application_applicationserviceregistrationt_07d3ce4c("BuildProvider()<br/><small>Test/Application/ApplicationServiceRegistrationTests.cs</small>")
+    end
+    subgraph tests_Test_DemoArchitectures_DemoArchitecturePer_8b3b1e17["Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs"]
+        test_demoarchitectures_demoarchitecturepersisten_5fc29773("DemoArchitecturePersistenceTests<br/><small>Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small>")
+        test_demoarchitectures_demoarchitecturepersisten_ba4c181b("AddPersistenceServices_ResolvesGenericRepositoryAsScoped()<br/><small>Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small>")
+        test_demoarchitectures_demoarchitecturepersisten_ffdbbc84("Model_UsesDemoArchitectureConfiguration()<br/><small>Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small>")
+    end
+    subgraph tests_Test_DemoArchitectures_GetDemoArchitecture_ed21ae96["Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs"]
+        test_demoarchitectures_getdemoarchitecturebyidqu_da494fa0("GetDemoArchitectureByIdQueryTests<br/><small>Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small>")
+        test_demoarchitectures_getdemoarchitecturebyidqu_d976f321("Handle_WhenEntityDoesNotExist_ReturnsNotFound()<br/><small>Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small>")
+        test_demoarchitectures_getdemoarchitecturebyidqu_c23a81ce("Handle_WhenEntityExists_ReturnsMappedResponse()<br/><small>Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small>")
+    end
+    subgraph tests_Test_Application_ValidationBehaviorTests_c_1f95f5c8["Test/Application/ValidationBehaviorTests.cs"]
+        test_application_validationbehaviortests_test_ap_75644524("ValidationBehaviorTests<br/><small>Test/Application/ValidationBehaviorTests.cs</small>")
+        test_application_validationbehaviortests_test_ap_8a8b0a70("Handle_WithAsyncValidationRule_AwaitsValidatorAndStopsPipeline()<br/><small>Test/Application/ValidationBehaviorTests.cs</small>")
+    end
+    subgraph tests_Test_DemoArchitectures_DemoArchitectureMap_48eed3b5["Test/DemoArchitectures/DemoArchitectureMappingTests.cs"]
+        test_demoarchitectures_demoarchitecturemappingte_ff490d20("DemoArchitectureMappingTests<br/><small>Test/DemoArchitectures/DemoArchitectureMappingTests.cs</small>")
+        test_demoarchitectures_demoarchitecturemappingte_0b0c3f5e("AutoConventionProfile_MapsEntityToDtoWithoutSpecificProfile()<br/><small>Test/DemoArchitectures/DemoArchitectureMappingTests.cs</small>")
+    end
+    subgraph tests_Test_DemoArchitectures_DemoArchitecturesCo_77f01408["Test/DemoArchitectures/DemoArchitecturesControllerTests.cs"]
+        test_demoarchitectures_demoarchitecturescontroll_8446f8fd("DemoArchitecturesControllerTests<br/><small>Test/DemoArchitectures/DemoArchitecturesControllerTests.cs</small>")
+        test_demoarchitectures_demoarchitecturescontroll_9ac4b411("GetById_SendsRequestAndReturnsMediatorResult()<br/><small>Test/DemoArchitectures/DemoArchitecturesControllerTests.cs</small>")
+    end
+    test_demoarchitectures_getdemoarchitecturebyidva_fa8655a0("GetDemoArchitectureByIdValidatorTests<br/><small>Test/DemoArchitectures/GetDemoArchitectureByIdValidatorTests.cs</small>")
+    test_test_4d233e15("Test.csproj")
+    test_application_applicationserviceregistrationt_a3d8f670 -->|method| test_application_applicationserviceregistrationt_960e02c6
+    test_application_applicationserviceregistrationt_a3d8f670 -->|method| test_application_applicationserviceregistrationt_79bf381b
+    test_application_applicationserviceregistrationt_a3d8f670 -->|method| test_application_applicationserviceregistrationt_07d3ce4c
+    test_application_applicationserviceregistrationt_79bf381b -->|calls| test_application_applicationserviceregistrationt_07d3ce4c
+    test_application_applicationserviceregistrationt_960e02c6 -->|calls| test_application_applicationserviceregistrationt_07d3ce4c
+    test_application_validationbehaviortests_test_ap_75644524 -->|method| test_application_validationbehaviortests_test_ap_8a8b0a70
+    test_demoarchitectures_demoarchitecturemappingte_ff490d20 -->|method| test_demoarchitectures_demoarchitecturemappingte_0b0c3f5e
+    test_demoarchitectures_demoarchitecturepersisten_5fc29773 -->|method| test_demoarchitectures_demoarchitecturepersisten_ba4c181b
+    test_demoarchitectures_demoarchitecturepersisten_5fc29773 -->|method| test_demoarchitectures_demoarchitecturepersisten_ffdbbc84
+    test_demoarchitectures_demoarchitecturescontroll_8446f8fd -->|method| test_demoarchitectures_demoarchitecturescontroll_9ac4b411
+    test_demoarchitectures_getdemoarchitecturebyidqu_da494fa0 -->|method| test_demoarchitectures_getdemoarchitecturebyidqu_d976f321
+    test_demoarchitectures_getdemoarchitecturebyidqu_da494fa0 -->|method| test_demoarchitectures_getdemoarchitecturebyidqu_c23a81ce
+    %% Omitted for readability: 21 nodes, 0 edges
+    class test_application_applicationserviceregistrationt_a3d8f670 test;
+    class test_application_applicationserviceregistrationt_960e02c6 test;
+    class test_application_applicationserviceregistrationt_79bf381b test;
+    class test_application_applicationserviceregistrationt_07d3ce4c test;
+    class test_demoarchitectures_demoarchitecturepersisten_5fc29773 test;
+    class test_demoarchitectures_demoarchitecturepersisten_ba4c181b test;
+    class test_demoarchitectures_demoarchitecturepersisten_ffdbbc84 test;
+    class test_demoarchitectures_getdemoarchitecturebyidqu_da494fa0 test;
+    class test_demoarchitectures_getdemoarchitecturebyidqu_d976f321 test;
+    class test_demoarchitectures_getdemoarchitecturebyidqu_c23a81ce test;
+    class test_application_validationbehaviortests_test_ap_75644524 test;
+    class test_application_validationbehaviortests_test_ap_8a8b0a70 test;
+    class test_demoarchitectures_demoarchitecturemappingte_ff490d20 test;
+    class test_demoarchitectures_demoarchitecturemappingte_0b0c3f5e test;
+    class test_demoarchitectures_demoarchitecturescontroll_8446f8fd test;
+    class test_demoarchitectures_demoarchitecturescontroll_9ac4b411 test;
+    class test_demoarchitectures_getdemoarchitecturebyidva_fa8655a0 test;
+    class test_test_4d233e15 test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Test.csproj</code><br><small style="color:var(--muted)">Test/Test.csproj</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>coverlet.collector (10.0.1)</code><br><small style="color:var(--muted)">Test/Test.csproj</small><br><code>FluentAssertions (8.10.0)</code><br><small style="color:var(--muted)">Test/Test.csproj</small><br><code>Microsoft.NET.Test.Sdk (18.8.1)</code><br><small style="color:var(--muted)">Test/Test.csproj</small><br>+3 more</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>ApplicationServiceRegistrationTests.cs</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Test.Application</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>ApplicationServiceRegistrationTests</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AddApplicationServices_InvalidRequest_StopsBeforeQuery()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small><br><code>AddApplicationServices_ValidRequest_DispatchesToRegisteredQuery()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small><br><code>BuildProvider()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>.AddApplicationServices_ValidRequest_DispatchesToRegisteredQuery()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>ApplicationServiceRegistrationTests</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td><code>BuildProvider()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td>.AddApplicationServices_ValidRequest_DispatchesToRegisteredQuery() node in Test/Application/ApplicationServiceRegistrationTests.cs.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>.AddApplicationServices_InvalidRequest_StopsBeforeQuery()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>ApplicationServiceRegistrationTests</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td><code>BuildProvider()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td>.AddApplicationServices_InvalidRequest_StopsBeforeQuery() node in Test/Application/ApplicationServiceRegistrationTests.cs.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>.BuildProvider()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>AddApplicationServices_InvalidRequest_StopsBeforeQuery()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small><br><code>AddApplicationServices_ValidRequest_DispatchesToRegisteredQuery()</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small><br><code>ApplicationServiceRegistrationTests</code><br><small style="color:var(--muted)">Test/Application/ApplicationServiceRegistrationTests.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.BuildProvider() node in Test/Application/ApplicationServiceRegistrationTests.cs.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>ValidationBehaviorTests.cs</code><br><small style="color:var(--muted)">Test/Application/ValidationBehaviorTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>ValidationBehaviorTests</code><br><small style="color:var(--muted)">Test/Application/ValidationBehaviorTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Handle_WithAsyncValidationRule_AwaitsValidatorAndStopsPipeline()</code><br><small style="color:var(--muted)">Test/Application/ValidationBehaviorTests.cs</small></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>.Handle_WithAsyncValidationRule_AwaitsValidatorAndStopsPipeline()</code><br><small style="color:var(--muted)">Test/Application/ValidationBehaviorTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>ValidationBehaviorTests</code><br><small style="color:var(--muted)">Test/Application/ValidationBehaviorTests.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Handle_WithAsyncValidationRule_AwaitsValidatorAndStopsPipeline() node in Test/Application/ValidationBehaviorTests.cs.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>AsyncValidationRequest</code><br><small style="color:var(--muted)">Test/Application/ValidationBehaviorTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AsyncValidationRequest node in Test/Application/ValidationBehaviorTests.cs.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>AsyncValidationRequestValidator</code><br><small style="color:var(--muted)">Test/Application/ValidationBehaviorTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AsyncValidationRequestValidator node in Test/Application/ValidationBehaviorTests.cs.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>DemoArchitectureMappingTests.cs</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitectureMappingTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>Test.DemoArchitectures</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitectureMappingTests.cs</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>DemoArchitectureMappingTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitectureMappingTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AutoConventionProfile_MapsEntityToDtoWithoutSpecificProfile()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitectureMappingTests.cs</small></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>.AutoConventionProfile_MapsEntityToDtoWithoutSpecificProfile()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitectureMappingTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>DemoArchitectureMappingTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitectureMappingTests.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.AutoConventionProfile_MapsEntityToDtoWithoutSpecificProfile() node in Test/DemoArchitectures/DemoArchitectureMappingTests.cs.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>DemoArchitecturePersistenceTests.cs</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>DemoArchitecturePersistenceTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AddPersistenceServices_ResolvesGenericRepositoryAsScoped()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small><br><code>Model_UsesDemoArchitectureConfiguration()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>.Model_UsesDemoArchitectureConfiguration()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>DemoArchitecturePersistenceTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>.AddPersistenceServices_ResolvesGenericRepositoryAsScoped()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>DemoArchitecturePersistenceTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.AddPersistenceServices_ResolvesGenericRepositoryAsScoped() node in Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>DemoArchitecturesControllerTests.cs</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturesControllerTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>DemoArchitecturesControllerTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturesControllerTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>GetById_SendsRequestAndReturnsMediatorResult()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturesControllerTests.cs</small></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>.GetById_SendsRequestAndReturnsMediatorResult()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturesControllerTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>DemoArchitecturesControllerTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/DemoArchitecturesControllerTests.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.GetById_SendsRequestAndReturnsMediatorResult() node in Test/DemoArchitectures/DemoArchitecturesControllerTests.cs.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>GetDemoArchitectureByIdQueryTests.cs</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>GetDemoArchitectureByIdQueryTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>Handle_WhenEntityDoesNotExist_ReturnsNotFound()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small><br><code>Handle_WhenEntityExists_ReturnsMappedResponse()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>.Handle_WhenEntityDoesNotExist_ReturnsNotFound()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>GetDemoArchitectureByIdQueryTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Handle_WhenEntityDoesNotExist_ReturnsNotFound() node in Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>.Handle_WhenEntityExists_ReturnsMappedResponse()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>GetDemoArchitectureByIdQueryTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.Handle_WhenEntityExists_ReturnsMappedResponse() node in Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>GetDemoArchitectureByIdValidatorTests.cs</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdValidatorTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>GetDemoArchitectureByIdValidatorTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdValidatorTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>ValidateAsync_WhenIdHasValue_IsValid()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdValidatorTests.cs</small><br><code>ValidateAsync_WhenIdIsEmpty_ReturnsValidationError()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdValidatorTests.cs</small></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>.ValidateAsync_WhenIdIsEmpty_ReturnsValidationError()</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdValidatorTests.cs</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td><code>GetDemoArchitectureByIdValidatorTests</code><br><small style="color:var(--muted)">Test/DemoArchitectures/GetDemoArchitectureByIdValidatorTests.cs</small></td>
+  <td>No direct outbound edge</td>
+  <td>.ValidateAsync_WhenIdIsEmpty_ReturnsValidationError() node in Test/DemoArchitectures/GetDemoArchitectureByIdValidatorTests.cs.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>Test/Test.csproj</code></td><td>9 nodes</td></tr>
+<tr><td><code>Test/Application/ApplicationServiceRegistrationTests.cs</code></td><td>6 nodes</td></tr>
+<tr><td><code>Test/Application/ValidationBehaviorTests.cs</code></td><td>5 nodes</td></tr>
+<tr><td><code>Test/DemoArchitectures/DemoArchitectureMappingTests.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Test/DemoArchitectures/DemoArchitecturePersistenceTests.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Test/DemoArchitectures/GetDemoArchitectureByIdQueryTests.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Test/DemoArchitectures/GetDemoArchitectureByIdValidatorTests.cs</code></td><td>4 nodes</td></tr>
+<tr><td><code>Test/DemoArchitectures/DemoArchitecturesControllerTests.cs</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x16, method x12, imports x6, references x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 9. CI · quality gates y artifactDrop ====== -->
+<h2 id="ci">9. CI · quality gates y artifactDrop</h2>
+<p>CI · quality gates y artifactDrop groups implementation around azure, pipelinesyml, pipeline, plantilla, mostly in azure-pipelines.yml. This section covers 3 nodes and 2 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: CI · quality gates y artifactDrop (3 nodes, 2 edges)
+    azure_pipelines_continuous_integration_pipeline_78a97399("Pipeline CI de la plantilla<br/><small>azure-pipelines.yml</small>")
+    azure_pipelines_artifactdrop_a9a83dcf("Publicación de artifactDrop<br/><small>azure-pipelines.yml</small>")
+    azure_pipelines_net10_release_quality_gate_32dff508(".NET 10 Release: restore auditado, buil...<br/><small>azure-pipelines.yml</small>")
+    azure_pipelines_continuous_integration_pipeline_78a97399 -->|references| azure_pipelines_artifactdrop_a9a83dcf
+    azure_pipelines_continuous_integration_pipeline_78a97399 -->|references| azure_pipelines_net10_release_quality_gate_32dff508
+    class azure_pipelines_continuous_integration_pipeline_78a97399 concept;
+    class azure_pipelines_artifactdrop_a9a83dcf klass;
+    class azure_pipelines_net10_release_quality_gate_32dff508 ui;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Pipeline CI de la plantilla</code><br><small style="color:var(--muted)">azure-pipelines.yml</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Pipeline CI de la plantilla.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>.NET 10 Release: restore auditado, build, test y formato</code><br><small style="color:var(--muted)">azure-pipelines.yml</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Publicación de artifactDrop</code><br><small style="color:var(--muted)">azure-pipelines.yml</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Publicación de artifactDrop node in azure-pipelines.yml.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>azure-pipelines.yml</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: references x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 10. Documentación · decisiones de arquitectura ====== -->
+<h2 id="documentation">10. Documentación · decisiones de arquitectura</h2>
+<p>Documentación · decisiones de arquitectura groups implementation around readmemd, dependencias, por, convención, mostly in README.md. This section covers 10 nodes and 2 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Documentación · decisiones de arquitectura (10 nodes, 2 edges)
+    readme_clean_architecture_template_514fee80("Plantilla Backend Clean Architecture<br/><small>README.md</small>")
+    readme_clean_architecture_boundaries_8d68043f("Dependencias dirigidas hacia Domain<br/><small>README.md</small>")
+    readme_demoarchitecture_end_to_end_flow_bbe40d02("Flujo transversal DemoArchitecture<br/><small>README.md</small>")
+    readme_eleven_automated_tests_ddcca705("Once pruebas automatizadas<br/><small>README.md</small>")
+    readme_authentication_policies_3cb84290("Políticas JWT y API Key<br/><small>README.md</small>")
+    readme_standard_response_and_error_mapping_327a0406("Respuesta estándar y traducción HTTP<br/><small>README.md</small>")
+    readme_convention_based_mapping_1b5f6e01("AutoMapper por convención<br/><small>README.md</small>")
+    readme_convention_based_dependency_injection_8e060768("Registro de dependencias por capa y con...<br/><small>README.md</small>")
+    readme_generic_repository_reuse_f6807ee6("Reutilización del repositorio genérico<br/><small>README.md</small>")
+    readme_cqrs_use_case_structure_b330e9e1("Use case CQRS: Request, Validator, Quer...<br/><small>README.md</small>")
+    readme_clean_architecture_template_514fee80 -->|references| readme_clean_architecture_boundaries_8d68043f
+    readme_clean_architecture_template_514fee80 -->|references| readme_demoarchitecture_end_to_end_flow_bbe40d02
+    class readme_clean_architecture_template_514fee80 concept;
+    class readme_clean_architecture_boundaries_8d68043f concept;
+    class readme_demoarchitecture_end_to_end_flow_bbe40d02 klass;
+    class readme_eleven_automated_tests_ddcca705 klass;
+    class readme_authentication_policies_3cb84290 api;
+    class readme_standard_response_and_error_mapping_327a0406 klass;
+    class readme_convention_based_mapping_1b5f6e01 concept;
+    class readme_convention_based_dependency_injection_8e060768 concept;
+    class readme_generic_repository_reuse_f6807ee6 concept;
+    class readme_cqrs_use_case_structure_b330e9e1 concept;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Plantilla Backend Clean Architecture</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Plantilla Backend Clean Architecture.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Dependencias dirigidas hacia Domain</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Dependencias dirigidas hacia Domain.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Flujo transversal DemoArchitecture</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Flujo transversal DemoArchitecture node in README.md.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>Use case CQRS: Request, Validator, Query o Command y Response</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Use case CQRS: Request, Validator, Query o Command y Response.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>Reutilización del repositorio genérico</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Reutilización del repositorio genérico.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>AutoMapper por convención</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for AutoMapper por convención.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>Registro de dependencias por capa y convención</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Registro de dependencias por capa y convención.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>Respuesta estándar y traducción HTTP</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Respuesta estándar y traducción HTTP node in README.md.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>Políticas JWT y API Key</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Políticas JWT y API Key node in README.md.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>Once pruebas automatizadas</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Once pruebas automatizadas node in README.md.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>README.md</code></td><td>10 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: references x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 11. Solución · topología de proyectos ====== -->
+<h2 id="solution">11. Solución · topología de proyectos</h2>
+<p>Solución · topología de proyectos groups implementation around examplesln, mostly in Example.sln. This section covers 1 nodes and 0 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "12.3px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 39, "rankSpacing": 52, "padding": 11, "diagramPadding": 8, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Solución · topología de proyectos (1 nodes, 0 edges)
+    example_c3499c27("Example.sln")
+    class example_c3499c27 klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>Example.sln</code><br><small style="color:var(--muted)">Example.sln</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Example.sln node in Example.sln.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>Example.sln</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: No high-confidence call edges detected. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<h2 id="hyperedges">Group Relationships (Hyperedges)</h2>
+<div class="grid">
+
+  <div class="card">
+    <h4>Ciclo de vida del request DemoArchitecture</h4>
+    <p><code>participate_in</code> — 8 participants</p>
+    <ul>
+      <li><code>api_api_controllers_v1_demoarchitecturescontroller_api_controllers_v1_demoarchitecturescontroller_getbyid</code></li>
+      <li><code>core_application_behaviors_validationbehavior_application_behaviors_validationbehavior_handle</code></li>
+      <li><code>core_application_usecases_demoarchitectures_getdemoarchitecturebyid_getdemoarchitecturebyidquery_application_usecases_demoarchitectures_getdemoarchitecturebyid_getdemoarchitecturebyidquery_handle</code></li>
+      <li><code>core_domain_base_interface_irepositorygeneric_domain_base_interface_irepositorygeneric</code></li>
+      <li><code>infraestructure_persistence_base_repositorygeneric_persistence_base_repositorygeneric</code></li>
+      <li>... and 3 more</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Composición por capas</h4>
+    <p><code>form</code> — 5 participants</p>
+    <ul>
+      <li><code>api_api_program</code></li>
+      <li><code>core_application_applicationserviceregistration_application_applicationserviceregistration_addapplicationservices</code></li>
+      <li><code>infraestructure_adapters_adapterserviceregistration_adapters_adapterserviceregistration_addadapterservices</code></li>
+      <li><code>infraestructure_persistence_persistenceserviceregistration_persistence_persistenceserviceregistration_addpersistenceservices</code></li>
+      <li><code>infraestructure_infraestructure_dependencyinjection_dependencyinjectionhelper_infraestructure_dependencyinjection_dependencyinjectionhelper</code></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>Quality gate y publicación de la API</h4>
+    <p><code>participate_in</code> — 4 participants</p>
+    <ul>
+      <li><code>azure_pipelines_continuous_integration_pipeline</code></li>
+      <li><code>azure_pipelines_net10_release_quality_gate</code></li>
+      <li><code>azure_pipelines_artifactdrop</code></li>
+      <li><code>api_api_api</code></li>
+    </ul>
+  </div>
+</div>
+<hr>
+<h2 id="stats">Project Statistics</h2>
+
+<div class="grid">
+  <div class="card">
+    <h4>Graph</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>Nodes</td><td>314</td></tr>
+      <tr><td>Edges</td><td>441</td></tr>
+      <tr><td>Hyperedges</td><td>3</td></tr>
+      <tr><td>Communities</td><td>11</td></tr>
+      <tr><td>Documented Sections</td><td>10</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Edge Confidence</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>EXTRACTED</td><td>435</td></tr>
+      <tr><td>INFERRED</td><td>6</td></tr>
+      <tr><td>AMBIGUOUS</td><td>0</td></tr>
+    </table>
+  </div>
+</div>
+
+<div style="text-align:center; padding:40px 0; color: var(--muted); font-size:0.9rem;">
+  <p>DemoArchitecture · Clean Architecture .NET 10 · Graphify</p>
+  <p>Generated: 2026-07-27 04:59 UTC · graphify callflow-html</p>
+</div>
+
+</div><!-- .container -->
+
+<script>
+(function () {
+  const mermaidConfig = {
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+    flowchart: { htmlLabels: true, useMaxWidth: true },
+    themeVariables: {
+      primaryColor: '#1e293b',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      secondaryColor: '#0f172a',
+      tertiaryColor: '#334155',
+      lineColor: '#64748b',
+      textColor: '#e2e8f0',
+    }
+  };
+
+  mermaid.initialize(mermaidConfig);
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function enhanceMermaidDiagrams() {
+    document.querySelectorAll('.mermaid').forEach((container) => {
+      if (container.dataset.zoomReady === 'true') return;
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+
+      container.dataset.zoomReady = 'true';
+      container.classList.add('is-enhanced');
+
+      const viewport = document.createElement('div');
+      viewport.className = 'mermaid-viewport';
+      svg.parentNode.insertBefore(viewport, svg);
+      viewport.appendChild(svg);
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'mermaid-toolbar';
+      toolbar.innerHTML = [
+        '<button type="button" data-action="zoom-out" title="Zoom out">-</button>',
+        '<span class="zoom-level" data-role="level">100%</span>',
+        '<button type="button" data-action="zoom-in" title="Zoom in">+</button>',
+        '<button type="button" data-action="fit" title="Fit width">Fit</button>',
+        '<button type="button" data-action="reset" title="Reset view">Reset</button>'
+      ].join('');
+      container.insertBefore(toolbar, viewport);
+
+      const state = { scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+      const level = toolbar.querySelector('[data-role="level"]');
+
+      function applyTransform() {
+        svg.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+        level.textContent = `${Math.round(state.scale * 100)}%`;
+      }
+
+      function zoomBy(delta) {
+        state.scale = clamp(state.scale + delta, 0.25, 3);
+        applyTransform();
+      }
+
+      function reset() {
+        state.scale = 1;
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      function fitWidth() {
+        const rawWidth = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width
+          ? svg.viewBox.baseVal.width
+          : svg.getBoundingClientRect().width / state.scale;
+        if (!rawWidth) {
+          reset();
+          return;
+        }
+        state.scale = clamp((viewport.clientWidth - 48) / rawWidth, 0.25, 1.4);
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      toolbar.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'zoom-in') zoomBy(0.15);
+        if (action === 'zoom-out') zoomBy(-0.15);
+        if (action === 'fit') fitWidth();
+        if (action === 'reset') reset();
+      });
+
+      viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        zoomBy(event.deltaY < 0 ? 0.1 : -0.1);
+      }, { passive: false });
+
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        state.dragging = true;
+        state.startX = event.clientX;
+        state.startY = event.clientY;
+        state.originX = state.x;
+        state.originY = state.y;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      });
+
+      viewport.addEventListener('pointermove', (event) => {
+        if (!state.dragging) return;
+        state.x = state.originX + event.clientX - state.startX;
+        state.y = state.originY + event.clientY - state.startY;
+        applyTransform();
+      });
+
+      function endDrag(event) {
+        if (!state.dragging) return;
+        state.dragging = false;
+        viewport.classList.remove('is-dragging');
+        if (viewport.hasPointerCapture(event.pointerId)) {
+          viewport.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+      applyTransform();
+    });
+  }
+
+  function renderMermaid() {
+    const result = mermaid.run
+      ? mermaid.run({ querySelector: '.mermaid' })
+      : Promise.resolve();
+    Promise.resolve(result)
+      .then(enhanceMermaidDiagrams)
+      .catch((error) => {
+        console.error('Mermaid render failed:', error);
+        enhanceMermaidDiagrams();
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderMermaid);
+  } else {
+    renderMermaid();
+  }
+})();
+</script>
+
+</body>
+</html>

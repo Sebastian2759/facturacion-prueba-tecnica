@@ -1,0 +1,67 @@
+services:
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest@sha256:f2874938b3ce7a3290887ba13daebd61fbdd790420950d2cf715e3c805d448ae
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SQL_ADMIN_PASSWORD:?Ejecute iniciar.cmd para generar la configuración local}
+    volumes:
+      - sql-data:/var/opt/mssql
+    healthcheck:
+      test: [CMD-SHELL, 'SQLCMDPASSWORD="$$MSSQL_SA_PASSWORD" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -Q "SELECT 1" -b -o /dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
+    mem_limit: 2g
+    shm_size: 256m
+    security_opt: [no-new-privileges:true]
+    networks: [private]
+    restart: unless-stopped
+  migrator:
+    build:
+      context: .
+      dockerfile: scripts/docker/Dockerfile.migrator
+    platform: linux/amd64
+    profiles: [tools]
+    environment:
+      Database__AdminConnectionString: 'Server=database;Database=master;User ID=sa;Password=${SQL_ADMIN_PASSWORD};Encrypt=True;TrustServerCertificate=True'
+      Database__Name: ${DATABASE_NAME:-FacturacionLocal}
+      Database__RuntimePassword: ${SQL_RUNTIME_PASSWORD:?Falta la configuración local}
+    read_only: true
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=64m']
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks: [private]
+    depends_on:
+      database:
+        condition: service_healthy
+  app:
+    build:
+      context: .
+      dockerfile: scripts/docker/Dockerfile.local
+    platform: linux/amd64
+    environment:
+      ASPNETCORE_ENVIRONMENT: LocalEvaluation
+      ASPNETCORE_HTTP_PORTS: 8080
+      Local__Origin: http://127.0.0.1:5080
+      Local__InstallationId: ${INSTALLATION_ID:?Falta la configuración local}
+      ConnectionStrings__AppDbContext: 'Server=database;Database=${DATABASE_NAME:-FacturacionLocal};User ID=facturacion_runtime;Password=${SQL_RUNTIME_PASSWORD};Encrypt=True;TrustServerCertificate=True'
+      Accounts__RealEnabled: 'false'
+    ports: ['127.0.0.1:5080:8080']
+    read_only: true
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=64m']
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    networks: [private]
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  sql-data:
+networks:
+  private:
+    internal: true

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "AndesTool",
+  "classifications": ["Web", "API", "Clean Architecture"],
+  "identity": "AndesTool.Plantilla.CleanArchitecture",
+  "name": "AndesTool - Plantilla Backend Clean Architecture",
+  "shortName": "plantilla-clean-arch",
+  "sourceName": "Plantilla",
+  "preferNameDirectory": true,
+  "symbols": {
+    "StandardsVersion": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "v0.2",
+      "replaces": "{{STANDARDS_VERSION}}",
+      "description": "Version del Estandar vigente al momento de generar el proyecto"
+    },
+    "CreatedAt": {
+      "type": "generated",
+      "generator": "now",
+      "parameters": { "format": "yyyy-MM-dd" },
+      "replaces": "{{CREATED_AT}}"
+    }
+  }
+}
