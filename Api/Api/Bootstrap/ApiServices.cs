@@ -140,7 +140,7 @@ public static class ApiServices
         app.MapGet("/health/live", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
         app.MapGet("/api/v1/version", () => Results.Ok(new
         {
-            version = typeof(ApiServices).Assembly.GetName().Version?.ToString(),
+            version = app.Configuration["Release:Version"] ?? typeof(ApiServices).Assembly.GetName().Version?.ToString(),
             profile = isLocal ? "local" : "web",
             commit = app.Configuration["Release:Commit"] ?? "development"
         })).AllowAnonymous();

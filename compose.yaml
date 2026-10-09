@@ -1,6 +1,6 @@
 services:
   database:
-    image: mcr.microsoft.com/mssql/server:2022-latest@sha256:f2874938b3ce7a3290887ba13daebd61fbdd790420950d2cf715e3c805d448ae
+    image: mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090
     platform: linux/amd64
     environment:
       ACCEPT_EULA: 'Y'
@@ -48,7 +48,7 @@ services:
       Local__Origin: http://127.0.0.1:5080
       Local__InstallationId: ${INSTALLATION_ID:?Falta la configuración local}
       ConnectionStrings__AppDbContext: 'Server=database;Database=${DATABASE_NAME:-FacturacionLocal};User ID=facturacion_runtime;Password=${SQL_RUNTIME_PASSWORD};Encrypt=True;TrustServerCertificate=True'
-      Accounts__RealEnabled: 'false'
+      Novasoft__Enabled: 'false'
     ports: ['127.0.0.1:5080:8080']
     read_only: true
     tmpfs: ['/tmp:rw,noexec,nosuid,size=64m']

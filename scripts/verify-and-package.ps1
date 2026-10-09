@@ -49,6 +49,10 @@ try {
         try { Invoke-WebRequest 'http://127.0.0.1:5080/health/live' -TimeoutSec 2 | Out-Null; $ready=$true; break } catch { Start-Sleep -Seconds 1 }
     }
     if (-not $ready) { throw 'El host local no inició.' }
+    $reportedVersion = Invoke-RestMethod 'http://127.0.0.1:5080/api/v1/version'
+    if ($reportedVersion.profile -ne 'local' -or $reportedVersion.commit -ne $manifest.sourceCommit -or $reportedVersion.version -ne $manifest.version) {
+        throw 'La versión o el commit de la aplicación no coincide con el manifiesto del paquete.'
+    }
     & (Join-Path $PSScriptRoot 'smoke-local.ps1')
     $apiSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
     Invoke-RestMethod 'http://127.0.0.1:5080/api/v1/session' -WebSession $apiSession | Out-Null

@@ -8,7 +8,7 @@
   },
   "images": {
     "aspnet": "mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4",
-    "sqlserver": "mcr.microsoft.com/mssql/server:2022-latest@sha256:f2874938b3ce7a3290887ba13daebd61fbdd790420950d2cf715e3c805d448ae",
+    "sqlserver": "mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090",
     "zap": "ghcr.io/zaproxy/zaproxy:stable@sha256:7aaa659b0d43078febd82e29bad112285c370727e86ab8340444220e17d9f0d2",
     "semgrep": "semgrep/semgrep:latest@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b"
   },
@@ -24,6 +24,7 @@
       "sha256": "c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f"
     }
   },
+  "imageVerification": "GET schema2/index with explicit Accept, SHA256(body) equals registry digest, GET by digest succeeds; SQL config confirms linux/amd64 and user mssql. Initial SQL HEAD representation was rejected by Docker and replaced before release.",
   "sources": [
     "https://api.github.com/repos/actions/checkout/releases/latest",
     "https://api.github.com/repos/actions/setup-dotnet/releases/latest",

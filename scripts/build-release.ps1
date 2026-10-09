@@ -14,6 +14,14 @@ try {
     try { Invoke-Checked $npm @('ci'); Invoke-Checked $npm @('run', 'build') } finally { Pop-Location }
     Invoke-Checked 'dotnet' @('publish', 'Api/LocalEvaluation/LocalEvaluation.csproj', '-c', 'Release', '-r', 'linux-x64', '--self-contained', 'false', '-p:UseAppHost=false', '-p:DebugType=None', '-o', (Join-Path $stage 'app'))
     Invoke-Checked 'dotnet' @('publish', 'Tools/DatabaseMigrator/DatabaseMigrator.csproj', '-c', 'Release', '-r', 'linux-x64', '--self-contained', 'false', '-p:UseAppHost=false', '-p:DebugType=None', '-o', (Join-Path $stage 'database/migrator'))
+    $settingsPath = Join-Path $stage 'app/appsettings.json'
+    $settings = Get-Content -LiteralPath $settingsPath -Raw | ConvertFrom-Json
+    if (-not $settings.PSObject.Properties['Release']) {
+        $settings | Add-Member -NotePropertyName Release -NotePropertyValue ([pscustomobject]@{})
+    }
+    $settings.Release | Add-Member -NotePropertyName Commit -NotePropertyValue $commit -Force
+    $settings.Release | Add-Member -NotePropertyName Version -NotePropertyValue $Version -Force
+    Write-Utf8 $settingsPath ($settings | ConvertTo-Json -Depth 20)
     $browser = Join-Path $script:ReleaseRoot 'Frontend/dist/facturacion/browser'
     if (-not (Test-Path -LiteralPath (Join-Path $browser 'index.html'))) { throw 'No se encontró el build Angular esperado.' }
     [IO.Directory]::CreateDirectory((Join-Path $stage 'app/wwwroot')) | Out-Null

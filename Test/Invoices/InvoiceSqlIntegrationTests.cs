@@ -120,6 +120,66 @@ public sealed class InvoiceSqlIntegrationTests
         first.Items.Concat(second.Items).Should().OnlyContain(invoice => invoice.OwnerSubject == "owner-a");
     }
 
+    [Fact(SkipUnless = nameof(SqlAvailable))]
+    [Trait("Category", "SqlIntegration")]
+    public async Task ReadInsertOnly_CreatesReadsAndReplaysWithoutUpdateOrDelete()
+    {
+        await using var database = await InvoiceTestDatabase.CreateAsync();
+        await using var adminContext = database.Context();
+        await adminContext.Database.ExecuteSqlRawAsync("""
+            CREATE USER [invoice_read_insert_test] WITHOUT LOGIN;
+            GRANT SELECT, INSERT ON OBJECT::[dbo].[Facturas] TO [invoice_read_insert_test];
+            GRANT SELECT, INSERT ON OBJECT::[dbo].[DetalleFactura] TO [invoice_read_insert_test];
+            """, TestContext.Current.CancellationToken);
+
+        // Impersonation is confined to this non-pooled connection and disposable
+        // database; the test never creates or changes the application's login.
+        var connectionOptions = new SqlConnectionStringBuilder(adminContext.Database.GetConnectionString())
+        {
+            Pooling = false,
+        };
+        await using var connection = new SqlConnection(connectionOptions.ConnectionString);
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using (var impersonate = new SqlCommand("EXECUTE AS USER = N'invoice_read_insert_test';", connection))
+            await impersonate.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(connection).Options;
+        await using var runtimeContext = new AppDbContext(options);
+        var repository = new InvoiceRepository(runtimeContext);
+        var key = Guid.NewGuid();
+        var created = await repository.CreateOrGetAsync(
+            InvoiceTestData.Entity("owner-a", key), TestContext.Current.CancellationToken);
+        var replay = await repository.CreateOrGetAsync(
+            InvoiceTestData.Entity("owner-a", key), TestContext.Current.CancellationToken);
+
+        created.WasCreated.Should().BeTrue();
+        replay.WasCreated.Should().BeFalse();
+        replay.Invoice.Number.Should().Be(created.Invoice.Number);
+        var invoice = await repository.FindOwnedByNumberAsync(
+            "owner-a", created.Invoice.Number, TestContext.Current.CancellationToken);
+        invoice.Should().NotBeNull();
+        invoice!.Details.Should().ContainSingle();
+        (await repository.ListOwnedAsync("owner-a", 1, 10, TestContext.Current.CancellationToken))
+            .TotalCount.Should().Be(1);
+
+        string[] forbiddenStatements =
+        [
+            "UPDATE [dbo].[Facturas] SET [Total] = [Total] WHERE 1 = 0;",
+            "DELETE FROM [dbo].[Facturas] WHERE 1 = 0;",
+            "UPDATE [dbo].[DetalleFactura] SET [Quantity] = [Quantity] WHERE 1 = 0;",
+            "DELETE FROM [dbo].[DetalleFactura] WHERE 1 = 0;",
+        ];
+        foreach (var statement in forbiddenStatements)
+        {
+            Func<Task> action = async () =>
+            {
+                await using var command = new SqlCommand(statement, connection);
+                await command.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+            };
+            await action.Should().ThrowAsync<SqlException>().Where(exception => exception.Number == 229);
+        }
+    }
+
     private sealed class InvoiceTestDatabase(string databaseName, DbContextOptions<AppDbContext> options) : IAsyncDisposable
     {
         public AppDbContext Context() => new(options);

@@ -59,7 +59,7 @@ try
     if (operation == "init")
     {
         await EnsureRuntimeAccessAsync(admin, databaseOptions, password!);
-        Console.WriteLine("Inicialización completada. Esquema migrado, datos existentes conservados y usuario runtime sin DDL.");
+        Console.WriteLine("Inicialización completada. Esquema migrado, datos existentes conservados y usuario runtime sólo SELECT/INSERT.");
         Console.WriteLine("No se cargan facturas de ejemplo: los ejemplos públicos son fixtures; la base inicial está vacía.");
     }
     else
@@ -123,8 +123,10 @@ static async Task EnsureRuntimeAccessAsync(
             CREATE ROLE [facturacion_runtime_role] AUTHORIZATION [dbo];
         IF IS_ROLEMEMBER(N'facturacion_runtime_role', N'facturacion_runtime') <> 1
             ALTER ROLE [facturacion_runtime_role] ADD MEMBER [facturacion_runtime];
-        GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::[dbo].[Facturas] TO [facturacion_runtime_role];
-        GRANT SELECT, INSERT, UPDATE, DELETE ON OBJECT::[dbo].[DetalleFactura] TO [facturacion_runtime_role];
+        REVOKE UPDATE, DELETE ON OBJECT::[dbo].[Facturas] FROM [facturacion_runtime_role];
+        REVOKE UPDATE, DELETE ON OBJECT::[dbo].[DetalleFactura] FROM [facturacion_runtime_role];
+        GRANT SELECT, INSERT ON OBJECT::[dbo].[Facturas] TO [facturacion_runtime_role];
+        GRANT SELECT, INSERT ON OBJECT::[dbo].[DetalleFactura] TO [facturacion_runtime_role];
         """;
     await using (var user = new SqlCommand(userSql, database))
         await user.ExecuteNonQueryAsync();
@@ -142,9 +144,16 @@ static async Task EnsureRuntimeAccessAsync(
             OR IS_MEMBER(N'db_owner') = 1
             OR HAS_PERMS_BY_NAME(DB_NAME(), N'DATABASE', N'ALTER') = 1
             OR HAS_PERMS_BY_NAME(DB_NAME(), N'DATABASE', N'CREATE TABLE') = 1
+            OR HAS_PERMS_BY_NAME(N'dbo', N'SCHEMA', N'ALTER') = 1
+            OR HAS_PERMS_BY_NAME(N'dbo.Facturas', N'OBJECT', N'ALTER') = 1
+            OR HAS_PERMS_BY_NAME(N'dbo.DetalleFactura', N'OBJECT', N'ALTER') = 1
+            OR HAS_PERMS_BY_NAME(N'dbo.Facturas', N'OBJECT', N'UPDATE') = 1
+            OR HAS_PERMS_BY_NAME(N'dbo.Facturas', N'OBJECT', N'DELETE') = 1
+            OR HAS_PERMS_BY_NAME(N'dbo.DetalleFactura', N'OBJECT', N'UPDATE') = 1
+            OR HAS_PERMS_BY_NAME(N'dbo.DetalleFactura', N'OBJECT', N'DELETE') = 1
             THEN 1 ELSE 0 END;
         """;
     await using var permissions = new SqlCommand(privilegeSql, runtime);
     if (await permissions.ExecuteScalarAsync() is not int privilegeResult || privilegeResult != 0)
-        throw new InvalidOperationException("El usuario runtime tiene permisos administrativos o de esquema no permitidos.");
+        throw new InvalidOperationException("El usuario runtime tiene permisos administrativos, de esquema, actualización o borrado no permitidos.");
 }
