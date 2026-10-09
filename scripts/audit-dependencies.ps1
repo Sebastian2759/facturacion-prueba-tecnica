@@ -8,8 +8,14 @@ try {
     $text = $output -join "`n"
     Write-Utf8 (Join-Path $reports 'nuget-vulnerabilities.json') $text
     $report = $text | ConvertFrom-Json
+    if (-not $report.PSObject.Properties['projects'] -or @($report.projects).Count -eq 0) { throw 'NuGet no devolvió un inventario de proyectos válido.' }
+    if ($report.PSObject.Properties['problems'] -and @($report.problems).Count -gt 0) { throw 'NuGet informó problemas al auditar; revise el reporte antes de entregar.' }
     foreach ($project in $report.projects) {
-        foreach ($framework in $project.frameworks) {
+        if ($project.PSObject.Properties['problems'] -and @($project.problems).Count -gt 0) { throw 'Un proyecto no pudo auditarse completamente.' }
+        # The filtered NuGet JSON omits frameworks when the project has no matching packages.
+        $frameworkProperty = $project.PSObject.Properties['frameworks']
+        if ($null -eq $frameworkProperty) { continue }
+        foreach ($framework in $frameworkProperty.Value) {
             foreach ($kind in @('topLevelPackages', 'transitivePackages')) {
                 $property = $framework.PSObject.Properties[$kind]
                 if ($null -ne $property -and @($property.Value).Count -gt 0) { throw 'NuGet detectó vulnerabilidades. Todas las severidades bloquean la entrega.' }

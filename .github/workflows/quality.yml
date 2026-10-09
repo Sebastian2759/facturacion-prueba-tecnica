@@ -57,15 +57,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm ci --prefix Frontend
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Audit dependencies without suppressing failed feeds
-        run: ./scripts/audit-dependencies.ps1
       - name: Validate the actual evaluator Compose configuration
         run: ./scripts/validate-compose.ps1
-      - name: TypeScript security rules, offline configuration and disabled metrics
-        run: |
-          $lock = Get-Content scripts/toolchain-lock.json -Raw | ConvertFrom-Json
-          docker run --rm -v "${PWD}:/src" --workdir /src $lock.images.semgrep semgrep scan --config scripts/security/semgrep.yml --metrics off --disable-version-check --error --json --output artifacts/security/typescript-sast.json Frontend/src
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Formatting and build with security analyzers
         run: |
           dotnet format Example.sln --no-restore --verify-no-changes
@@ -93,6 +86,13 @@ jobs:
           npx --no-install playwright install --with-deps chromium
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm run test:e2e
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Audit dependencies without suppressing failed feeds
+        run: ./scripts/audit-dependencies.ps1
+      - name: TypeScript security rules, offline configuration and disabled metrics
+        run: |
+          $lock = Get-Content scripts/toolchain-lock.json -Raw | ConvertFrom-Json
+          docker run --rm -v "${PWD}:/src" --workdir /src $lock.images.semgrep semgrep scan --config scripts/security/semgrep.yml --metrics off --disable-version-check --error --json --output artifacts/security/typescript-sast.json Frontend/src
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Filesystem, configuration and official runtime image scans
         run: |
