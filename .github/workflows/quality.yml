@@ -28,10 +28,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Configure the public Docker Hub mirror on the ephemeral runner
-        env:
-          CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
-        run: ./scripts/configure-ci-registry-mirror.ps1
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
@@ -68,6 +64,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm run api:setup --prefix Frontend
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: TypeScript SAST from the hash-locked official Python distribution
+        run: ./scripts/scan-typescript.ps1
       - name: Validate the actual evaluator Compose configuration
         run: ./scripts/validate-compose.ps1
       - name: Verify fail-closed ZAP and API cache policy gates
@@ -116,12 +114,6 @@ jobs:
       - name: Audit dependencies without suppressing failed feeds
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: ./scripts/audit-dependencies.ps1
-      - name: TypeScript security rules, offline configuration and disabled metrics
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: |
-          $lock = Get-Content scripts/toolchain-lock.json -Raw | ConvertFrom-Json
-          docker run --rm -v "${PWD}:/src" --workdir /src $lock.images.semgrep semgrep scan --config scripts/security/semgrep.yml --metrics off --disable-version-check --error --json --output artifacts/security/typescript-sast.json Frontend/src
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Filesystem, configuration and secret scans
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |

@@ -62,13 +62,13 @@ fecIng se mapea a fecha/hora; no se añade estCli sin respaldo del Swagger consu
 
 ## D11. Contrato de errores compatible
 
-Se conservan campos de ResponseBase y se añaden code/fieldErrors/traceId. ProblemDetails cubre seguridad, binding y excepciones. Angular normaliza ambos y conserva el formulario. Los tipos de transporte proceden del OpenAPI real exportado por CI y se consumen mediante un puente tipado y decodificadores. La comparación íntegra de esquema y ese puente pasaron localmente después del run7; esperan nueva CI. Véase [procedencia OpenAPI](../Frontend/docs/openapi.md).
+Se conservan campos de ResponseBase y se añaden code/fieldErrors/traceId. ProblemDetails cubre seguridad, binding y excepciones. Angular normaliza ambos y conserva el formulario. Los tipos de transporte proceden del OpenAPI real exportado por CI y se consumen mediante un puente tipado y decodificadores. La comparación íntegra del esquema y ese puente pasaron contra el contenedor en el run8. Véase [procedencia OpenAPI](../Frontend/docs/openapi.md).
 
 ## D12. Gates antes de etiquetar la release
 
 Build no equivale a tests; mocks no equivalen a SQL; YAML no equivale a CI ejecutado; VERIFYONLY no sustituye restore. Un escáner/feed fallido bloquea. NuGet Audit transitivo y NU1900–NU1905, npm, analizadores, Gitleaks, Semgrep, Trivy, SBOM y ZAP local tienen evidencia separada.
 
-La release final sólo procede desde commit/árbol limpio y gates aprobados. No se modifica WDAC. [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596) (`c6b44269ac0944289cb1d848a48510efcd1e5523`) aprobó 150 tests .NET, incluidas cinco integraciones SQL, y los gates Gitleaks/Semgrep/NuGet/npm/Trivy filesystem/ASP.NET. Backup/restore, CHECKDB, migradores, smoke API y 1 E2E live API/SQL pasaron. La imagen SQL mantiene el bloqueo Go/OpenSSL, sin excepción; el diagnóstico binario confirma símbolos de 9 CVE Go HIGH sin restricción Windows, sin demostrar explotabilidad remota. ZAP terminó con 4 advertencias; correcciones pendientes de nueva CI. El ZIP final y Windows con Docker siguen pendientes.
+La release final sólo procede desde commit/árbol limpio y gates aprobados. No se modifica WDAC. [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37991580284) (`8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2`) aprobó 159 tests .NET, incluidas cinco integraciones SQL, y Gitleaks/NuGet/npm/Trivy filesystem/ASP.NET. Semgrep no se ejecutó porque Docker Hub respondió 429 al descargar la imagen. Backup/restore, CHECKDB, migradores, smoke API/no-store, OpenAPI del contenedor, 1 E2E live API/SQL y gate ZAP pasaron. SQL mantiene 71 ocurrencias HIGH, 24 CVE únicos por imagen, sin excepción; el diagnóstico binario previo confirmó símbolos de 9 CVE Go HIGH sin restricción Windows, sin demostrar explotabilidad remota. El ZIP final y Windows con Docker siguen pendientes.
 
 ## D13. Node LTS fijado
 
@@ -76,4 +76,8 @@ Se fija Node 24.21.0 LTS con npm 11.13.0, verificados también en distribución 
 
 ## D14. Verificar estilos y CSP además del recorrido funcional
 
-La captura del run7 reveló CSS global bloqueado pese a aprobar guardado/consulta. Se corrige el HTML con nonce por respuesta para Angular/CDK y se desactiva inlineCritical para cargar el CSS global desde el mismo origen. El smoke local de producción pasó sin violaciones CSP; se refuerzan las aserciones live de estilos. La nueva CI debe comprobar la integración. Las 28 unitarias frontend posteriores son evidencia local y no sustituyen esa ejecución.
+La captura del run7 reveló CSS global bloqueado pese a aprobar guardado/consulta. Se corrigió el HTML con nonce por respuesta para Angular/CDK y se desactivó inlineCritical para cargar el CSS global desde el mismo origen. El navegador real del run8 verificó estilos efectivos y nonce/CSP. Las 28 unitarias frontend también pasaron en esa CI.
+
+## D15. Evaluar informativos ZAP con condiciones verificables
+
+Exit 2 del baseline no se interpreta automáticamente como éxito. El gate examina JSON válido del origen loopback, severidad/subtipo y evidencia API no-store; sólo permite informativos conocidos y caché de assets públicos publicados por ruta exacta. Las excepciones HTTP-loopback 10035-1/10011 están limitadas a sus referencias y riesgo bajo. El run8 sólo aceptó risk 0, sin alertas rechazadas. Una alerta desconocida, severidad distinta o reporte incompleto falla. Esta revisión no concede excepciones Trivy SQL ni equivale a pentest.

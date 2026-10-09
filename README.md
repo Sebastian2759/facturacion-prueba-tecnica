@@ -62,16 +62,16 @@ Desde un commit y árbol limpios, `pwsh scripts/build-release.ps1 -PrepareOnly` 
 
 ## Estado de verificación
 
-Evidencia del 9 de octubre de 2026: [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596), commit `c6b44269ac0944289cb1d848a48510efcd1e5523` (run7).
+Evidencia del 9 de octubre de 2026: [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37991580284), commit `8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2` (run8).
 
 - Build .NET integrado: **0 errores y 0 advertencias**; formato aprobado.
-- **150 pruebas .NET aprobadas, 0 omitidas**, incluidas las **5 de SQL Server real**, modelo/snapshot EF, autorización HTTP y cliente Accounts con respuestas controladas.
-- Angular en CI: build/formato, **16 unitarias**, **4 pruebas de proxy**, **7 de navegador con respuestas controladas/axe** y **1 live con API/SQL** aprobadas. Axe no acredita accesibilidad completa.
+- **159 pruebas .NET aprobadas, 0 omitidas**, incluidas las **5 de SQL Server real**, modelo/snapshot EF, autorización HTTP y cliente Accounts con respuestas controladas.
+- Angular en CI: build/formato, **28 unitarias**, **4 pruebas de proxy**, **7 de navegador con respuestas controladas/axe** y **1 live con API/SQL** aprobadas. Axe no acredita accesibilidad completa.
 - Backup vacío, restore a otra base, CHECKDB, migradores y smoke de API con persistencia: aprobados en CI Linux.
-- Gitleaks, Semgrep, NuGet/npm Audit, Trivy del filesystem y de la imagen ASP.NET: gates aprobados.
+- Gitleaks, NuGet/npm Audit, Trivy del filesystem y de la imagen ASP.NET: gates aprobados. **Semgrep no se ejecutó**: la descarga de su imagen recibió HTTP 429 de Docker Hub; no es un hallazgo del código ni una aprobación.
 - **Bloqueo de seguridad:** la imagen oficial SQL conserva hallazgos Go y OpenSSL; el análisis binario identifica símbolos asociados a **9 CVE Go HIGH** sin restricción Windows. No demuestra explotabilidad remota ni justifica una excepción. Véase el [análisis de runtime](docs/sql-runtime-risk-assessment.md).
-- ZAP terminó con **4 advertencias**. Las correcciones de cabeceras y la evaluación acotada de informativos están pendientes de nueva CI. No hay ZIP final aprobado ni instalación Windows con Docker acreditada.
-- La captura real del run7 reveló CSS global bloqueado pese al éxito funcional. Después se corrigieron CSP/nonce y el build de estilos; el smoke local de producción pasó sin violaciones CSP. La integración OpenAPI real y **28 unitarias locales** también pasaron; su validación integrada en la siguiente CI queda pendiente.
+- El gate ZAP **pasó** con informativos risk 0 revisados y API `no-store` comprobada. El escáner devolvió 2; el JSON no contiene alertas rechazadas. No equivale a cero alertas ni a un pentest.
+- El CSS bloqueado detectado en el run7 está **corregido y verificado en el run8**: el navegador real comprobó estilos efectivos y nonce/CSP. También pasó el contrato OpenAPI del contenedor. No hay ZIP final aprobado ni instalación Windows con Docker acreditada.
 - En el equipo local, WDAC `0x800711C7` sigue limitando el runtime .NET y no hay Docker/WSL; las pruebas backend/SQL anteriores se ejecutaron en CI Linux.
 - Novasoft real: no ejecutado; el ZIP fuerza simulación identificada. La guía HTML se revisó offline en escritorio/móvil; no sustituye el arranque de la aplicación.
 
@@ -81,6 +81,6 @@ Node **24.21.0 LTS** con npm **11.13.0** fue verificado también mediante toolch
 
 Basado en [ServiciosAndesTool/Template](https://dev.azure.com/ServiciosAndesTool/_git/Template), commit `3393c2e7b02f7d0ea439b461b8fba5d561107681`. Se conserva Clean Architecture, CQRS, validación, ResponseBase y convenciones de repositorio/mapper. Los archivos DemoArchitecture son material heredado y no un grafo actualizado de la aplicación.
 
-Destino: [GitHub privado personal](https://github.com/Sebastian2759/facturacion-prueba-tecnica), cuenta `Sebastian2759`, correo principal requerido verificado `forero.sebastian157@gmail.com`. Repositorio sincronizado; el corte de evidencia CI corresponde al commit `c6b44269ac0944289cb1d848a48510efcd1e5523`. La release final sigue bloqueada. El workflow vigente es `.github/workflows/quality.yml`; `azure-pipelines.yml` fue retirado y reemplazado por GitHub Actions.
+Destino: [GitHub privado personal](https://github.com/Sebastian2759/facturacion-prueba-tecnica), cuenta `Sebastian2759`, correo principal requerido verificado `forero.sebastian157@gmail.com`. Repositorio sincronizado; el corte de evidencia CI corresponde al commit `8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2`. La release final sigue bloqueada. El workflow vigente es `.github/workflows/quality.yml`; `azure-pipelines.yml` fue retirado y reemplazado por GitHub Actions.
 
 El paquete excluye datos reales, credenciales del examen, secretos locales y PDF original. Los componentes de terceros conservan sus condiciones de licencia; la configuración SQL Developer se destina a evaluación.

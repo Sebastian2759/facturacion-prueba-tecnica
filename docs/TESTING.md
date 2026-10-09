@@ -4,30 +4,32 @@ Actualizado: 9 de octubre de 2026. No confundir compilación con ejecución ni r
 
 ## Resultado observado
 
-Evidencia: [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596), commit `c6b44269ac0944289cb1d848a48510efcd1e5523`, 9 de octubre de 2026 (run7). Artifact `11644926583`, SHA-256 `7722e78ad3d2ffd96e478407e6bbe4cde52ef7f0f697748a6fb16c24dcb3ac2e`; descarga e integridad verificadas.
+Evidencia: [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37991580284), commit de código `8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2`, 9 de octubre de 2026 (run8). Se revisaron `tests.trx`, `functional-evidence.json`, `zap-gate.json` y los JSON Trivy descargados de esa ejecución. El recibo funcional indica `functional-verified-not-authorized-for-release`.
 
 | Comprobación | Resultado |
 |---|---|
 | Build integrado / formato .NET | Aprobados; build local 0 errores y 0 advertencias. |
-| Tests .NET en CI Linux | **150 aprobados, 0 omitidos**. Incluyen HTTP/WAF, modelo/snapshot y 5 integraciones SQL. |
+| Tests .NET en CI Linux | **159 aprobados, 0 omitidos**. Incluyen HTTP/WAF, modelo/snapshot y 5 integraciones SQL. |
 | SQL Server real | 5 aprobadas: round-trip/propiedad, concurrencia/idempotencia, rollback, paginación y permisos SELECT/INSERT. |
 | Angular build / formato | Aprobados. Node 24.21.0 LTS/npm 11.13.0; toolchain portable verificado. |
-| Frontend unitarias / proxy | 16 unitarias y 4 pruebas HTTP del proxy aprobadas en CI. |
+| Frontend unitarias / proxy | 28 unitarias y 4 pruebas HTTP del proxy aprobadas en CI. |
 | Playwright con respuestas controladas | 7 aprobadas. |
-| Playwright live navegador/API/SQL | 1 aprobada; la captura reveló CSS bloqueado que las aserciones funcionales no detectaban. |
+| Playwright live navegador/API/SQL | 1 aprobada, con estilos efectivos y nonce/CSP comprobados; defecto CSS del run7 corregido. |
 | Axe escritorio/móvil | Sin violaciones detectadas en los casos revisados; no certificación completa. |
-| Gitleaks / Semgrep / NuGet / npm | Gates aprobados en la ejecución indicada. |
+| Gitleaks / NuGet / npm | Gates aprobados en la ejecución indicada. |
+| Semgrep | No ejecutado: Docker Hub devolvió HTTP 429 al descargar la imagen. No se atribuye hallazgo TypeScript ni aprobación. |
 | Trivy filesystem e imagen ASP.NET | Aprobados. |
-| Trivy imagen oficial SQL Server | **Bloquea la entrega**. Go/OpenSSL; análisis de símbolos confirma 9 CVE Go HIGH sin restricción Windows. Sin excepción. |
+| Trivy SQL 2022 / candidato SQL 2025 | **Bloquean la entrega**: 71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL en cada imagen. Sin excepción SQL. |
 | Backup/restore / CHECKDB / migradores / smoke API | Aprobados en CI sobre la aplicación preparada y SQL real. |
-| ZAP baseline local | 4 advertencias; correcciones y gate de informativos pendientes de nueva CI. |
+| ZAP baseline local | Gate aprobado: sólo informativos risk 0 aceptados, API no-store comprobada y ninguna alerta rechazada. Exit 2 del escáner revisado mediante JSON. |
+| OpenAPI del contenedor | Esquema real y puente consumido por Angular comprobados. |
 | ZIP final | Pendiente; no se etiqueta como release verificada. |
 | Instalación Windows con Docker | No ejecutada; Docker/WSL ausentes en el equipo local. |
 | Novasoft real | No ejecutado; pruebas HTTP controladas y simulación local. |
 
-WDAC 0x800711C7 continúa afectando la ejecución .NET del equipo Windows. Las 150 pruebas aprobadas pertenecen al entorno CI Linux, no a una evasión de esa política.
+WDAC 0x800711C7 continúa afectando la ejecución .NET del equipo Windows. Las 159 pruebas aprobadas pertenecen al entorno CI Linux, no a una evasión de esa política.
 
-Después del run7, la integración del OpenAPI real y 28 unitarias frontend pasaron localmente. Se corrigieron CSP/nonce y la carga de estilos (`inlineCritical: false`); el smoke local de producción confirmó CSS y estilos Material/CDK sin violaciones CSP. Build/formato de los cambios backend también pasó. Estas mejoras y las aserciones live reforzadas aún requieren la siguiente CI; no se atribuyen al run7.
+El run8 valida la integración OpenAPI y las 28 unitarias frontend. La corrección CSP/nonce y `inlineCritical: false` resolvió el CSS bloqueado hallado en la captura del run7. El navegador real del run8 comprueba estilos efectivos, estilos Material/CDK, renovación del nonce y ausencia de violaciones CSP; el éxito funcional ya no es la única evidencia visual.
 
 ## Backend
 
@@ -79,12 +81,12 @@ $env:E2E_BASE_URL='http://127.0.0.1:5080'
 npm run test:e2e -- e2e/local-live.spec.ts
 ```
 
-El run7 ejecutó este recorrido con API/SQL real. El defecto visual de CSS hallado en su captura demuestra que las aserciones funcionales eran insuficientes: la siguiente ejecución comprobará estilos efectivos y CSP además del guardado. Conservar reporte/trazas depuradas. La revisión automática de accesibilidad se complementa con teclado y revisión visual; no se atribuye certificación WCAG a axe.
+El run8 ejecutó este recorrido con API/SQL real y las aserciones de estilos/CSP añadidas tras el defecto visual del run7. Conservar reporte/trazas depuradas. La revisión automática de accesibilidad se complementa con teclado y revisión visual; no se atribuye certificación WCAG a axe.
 
 ## Release y CI
 
-El workflow vigente es [.github/workflows/quality.yml](../.github/workflows/quality.yml). Restore, auditorías, análisis, build/formato y tests .NET/SQL/UI pasaron en la ejecución indicada. El job funcional completó backup/restore, CHECKDB, migradores, smoke y live; terminó fallido por 4 advertencias ZAP. El gate separado de Trivy SQL también bloquea la release; no se omite ni silencia.
+El workflow vigente es [.github/workflows/quality.yml](../.github/workflows/quality.yml). Build/formato, tests .NET/SQL/UI, auditorías NuGet/npm, Gitleaks y Trivy filesystem/ASP.NET pasaron. La fase funcional completó backup/restore, CHECKDB, migradores, smoke/no-store, contrato OpenAPI del contenedor, navegador real y gate ZAP. Trivy SQL bloquea la release; además Semgrep no pudo ejecutarse por el 429 del registro. La siguiente CI debe repetirlo con la corrección de disponibilidad del mirror, sin tratar su ausencia como aprobación.
 
-El empaquetado exige backup real vacío, RESTORE VERIFYONLY y restore a otra base, CHECKDB, verificación de esquema/permisos y smoke creando/consultando una factura; esos pasos SQL pasaron en el run7. La generación y verificación final del ZIP, SBOM/manifiesto/checksums y escaneo del paquete siguen condicionados a los gates. El script PrepareOnly no acredita estas verificaciones.
+El empaquetado exige backup real vacío, RESTORE VERIFYONLY y restore a otra base, CHECKDB, verificación de esquema/permisos y smoke creando/consultando una factura; esos pasos SQL pasaron en el run8. La generación y verificación final del ZIP, SBOM/manifiesto/checksums y escaneo del paquete siguen condicionados a los gates. El script PrepareOnly no acredita estas verificaciones.
 
 Registrar por comprobación: comando, commit, herramienta/versión, fecha, resultado y artifact. Las categorías son aprobado, fallido, pendiente u omitido con motivo. No transformar omitido/bloqueado en aprobado. Antes de entrega se debe probar Windows con Docker a partir del ZIP descargado, además de CI Linux.

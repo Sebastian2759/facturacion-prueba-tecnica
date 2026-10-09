@@ -1,6 +1,6 @@
 # Evaluación del riesgo de la imagen SQL Server
 
-Fecha de corte: 9 de octubre de 2026, después de la CI 37989162596 (run7). Estado: la entrega sigue bloqueada por la imagen SQL; las cuatro advertencias ZAP del run7 también están pendientes de resolución. **No se aplicaron exclusiones, excepciones ni cambios de umbral.** La revisión confirma versiones y símbolos afectados presentes, pero no demuestra explotabilidad ni ausencia de riesgo.
+Fecha de corte: 9 de octubre de 2026, después de la CI 37991580284 (run8). Estado: la entrega sigue bloqueada por la imagen SQL; el gate ZAP y la corrección CSS/CSP ya pasaron en el run8. Semgrep no pudo ejecutarse por HTTP 429 del registro de imágenes. **No se aplicaron exclusiones, excepciones ni cambios de umbral al análisis SQL.** La revisión confirma versiones y símbolos afectados presentes, pero no demuestra explotabilidad ni ausencia de riesgo.
 
 ## Imagen y evidencia de origen
 
@@ -35,6 +35,10 @@ La comparación se calculó desde `trivy-sqlserver.json`, `trivy-sql2025-candida
 El TRX del run6 confirma **150 pruebas .NET aprobadas y cero omitidas**. El frontend registró 16 pruebas unitarias, cuatro de proxy y siete de navegador con respuestas controladas. Esa ejecución publicó el payload y completó `init` del migrador, pero falló en el lote backup/restore. Este resultado se conserva como historial; los avances posteriores figuran en el corte del run7 siguiente.
 
 La [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596), commit `c6b44269ac0944289cb1d848a48510efcd1e5523`, volvió a aprobar las 150 pruebas .NET y completó backup/restore, CHECKDB, el migrador, el smoke API del paquete y la prueba de navegador live. Los controles de configuración SQL también pasaron. La fase funcional terminó con cuatro advertencias ZAP; el gate de imagen SQL sigue fallando. No se declara ZIP liberado ni ejecución del paquete en Docker Desktop Windows.
+
+El run8, [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37991580284), commit `8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2`, vuelve a analizar los mismos digests literales anteriores. Los JSON registran SQL 2022 a las 21:16:10 UTC, SQL 2025 a las 21:16:22 UTC y ASP.NET a las 21:15:06 UTC: cada imagen SQL conserva **71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL**; ASP.NET, 0 HIGH/CRITICAL. No se sustituye el análisis de símbolos histórico del run7 por una afirmación de explotabilidad.
+
+El TRX run8 confirma **159/159 aprobadas, 0 omitidas**, incluidas cinco SQL. El recibo funcional, los reportes del smoke/OpenAPI y el navegador real acreditan backup/restore, CHECKDB, migradores, API/no-store y nonce/CSS corregidos. `zap-gate.json` indica passed, exit 2 del escáner revisado, sólo informativos risk 0 aceptados y ninguna alerta rechazada. Semgrep no se ejecutó por el 429; no es un hallazgo del código ni una aprobación. `functional-evidence.json` se identifica como `functional-verified-not-authorized-for-release`: ZIP final y Windows con Docker siguen pendientes.
 
 ## OpenSSL: paquete afectado y condición de activación
 

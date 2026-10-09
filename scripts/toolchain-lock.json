@@ -9,13 +9,19 @@
   "images": {
     "aspnet": "mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4",
     "sqlserver": "mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090",
-    "zap": "ghcr.io/zaproxy/zaproxy:stable@sha256:7aaa659b0d43078febd82e29bad112285c370727e86ab8340444220e17d9f0d2",
-    "semgrep": "semgrep/semgrep:latest@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b"
+    "zap": "ghcr.io/zaproxy/zaproxy:stable@sha256:7aaa659b0d43078febd82e29bad112285c370727e86ab8340444220e17d9f0d2"
   },
   "diagnosticImages": {
     "sql2025Candidate": "mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04@sha256:2b5b581621126574f3d1f75e78d3eebe8d05aedb59ad0cfdf9aa42cb0634d726"
   },
   "tools": {
+    "semgrep": {
+      "version": "1.179.0",
+      "python": "3.12",
+      "index": "https://pypi.org/simple",
+      "requirements": "scripts/security/semgrep-requirements.txt",
+      "verification": "isolated venv, pip require-hashes and only-binary, exact CLI/report version, nonempty scanned paths and zero findings/errors"
+    },
     "go": {
       "version": "1.26.9",
       "url": "https://go.dev/dl/go1.26.9.linux-amd64.tar.gz",
@@ -49,6 +55,7 @@
     "https://mcr.microsoft.com/v2/mssql/server/manifests/2022-latest",
     "https://ghcr.io/v2/zaproxy/zaproxy/manifests/stable",
     "https://go.dev/dl/?mode=json&include=all",
-    "https://pkg.go.dev/golang.org/x/vuln@v1.8.0/cmd/govulncheck"
+    "https://pkg.go.dev/golang.org/x/vuln@v1.8.0/cmd/govulncheck",
+    "https://pypi.org/pypi/semgrep/1.179.0/json"
   ]
 }

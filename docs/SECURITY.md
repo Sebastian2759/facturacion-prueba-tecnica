@@ -2,7 +2,7 @@
 
 La política vigente está en [SECURITY.md de la raíz](../SECURITY.md).
 
-El alcance es evaluación local Windows x64, repositorio GitHub privado y distribución controlada. El host web opcional queda fuera de la entrega; no hay publicación Azure/Cloudflare ni IdP requerido. La [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596), commit `c6b44269ac0944289cb1d848a48510efcd1e5523`, aprobó 150 pruebas .NET, backup/restore, CHECKDB, migradores, smoke API y 1 navegador live con SQL. Trivy SQL bloquea la release y ZAP terminó con 4 advertencias. Las correcciones CSP/estilos y cabeceras posteriores esperan nueva CI; la captura había revelado CSS bloqueado pese al éxito funcional. Esas verificaciones no se presentan como pentest o auditoría exhaustiva.
+El alcance es evaluación local Windows x64, repositorio GitHub privado y distribución controlada. El host web opcional queda fuera de la entrega; no hay publicación Azure/Cloudflare ni IdP requerido. La [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37991580284), commit `8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2`, aprobó 159 pruebas .NET, backup/restore, CHECKDB, migradores, smoke API/no-store, OpenAPI del contenedor y 1 navegador live SQL con CSP/estilos corregidos. El gate ZAP pasó con informativos risk 0 revisados. Trivy SQL sigue bloqueando y Semgrep no se ejecutó por HTTP 429 del registro de imágenes. Esas verificaciones no se presentan como pentest o auditoría exhaustiva.
 
 Véanse también [arquitectura](ARCHITECTURE.md), [decisiones](decisions.md) y [estado de pruebas](TESTING.md).
 

@@ -75,11 +75,11 @@ ResponseBase conserva isSuccess, statusCode, message, data y errors, añadiendo 
 | Límite temporal | 429 |
 | Error inesperado | 500, mensaje depurado |
 
-El [contrato](implementation-contract.md) describe rutas/DTO. Angular consume tipos de transporte generados desde el OpenAPI real exportado por CI; los decodificadores comprueban las respuestas antes de formar el modelo de UI. El check compara la referencia completa y compila el puente utilizado por la aplicación. Esta integración posterior al run7 pasó localmente y espera la siguiente CI; véase [procedencia OpenAPI](../Frontend/docs/openapi.md).
+El [contrato](implementation-contract.md) describe rutas/DTO. Angular consume tipos de transporte generados desde el OpenAPI real exportado por CI; los decodificadores comprueban las respuestas antes de formar el modelo de UI. El check compara la referencia completa y compila el puente utilizado por la aplicación. La comprobación pasó contra el OpenAPI del contenedor en el run8; véase [procedencia OpenAPI](../Frontend/docs/openapi.md).
 
 Frontend usa componentes standalone, lazy loading por rutas, formularios reactivos tipados y signals. core normaliza errores/sesión; shared contiene campos, feedback e iconos realmente reutilizados. La idempotencia se conserva para reintentar el mismo cuerpo y cambia al editarlo.
 
-La revisión visual del run7 detectó CSS global bloqueado aunque el recorrido funcional pasó. La corrección posterior utiliza nonce por respuesta para los estilos Angular/CDK y desactiva el inline de CSS crítico; el archivo global se sirve desde el mismo origen. El smoke local de producción confirmó estilos efectivos sin violaciones CSP. Las aserciones live reforzadas y esa corrección esperan nueva CI.
+La revisión visual del run7 detectó CSS global bloqueado aunque el recorrido funcional pasó. Se corrigió con nonce por respuesta para los estilos Angular/CDK y desactivando el inline de CSS crítico; el archivo global se sirve desde el mismo origen. El navegador real del run8 comprobó estilos efectivos, renovación del nonce y ausencia de violaciones CSP.
 
 ## Sesión y proveedor
 
@@ -91,4 +91,4 @@ Api/Api conserva un host JWT opcional, fuera del alcance de entrega y sin IdP co
 
 Los HTML y reportes DemoArchitecture en docs/architecture son documentación histórica de Template, no un grafo actualizado de este sistema. Build y evidencia actual están en [TESTING](TESTING.md).
 
-Evidencia de ejecución: [CI 37989162596](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37989162596), commit `c6b44269ac0944289cb1d848a48510efcd1e5523`: 150 tests .NET aprobados, 0 omitidos; frontend 16 unitarias, 4 proxy, 7 navegador/axe controladas y 1 live API/SQL. Trivy SQL y 4 advertencias ZAP impiden cerrar la release. El ZIP final y su instalación Windows siguen pendientes.
+Evidencia de ejecución: [CI 37991580284](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37991580284), commit `8d4469a0e47c3cd4b61ca8ebb397d8b9327708c2`: 159 tests .NET aprobados, 0 omitidos; frontend 28 unitarias, 4 proxy, 7 navegador/axe controladas y 1 live API/SQL. El gate ZAP pasó. Trivy SQL mantiene 71 ocurrencias HIGH por imagen y Semgrep no se ejecutó por HTTP 429 de Docker Hub. El ZIP final y su instalación Windows siguen pendientes.
