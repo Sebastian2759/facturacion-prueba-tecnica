@@ -36,6 +36,8 @@ try {
         [IO.File]::WriteAllText($_.FullName, $scriptText, $windowsScriptEncoding)
     }
     Copy-Item -LiteralPath (Join-Path $script:ReleaseRoot 'docs/delivery.md') -Destination (Join-Path $stage 'README.md')
+    $deliveryReadme = Join-Path $stage 'README.md'
+    Write-Utf8 $deliveryReadme ((Get-Content -LiteralPath $deliveryReadme -Raw).Replace('(sql-risk-acceptance.md)', '(docs/sql-risk-acceptance.md)'))
     [IO.Directory]::CreateDirectory((Join-Path $stage 'source')) | Out-Null
     $tracked = & git ls-files
     foreach ($relative in $tracked) {

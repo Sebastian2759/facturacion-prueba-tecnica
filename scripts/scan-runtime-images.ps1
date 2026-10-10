@@ -40,3 +40,6 @@ foreach ($target in $targets) {
 }
 Write-Utf8 (Join-Path $reports 'runtime-images-summary.json') ($summary | ConvertTo-Json -Depth 5)
 if ($failed) { throw 'Una imagen requerida tiene hallazgos o no pudo verificarse. El ZIP permanece bloqueado; consulte los reportes JSON. El candidato no autoriza un cambio de motor.' }
+# GitHub's pwsh wrapper exits with LASTEXITCODE. Native diagnostic scans may
+# return 1 even after every required gate passed; only clear it after validation.
+$global:LASTEXITCODE = 0

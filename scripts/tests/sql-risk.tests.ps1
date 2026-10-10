@@ -60,5 +60,42 @@ Check 'Missing owner rejected' $false { param($r,$p) $p.owner = '' } 'ownership'
 Check 'Invalid policy baseline rejected' $false { param($r,$p) $p.findings = @($p.findings | Select-Object -Skip 1) } 'incomplete'
 Check 'Critical policy entry rejected' $false { param($r,$p) $p.findings[0].severity = 'CRITICAL' } 'invalid finding'
 Check 'Duplicate policy entry rejected' $false { param($r,$p) $p.findings[0] = $p.findings[1] } 'duplicate'
+$integrationRoot = Join-Path $fixture 'scan-integration'
+[IO.Directory]::CreateDirectory((Join-Path $integrationRoot 'scripts')) | Out-Null
+[IO.Directory]::CreateDirectory((Join-Path $integrationRoot 'docs')) | Out-Null
+foreach ($name in @('common.ps1', 'scan-runtime-images.ps1', 'assert-sql-risk.ps1', 'toolchain-lock.json')) {
+    Copy-Item -LiteralPath (Join-Path $repo "scripts/$name") -Destination (Join-Path $integrationRoot "scripts/$name")
+}
+[IO.File]::WriteAllText((Join-Path $integrationRoot 'docs/sql-risk-acceptance.json'), $original)
+$global:SqlRiskFixtureReport = $baseline | ConvertFrom-Json
+$global:SqlRiskFixtureReport.CreatedAt = [DateTimeOffset]::UtcNow.ToString('o')
+function trivy {
+    $arguments = @($args)
+    $output = $arguments[[Array]::IndexOf($arguments, '--output') + 1]
+    $imageName = $arguments[-1]
+    $sql = $imageName -like '*2022-latest*'
+    $candidate = $imageName -like '*2025-CU9*'
+    $r = $global:SqlRiskFixtureReport | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+    if (-not $sql) { $r.Results = @(@{ Vulnerabilities = @() }) }
+    if ($global:SqlRiskFixtureScenario -eq 'required-hit' -and -not $sql -and -not $candidate) { $r.Results[0].Vulnerabilities = @(@{ VulnerabilityID = 'CVE-2099-99999'; Severity = 'HIGH' }) }
+    if ($global:SqlRiskFixtureScenario -eq 'new-sql-hit' -and $sql) { $r.Results[0].Vulnerabilities[0].VulnerabilityID = 'CVE-2099-99999' }
+    $json = $r | ConvertTo-Json -Depth 20
+    if ($global:SqlRiskFixtureScenario -eq 'malformed' -and $sql) { $json = '{invalid' }
+    [IO.File]::WriteAllText($output, $json)
+    $global:LASTEXITCODE = if ($sql -or $candidate -or $global:SqlRiskFixtureScenario -eq 'required-hit') { 1 } else { 0 }
+    if ($global:SqlRiskFixtureScenario -eq 'scanner-error' -and $sql) { $global:LASTEXITCODE = 2 }
+}
+try {
+    foreach ($scenario in @('accepted-with-diagnostic-failure', 'required-hit', 'new-sql-hit', 'malformed', 'scanner-error')) {
+        $global:SqlRiskFixtureScenario = $scenario
+        $failure = $null
+        try { & (Join-Path $integrationRoot 'scripts/scan-runtime-images.ps1') 3>$null 6>$null } catch { $failure = $_.Exception.Message }
+        $shouldPass = $scenario -eq 'accepted-with-diagnostic-failure'
+        if (($null -eq $failure) -ne $shouldPass) { throw "SQL scan integration failed: $scenario, error=$failure" }
+        if ($shouldPass -and $global:LASTEXITCODE -ne 0) { throw 'Successful gates leaked diagnostic native exit code to the CI wrapper.' }
+        $checks.Add(@{ name = "Scan wrapper: $scenario"; result = 'passed' })
+    }
+} finally { Remove-Item Function:trivy; Remove-Variable SqlRiskFixtureReport, SqlRiskFixtureScenario -Scope Global }
 if ($RegressionReportPath) { [IO.File]::WriteAllText($RegressionReportPath, (@{ checks = $checks.ToArray(); total = $checks.Count } | ConvertTo-Json -Depth 5)) }
 Write-Host "SQL acceptance regression checks passed: $($checks.Count)."
+$global:LASTEXITCODE = 0
