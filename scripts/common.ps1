@@ -38,11 +38,15 @@ function Protect-LocalFile {
     param([string]$Path)
     if ($env:OS -eq 'Windows_NT') {
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-        $acl = Get-Acl -LiteralPath $Path
+        # Windows PowerShell can lose module auto-loading after a nested verifier.
+        # Use the framework ACL API there; PowerShell Core uses its security module.
+        $desktop = $PSVersionTable.PSEdition -eq 'Desktop'
+        $acl = if ($desktop) { [IO.File]::GetAccessControl($Path) } else { Get-Acl -LiteralPath $Path }
         $acl.SetAccessRuleProtection($true, $false)
         $rule = New-Object Security.AccessControl.FileSystemAccessRule($identity, 'FullControl', 'Allow')
         $acl.AddAccessRule($rule)
-        Set-Acl -LiteralPath $Path -AclObject $acl
+        if ($desktop) { [IO.File]::SetAccessControl($Path, $acl) }
+        else { Set-Acl -LiteralPath $Path -AclObject $acl }
     } else {
         Invoke-Checked 'chmod' @('600', $Path)
     }

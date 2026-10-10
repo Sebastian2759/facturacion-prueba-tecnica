@@ -67,14 +67,24 @@ Pass 'Verify intact synthetic package in a path with spaces'
 # Windows PowerShell process; importing Utility in this test runner hid the bug.
 $nestedProbe = Join-Path $fixture 'nested-start.ps1'
 $probeText = @'
-param([string]$Common, [string]$Verifier, [string]$Package)
+param([string]$Common, [string]$Verifier, [string]$Package, [string]$SettingsRoot)
 . $Common
 & $Verifier -Root $Package
+$script:ReleaseRoot = $SettingsRoot
+Initialize-LocalSettings
 '@
 Write-Utf8 $nestedProbe $probeText
-& powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File $nestedProbe -Common (Join-Path $fixture 'common.ps1') -Verifier $verify -Package $package
+$freshSettings = Join-Path $fixture 'fresh Windows settings'
+[IO.Directory]::CreateDirectory($freshSettings) | Out-Null
+& powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File $nestedProbe -Common (Join-Path $fixture 'common.ps1') -Verifier $verify -Package $package -SettingsRoot $freshSettings
 if ($LASTEXITCODE -ne 0) { throw 'Nested Windows PowerShell verifier failed.' }
 Pass 'Fresh Windows PowerShell common/verifier script scopes verify the intact package'
+foreach ($privateName in @('local.env', 'novasoft.local.json')) {
+    $privateAcl = Get-Acl -LiteralPath (Join-Path $freshSettings $privateName)
+    $privateRules = @($privateAcl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier]))
+    if (-not $privateAcl.AreAccessRulesProtected -or $privateRules.Count -ne 1 -or $privateRules[0].IdentityReference.Value -ne $currentSid) { throw 'Fresh Windows process did not restrict private configuration.' }
+}
+Pass 'Fresh Windows PowerShell startup restricts both private settings files after verification'
 Write-Utf8 (Join-Path $package 'first.txt') 'Changed after checksum creation'
 Expect-Rejection 'Reject modified file' { & $verify -Root $package 6>$null } 'Integridad no v'
 Write-FixtureChecksums
