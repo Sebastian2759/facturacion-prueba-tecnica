@@ -60,7 +60,7 @@ try
     {
         await EnsureRuntimeAccessAsync(admin, databaseOptions, password!);
         Console.WriteLine("Inicialización completada. Esquema migrado, datos existentes conservados y usuario runtime sólo SELECT/INSERT.");
-        Console.WriteLine("No se cargan facturas de ejemplo: los ejemplos públicos son fixtures; la base inicial está vacía.");
+        Console.WriteLine("La inicialización no agrega facturas ni cuentas. Los registros existentes se conservan.");
     }
     else
     {
