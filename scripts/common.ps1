@@ -71,7 +71,9 @@ function Get-DatabaseContainer {
 
 function Invoke-ContainerSql {
     param([string]$Container, [string]$Sql)
-    $Sql | & docker exec -i $Container sh -c 'SQLCMDPASSWORD="$MSSQL_SA_PASSWORD" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -r1 -h -1 -W -s "|" -i /dev/stdin'
+    # POSIX assignment expansion does not split the password. Single quotes around
+    # the delimiter also survive Windows PowerShell 5.1 native argument passing.
+    $Sql | & docker exec -i $Container sh -c 'SQLCMDPASSWORD=$MSSQL_SA_PASSWORD /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -C -b -r1 -h -1 -W -s ''|'' -i /dev/stdin'
     if ($LASTEXITCODE -ne 0) { throw 'La operación SQL falló. Los datos existentes se conservan.' }
 }
 
