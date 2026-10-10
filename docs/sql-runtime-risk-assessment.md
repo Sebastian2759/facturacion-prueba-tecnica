@@ -1,5 +1,7 @@
 # Evaluación del riesgo de la imagen SQL Server
 
+La detección de estos componentes afectados es un resultado del proceso de revisión DevSecOps. No se atribuye a una demo sin controles ni implica que los fallos sean aceptables por ser habituales. Su gestión requiere análisis, reducción de exposición y corrección verificada; la [explicación para el evaluador](SECURITY.md#interpretación-de-los-hallazgos-de-terceros) distingue este contexto de una aceptación formal del riesgo. Los hallazgos permanecen abiertos y no hay excepción SQL aprobada.
+
 ## Alternativa oficial RHEL comprobada el 9 de octubre de 2026
 
 La [ejecución diagnóstica 38014461532](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38014461532), commit `f13866bd3926b9bfe64a49f60ea10711141327ed`, analizó sin ejecutar la imagen oficial `mcr.microsoft.com/mssql/rhel/server:2022-latest@sha256:a28ec29377c9a45f3afe7411c27b75124e3c6dd3e4f5adab930eb4bea2951dcc`. Trivy detectó RHEL 9.8 y **113 ocurrencias HIGH, 50 CVE únicos y cero CRITICAL**: 44 ocurrencias en paquetes del sistema y las mismas 69 ocurrencias Go en tres binarios. Cambiar de Ubuntu a esta imagen no elimina el bloqueo. La imagen de la aplicación no se modificó y no se aplicó una excepción.
