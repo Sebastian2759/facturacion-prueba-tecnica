@@ -16,14 +16,14 @@ const invoice = {
   tax: 90250,
   total: 565250,
 };
-async function mockLocal(page: Page) {
+async function mockLocal(page: Page, canUseRealAccounts = false) {
   await page.route('**/api/v1/session', (route) =>
     route.fulfill({
       json: envelope({
         mode: 'local',
         authenticated: true,
         canEvaluate: true,
-        canUseRealAccounts: false,
+        canUseRealAccounts,
         csrfToken: 'test-csrf',
       }),
     }),
@@ -52,6 +52,23 @@ async function fillInvoice(page: Page) {
   await expect(page.getByText('Actualizando importes…')).toBeHidden();
 }
 test.describe('UI with controlled API responses (not live SQL evidence)', () => {
+  test('real mode requires server capability and sends an explicit real query', async ({
+    page,
+  }) => {
+    await mockLocal(page, true);
+    const modes: string[] = [];
+    await page.route('**/api/v1/accounts?**', (route) => {
+      const mode = new URL(route.request().url()).searchParams.get('mode')!;
+      modes.push(mode);
+      return route.fulfill({ json: envelope({ mode, accounts: [] }) });
+    });
+    await page.goto('/cuentas');
+    await expect(page.getByRole('button', { name: 'Novasoft real', exact: true })).toBeEnabled();
+    await page.getByRole('button', { name: 'Novasoft real', exact: true }).click();
+    await expect(page.getByText('Modo real seleccionado')).toBeVisible();
+    await expect(page.getByText('No encontramos cuentas')).toBeVisible();
+    expect(modes).toEqual(['simulated', 'real']);
+  });
   test('saves the server totals, sends CSRF and preserves retry identity after a timeout', async ({
     page,
   }) => {
@@ -215,7 +232,7 @@ test.describe('UI with controlled API responses (not live SQL evidence)', () => 
     });
     await page.goto('/cuentas');
     await expect(page.getByText('No encontramos cuentas')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Real', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Novasoft real', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: 'Crear cuenta', exact: true }).click();
     await page.locator('#account-code').fill('DEMO001');
     await page.locator('#identificationType').fill('06');

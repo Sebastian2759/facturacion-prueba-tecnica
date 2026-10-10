@@ -11,13 +11,42 @@
 <div class="panel integration-toolbar">
   <div>
     <strong>Origen de los datos</strong>
-    <p>Cuentas ficticias de esta instalación. La simulación se reinicia con el servidor.</p>
+    <p>
+      {{
+        mode() === 'real'
+          ? 'Servicio de pruebas Novasoft. Las altas se envían al proveedor.'
+          : 'Cuentas ficticias de esta instalación. La simulación se reinicia con el servidor.'
+      }}
+    </p>
   </div>
-  <span class="badge amber">SIMULACIÓN LOCAL</span>
+  <div class="tabs" role="group" aria-label="Origen de los datos">
+    <button
+      type="button"
+      (click)="setMode('simulated')"
+      [attr.aria-pressed]="mode() === 'simulated'"
+      [disabled]="loading() || saving()"
+    >
+      Simulación
+    </button>
+    <button
+      type="button"
+      (click)="setMode('real')"
+      [attr.aria-pressed]="mode() === 'real'"
+      [disabled]="!auth.canUseRealAccounts() || loading() || saving()"
+    >
+      Novasoft real
+    </button>
+  </div>
 </div>
 <p class="helper-text">
-  Este paquete no llama al servicio Novasoft real. La respuesta identifica su origen simulado; las
-  facturas sí se guardan en SQL Server.
+  @if (auth.canUseRealAccounts()) {
+    La conexión real está configurada. Selecciona su origen para consultar o crear cuentas de
+    prueba.
+  } @else {
+    Para habilitar Novasoft real, ejecuta configurar-novasoft.cmd con las credenciales de prueba y
+    reinicia la aplicación. La simulación funciona sin esa configuración.
+  }
+  Las facturas se guardan en SQL Server en ambos modos.
 </p>
 <nav class="tabs" aria-label="Operaciones de cuentas">
   <button

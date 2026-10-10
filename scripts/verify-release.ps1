@@ -27,8 +27,17 @@ foreach ($line in $lines) {
     if ((Get-ReleaseFileSha256 $path) -ne $hash) { throw "Integridad no válida: $relative. Vuelva a descargar el ZIP." }
 }
 $release = Get-Content -LiteralPath (Join-Path $rootPath 'release.json') -Raw | ConvertFrom-Json
-if ($release.status -notin @('release-verified', 'release-verified-with-accepted-risk')) { throw 'El paquete no ha superado los controles de entrega.' }
-if ($release.status -eq 'release-verified-with-accepted-risk') {
+if ($release.status -notin @('release-verified', 'release-verified-with-accepted-risk', 'local-verified-with-accepted-risk')) { throw 'El paquete no ha superado los controles de entrega.' }
+if ($release.status -eq 'local-verified-with-accepted-risk') {
+    $receiptPath = Join-Path $rootPath 'docs/local-verification.json'
+    if (-not (Test-Path -LiteralPath $receiptPath)) { throw 'Falta evidencia de verificación local.' }
+    $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
+    if ($receipt.environment -ne 'Windows Docker Desktop' -or $receipt.status -ne 'passed-with-accepted-sql-risk' -or
+        $receipt.sourceCommit -ne $release.sourceCommit -or $receipt.version -ne $release.version -or
+        -not $release.backupVerified) { throw 'La evidencia local no corresponde a esta entrega.' }
+    Write-Host 'Entrega verificada localmente; no constituye una aprobación de CI remota.'
+}
+if ($release.status -in @('release-verified-with-accepted-risk', 'local-verified-with-accepted-risk')) {
     if ($release.profile -ne 'local-evaluation' -or $release.sqlRiskAcceptance.acceptanceId -ne 'SQL-LOCAL-2026-10-09' -or
         $release.sqlRiskAcceptance.status -notin @('accepted-risk', 'passed-no-findings') -or $release.sqlRiskAcceptance.image -ne $release.images.sqlserver) { throw 'La aceptación SQL del paquete no es válida.' }
     Write-Host 'Evaluación local con riesgo SQL aceptado. Consulte docs/sql-risk-acceptance.md; utilice datos ficticios.'

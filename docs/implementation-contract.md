@@ -28,7 +28,7 @@ Precio unitario, importe de cada línea, bruto y total no pueden superar `999999
 - `POST /api/v1/accounts`: `{ mode, code, identificationType, document, name, firstName?, lastName?, email, personType, cityCode, departmentCode, countryCode, address?, additionalAddress?, phone?, customerType, website?, registeredAt, externalCode? }`.
 - La creación devuelve `data: { mode, code, accepted: true }`: la respuesta genérica del proveedor indica aceptación, no un objeto creado. La UI ofrece una consulta posterior explícita.
 
-La respuesta siempre indica `mode: 'simulated' | 'real'`; no cambia a simulación tras fallar una llamada real. El perfil local sólo permite simulación y rechaza `real` incluso si se manipula la petición. El adaptador real se implementó contra el Swagger consultado de Novasoft; no se han ejecutado login ni escrituras contra ese servicio. No se distribuyen sus credenciales.
+La respuesta siempre indica `mode: 'simulated' | 'real'`; no cambia a simulación tras fallar una llamada real. El perfil local usa simulación por defecto. Sólo la configuración privada completa habilita la capacidad real de sesión. Se verificaron login, GET general, POST único autorizado y GET por código desde C#; consulte novasoft-real.md. No se distribuyen sus credenciales.
 
 ## Errores
 

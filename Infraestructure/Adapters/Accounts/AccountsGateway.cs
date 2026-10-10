@@ -33,7 +33,7 @@ public sealed class AccountsGateway(
     {
         if (!Enum.IsDefined(mode))
             throw new AccountsIntegrationException("ACCOUNTS_MODE_INVALID", 400, "El modo solicitado no es válido.");
-        if (mode == AccountExecutionMode.Real && (options.IsLocal || !options.RealEnabled))
+        if (mode == AccountExecutionMode.Real && !options.RealEnabled)
             throw new AccountsIntegrationException("ACCOUNTS_REAL_DISABLED", 403, "La integración real no está habilitada en este entorno.");
     }
 }

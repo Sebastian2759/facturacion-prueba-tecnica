@@ -26,7 +26,7 @@ try {
     if (-not (Test-Path -LiteralPath (Join-Path $browser 'index.html'))) { throw 'No se encontró el build Angular esperado.' }
     [IO.Directory]::CreateDirectory((Join-Path $stage 'app/wwwroot')) | Out-Null
     Copy-Item -Path (Join-Path $browser '*') -Destination (Join-Path $stage 'app/wwwroot') -Recurse
-    foreach ($name in @('scripts', 'docs', 'compose.yaml', 'LEEME.html', 'iniciar.cmd', 'detener.cmd', 'diagnosticar.cmd', 'backup.cmd', 'restaurar.cmd')) {
+    foreach ($name in @('scripts', 'docs', 'compose.yaml', 'LEEME.html', 'iniciar.cmd', 'detener.cmd', 'diagnosticar.cmd', 'backup.cmd', 'restaurar.cmd', 'configurar-novasoft.cmd')) {
         Copy-Item -LiteralPath (Join-Path $script:ReleaseRoot $name) -Destination $stage -Recurse
     }
     # Windows PowerShell 5.1 otherwise decodes BOM-less UTF-8 as the local ANSI code page.
@@ -46,7 +46,7 @@ try {
         [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($destination)) | Out-Null
         Copy-Item -LiteralPath (Join-Path $script:ReleaseRoot $relative) -Destination $destination
     }
-    Write-Utf8 (Join-Path $stage 'database/README.md') "# Base de evaluación`n`ndemo.bak contiene únicamente el esquema migrado, sin facturas ni datos personales. Los ejemplos de la pantalla pública son fixtures de la aplicación. La inicialización normal aplica las migraciones con un usuario administrativo separado; la API usa facturacion_runtime sin DDL. El backup de entrega se incluye únicamente después de restaurarlo y verificarlo en CI.`n"
+    Write-Utf8 (Join-Path $stage 'database/README.md') "# Base de evaluación`n`ndemo.bak contiene únicamente el esquema migrado, sin facturas ni datos personales. Los ejemplos de la pantalla pública son fixtures de la aplicación. La inicialización normal aplica las migraciones con un usuario administrativo separado; la API usa facturacion_runtime sin DDL. El backup de entrega se incluye únicamente después de restaurarlo y verificarlo; release.json identifica si la evidencia procede de CI o de validación local.`n"
     $lock = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'toolchain-lock.json') -Raw | ConvertFrom-Json
     $manifest = [ordered]@{
         version = $Version; sourceCommit = $commit; profile = 'local-evaluation'; architecture = 'linux-x64-on-windows-docker'

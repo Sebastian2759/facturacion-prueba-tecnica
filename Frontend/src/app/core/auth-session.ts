@@ -19,7 +19,9 @@ export class AuthSession {
       this.state()?.authenticated === true &&
       this.state()?.canEvaluate === true,
   );
-  readonly canUseRealAccounts = computed(() => false);
+  readonly canUseRealAccounts = computed(
+    () => this.canEvaluate() && this.state()?.canUseRealAccounts === true,
+  );
 
   async initialize(): Promise<void> {
     if (this.config.error()) return;

@@ -4,11 +4,11 @@
 
 Esta entrega se ejecuta en **Windows x64 con Docker Desktop en modo Linux**. La aplicación abre en `http://127.0.0.1:5080`. El paquete contiene Angular y .NET ya compilados: el evaluador no necesita Node, Visual Studio ni SDK de .NET.
 
-**Estado del repositorio:** los scripts y el pipeline definen la construcción y los controles. Un directorio de fuentes o un payload `prepared-not-verified` no constituye el ZIP final. Sólo un job de CI exitoso que adjunte `Aplicacion-<version>.zip`, su checksum y las evidencias del mismo commit acredita una entrega verificada. No se publica la aplicación en un servicio de alojamiento.
+**Estado de entrega:** revise release.json y la evidencia del mismo payload. CI15 acredita la versión anterior; una verificación local posterior se identifica expresamente como local. No se publica la aplicación en servicios de alojamiento.
 
-## 1. Descargar desde SharePoint
+## 1. Obtener el ZIP local
 
-Descargue el ZIP completo y el archivo externo `SHA256SUMS.txt` de la carpeta de entrega. La cuenta del evaluador debe tener permiso de lectura **y descarga**. El README del repositorio privado, el HTML local y la documentación dentro del ZIP permiten revisar la solución sin depender de la vista previa de SharePoint.
+Use el ZIP y checksum de la carpeta local de entrega. Las publicaciones y permisos de SharePoint/GitHub están aplazados. El paquete incluye fuentes y documentación para revisar sin acceso remoto.
 
 Antes de extraer, compare el SHA-256 del ZIP en PowerShell:
 
@@ -86,8 +86,12 @@ SHA256SUMS.txt                    Integridad de los archivos extraídos
 
 Los resultados de CI, sus limitaciones y las incidencias pendientes se revisan junto con la entrega. Un análisis estático o ZAP baseline no equivale a una auditoría completa ni acredita ausencia de vulnerabilidades.
 
-## Entrega por SharePoint
+## Distribución posterior
 
-La carpeta de entrega debe incluir el ZIP, checksum externo, guía inicial/documentación y enlaces al repositorio privado y a la ejecución de CI. El usuario cargará esa carpeta en SharePoint; no se presupone un sitio ni permisos existentes. Antes de enviarla, pruebe descargar con los permisos del evaluador, extraer fuera de carpetas sincronizadas y seguir el arranque en un Windows limpio con los prerrequisitos indicados. La revisión de código en GitHub exige invitación separada; las fuentes también están dentro del ZIP.
+El alcance actual es local. Si se reanuda la distribución, copie ZIP, checksum y evidencias; compruebe permisos y descarga del evaluador. No incluya secretos ni backups personales.
 
 Consulte `docs/operations.md` para soporte, actualizaciones controladas y detalles técnicos.
+
+## Novasoft real
+
+Ejecute configurar-novasoft.cmd, introduzca credenciales de prueba, detenga/inicie y elija Novasoft real en Cuentas. No se incluyen credenciales en el ZIP. Consulte [la guía](novasoft-real.md).

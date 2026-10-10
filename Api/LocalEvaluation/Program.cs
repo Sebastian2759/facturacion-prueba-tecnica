@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
+// A private Docker secret is optional. Never ship provider credentials in the ZIP.
+builder.Configuration.AddJsonFile("/run/secrets/novasoft", optional: true, reloadOnChange: false);
 var origin = builder.Configuration["Local:Origin"] ?? "http://127.0.0.1:5080";
 if (!Uri.TryCreate(origin, UriKind.Absolute, out var originUri) || originUri.Scheme != "http" ||
     originUri.Host != "127.0.0.1" || originUri.AbsolutePath != "/" ||

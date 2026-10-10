@@ -1,9 +1,5 @@
 # Arquitectura de Nexo
 
-**Estado vigente — Windows verificado:** `Aplicacion-1.0.0-ci.15.zip`, commit `89be6447e9f69fb7b6b24be2dd90b9fd0fbff6c6`, generado por [CI run15](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38022085155), fue descargado y probado sin modificar en Windows 11 x64 con Docker Desktop y los lanzadores de PowerShell 5.1. Pasaron arranque desde extracción nueva, factura por API y navegador, persistencia después de detener/iniciar, backup, restauración en una base nueva y CHECKDB. SHA-256: `fd333c43e0ad90a9ef1055481761c211557b1fa95eb6975373ecc15f74799652`. SQL mantiene riesgo aceptado, no corregido. Las referencias a SVM desactivado o pruebas Windows pendientes que se conservan más abajo pertenecen a cortes históricos anteriores a esta validación.
-
-[Detalle de la prueba Windows](windows-validation.md).
-
 La aplicación conserva Clean Architecture y las convenciones de [Template](https://dev.azure.com/ServiciosAndesTool/_git/Template), commit `3393c2e7b02f7d0ea439b461b8fba5d561107681`. Se agregan facturación, Accounts y un host de evaluación local sin reorganizar las capas.
 
 ## Composición y límites
@@ -14,7 +10,7 @@ Navegador Angular
   → Application: Request / Validator / Command o Query / Response
   → Domain: entidades, calculador, puertos, reglas
   → Infraestructure: repositorio EF / mapper / gateway Accounts
-  → SQL Server privado; Accounts simulado en la entrega local
+  → SQL Server privado; Accounts simulado por defecto o real con configuración privada
 
 DatabaseMigrator → SQL Server (identidad administrativa separada)
 ```
@@ -89,10 +85,14 @@ La revisión visual del run7 detectó CSS global bloqueado aunque el recorrido f
 
 LocalEvaluation sirve Angular/API en el mismo origen, publica sólo loopback y protege escrituras con cookie/Origin/CSRF. Su propietario es la instalación; no un usuario cloud. Las pruebas A/B comprueban aislamiento de las consultas y cookies de instalaciones diferentes. Véase [seguridad](../SECURITY.md).
 
-Accounts local usa almacenamiento simulado por propietario que se reinicia con el proceso. La creación devuelve aceptación, no una cuenta del proveedor inventada. El cliente real implementa login y expiración de token, destino HTTPS fijo, timeout y errores normalizados; no hubo prueba real. Se prohíbe cambiar silenciosamente de real a simulado.
+Accounts local usa almacenamiento simulado por propietario que se reinicia con el proceso. La creación devuelve aceptación, no una cuenta del proveedor inventada. El cliente real implementa login y expiración de token, destino HTTPS fijo, timeout y errores normalizados; se verificaron login, consultas y una creación ficticia autorizada, con consulta posterior por código. Se prohíbe cambiar silenciosamente de real a simulado.
 
 Api/Api conserva un host JWT opcional, fuera del alcance de entrega y sin IdP configurado. Su rechazo de modo local es defensa adicional de diseño, no evidencia de un despliegue web validado.
 
 Los HTML y reportes DemoArchitecture en docs/architecture son documentación histórica de Template, no un grafo actualizado de este sistema. Build y evidencia actual están en [TESTING](TESTING.md).
 
-Evidencia de ejecución: [CI 37994136672](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37994136672), commit `b0b7e25eb93f93b2870281bc2bc716a38ff2b463`: 159 tests .NET aprobados, 0 omitidos; frontend 28 unitarias, 4 proxy, 7 navegador/axe controladas y 1 live API/SQL. Pasaron ambos checks OpenAPI, no-store, nonce/CSS, ZAP y Semgrep (31 archivos, 0 hallazgos/errores). SQL 2022 mantiene el único gate previo a empaquetado bloqueante: 71 ocurrencias HIGH; el candidato SQL 2025 presenta el mismo resultado. El ZIP final y su instalación Windows siguen pendientes.
+Evidencia vigente: [pruebas locales](TESTING.md). Las ejecuciones CI históricas corresponden a versiones anteriores; no acreditan estos ajustes.
+
+## Ajustes de cumplimiento
+
+VARCHAR UTF-8 conserva los textos del cliente mediante la migración 20261010000100. La migración inicial permanece inmutable. Accounts real funciona por configuración privada del servidor y capacidad de sesión; véase [Novasoft](novasoft-real.md). La compilación/tests de nuevos ajustes se acreditan localmente y no heredan automáticamente la aprobación CI15.

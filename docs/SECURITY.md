@@ -1,23 +1,7 @@
-# Seguridad del proyecto
+# Seguridad y hallazgos de terceros
 
-**Estado vigente — Windows verificado:** `Aplicacion-1.0.0-ci.15.zip`, commit `89be6447e9f69fb7b6b24be2dd90b9fd0fbff6c6`, generado por [CI run15](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38022085155), fue descargado y probado sin modificar en Windows 11 x64 con Docker Desktop y los lanzadores de PowerShell 5.1. Pasaron arranque desde extracción nueva, factura por API y navegador, persistencia después de detener/iniciar, backup, restauración en una base nueva y CHECKDB. SHA-256: `fd333c43e0ad90a9ef1055481761c211557b1fa95eb6975373ecc15f74799652`. SQL mantiene riesgo aceptado, no corregido. Las referencias a SVM desactivado o pruebas Windows pendientes que se conservan más abajo pertenecen a cortes históricos anteriores a esta validación.
+La política vigente está en [SECURITY de la raíz](../SECURITY.md). Véase [aceptación SQL](sql-risk-acceptance.md), [análisis de runtime](sql-runtime-risk-assessment.md) y [pruebas](TESTING.md).
 
-[Detalle de la prueba Windows](windows-validation.md).
+Detectar, analizar y corregir vulnerabilidades forma parte de DevSecOps. Encontrar hallazgos en una imagen oficial no significa que la aplicación no tenga protección. Aceptar temporalmente un inventario concreto tampoco lo corrige ni demuestra que sea inexplotable. El propietario autorizó SQL-LOCAL-2026-10-09 para evaluación local con datos ficticios; los demás controles siguen vigentes.
 
-**Entrega anterior — run12, sustituida:** [CI 38018319032 / run12](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38018319032) terminó correctamente sobre el commit `5b1efa2c75fba7ed7fa839d8addc78693b78424f` y produjo `Aplicacion-1.0.0-ci.12.zip`. Estado: `release-verified-with-accepted-risk`, con SQL-LOCAL-2026-10-09 visible en el manifiesto. SHA-256 del ZIP: `ad415b466dfcedd427494632ad5ed0fe086e6862fe35a503a6980b0f6076c358`. Se verificaron descarga, extracción e integridad en Windows; el arranque completo con Docker Desktop sigue pendiente de SVM. Los apartados sobre runs anteriores conservan el historial; no describen el estado actual del empaquetado.
-
-La política vigente está en [SECURITY.md de la raíz](../SECURITY.md).
-
-## Interpretación de los hallazgos de terceros
-
-Detectar, analizar y gestionar vulnerabilidades de dependencias es una actividad habitual de DevSecOps. Una imagen oficial puede contener componentes con fallos conocidos; documentarlos permite decidir con evidencia y comprobar posteriormente su corrección. El proceso de referencia incluye identificación, reporte y remediación ([OWASP VMG](https://owasp.org/projects/vulnerability-management-guide)), junto con prácticas para reducir vulnerabilidades y su impacto ([NIST SSDF](https://csrc.nist.gov/pubs/sp/800/218/final)). Estas referencias no certifican esta aplicación.
-
-Los hallazgos SQL documentados están en componentes de la imagen del proveedor. No evidencian que la demo carezca de protección: existen loopback, SQL sin puerto publicado, red Docker interna, validación, sesión/CSRF y mínimo privilegio. Esos controles reducen exposición, pero no corrigen los componentes afectados ni prueban que todos los CVE sean inaccesibles.
-
-**Es habitual revisar y encontrar hallazgos; no se considera normal ignorarlos.** No se ha demostrado explotación mediante la aplicación ni se han clasificado todos como falsos positivos. El tratamiento consiste en investigar aplicabilidad, conservar evidencias, evaluar versiones corregidas y repetir análisis/pruebas. Cualquier aceptación temporal exige una decisión explícita y registrada, independiente de esta explicación. **Los hallazgos siguen abiertos con riesgo aceptado por el propietario para evaluación local.** Véase la [decisión SQL-LOCAL-2026-10-09](sql-risk-acceptance.md). La nueva CI debe comprobar su alcance y los demás controles antes de generar el ZIP; no equivale a un escaneo sin vulnerabilidades.
-
-El alcance es evaluación local Windows x64, repositorio GitHub privado y distribución controlada. El host web opcional queda fuera de la entrega; no hay publicación Azure/Cloudflare ni IdP requerido. La [CI 37994136672](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37994136672), commit `b0b7e25eb93f93b2870281bc2bc716a38ff2b463`, aprobó 159 pruebas .NET, backup/restore, CHECKDB, migradores, siete respuestas API/no-store, ambos OpenAPI y 1 navegador live SQL con CSP/estilos corregidos. El gate ZAP pasó con informativos risk 0 revisados. Semgrep 1.179.0 aprobó 31 archivos sin hallazgos/errores desde PyPI con hashes y venv aislado. Trivy SQL mantiene el único gate previo a empaquetado bloqueante. Esas verificaciones no se presentan como pentest o auditoría exhaustiva.
-
-Véanse también [arquitectura](ARCHITECTURE.md), [decisiones](decisions.md) y [estado de pruebas](TESTING.md).
-
-La [evaluación del runtime SQL](sql-runtime-risk-assessment.md) conserva los digests y los hallazgos investigados, con fuentes y límites del análisis. La aceptación conserva el escaneo y verifica un inventario acotado; el candidato SQL Server 2025 también falla el diagnóstico del run6. El análisis de símbolos del run7 confirma funciones asociadas a CVE en dos binarios SQL 2022 y mantiene el bloqueo, sin afirmar explotabilidad remota demostrada.
+La evaluación actual no publica el servicio ni modifica GitHub/SharePoint. La conexión saliente al servicio de pruebas Novasoft requiere configuración privada explícita y conserva Host/Origin/CSRF y autorización.

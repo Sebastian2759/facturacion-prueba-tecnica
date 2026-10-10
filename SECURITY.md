@@ -1,49 +1,30 @@
-# Seguridad
+# Seguridad de la evaluación local
 
-**Estado vigente — Windows verificado:** `Aplicacion-1.0.0-ci.15.zip`, commit `89be6447e9f69fb7b6b24be2dd90b9fd0fbff6c6`, generado por [CI run15](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38022085155), fue descargado y probado sin modificar en Windows 11 x64 con Docker Desktop y los lanzadores de PowerShell 5.1. Pasaron arranque desde extracción nueva, factura por API y navegador, persistencia después de detener/iniciar, backup, restauración en una base nueva y CHECKDB. SHA-256: `fd333c43e0ad90a9ef1055481761c211557b1fa95eb6975373ecc15f74799652`. SQL mantiene riesgo aceptado, no corregido. Las referencias a SVM desactivado o pruebas Windows pendientes que se conservan más abajo pertenecen a cortes históricos anteriores a esta validación.
+La aplicación usa datos ficticios y sólo publica HTTP en 127.0.0.1:5080. SQL no publica puerto al host; migrador y SQL pertenecen a una red Docker interna. La API tiene salida HTTPS para Novasoft. No se publica en Azure/Cloudflare ni en red local.
 
-[Detalle de la prueba Windows](docs/windows-validation.md).
+## Controles
 
-**Entrega anterior — run12, sustituida:** [CI 38018319032 / run12](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38018319032) terminó correctamente sobre el commit `5b1efa2c75fba7ed7fa839d8addc78693b78424f` y produjo `Aplicacion-1.0.0-ci.12.zip`. Estado: `release-verified-with-accepted-risk`, con SQL-LOCAL-2026-10-09 visible en el manifiesto. SHA-256 del ZIP: `ad415b466dfcedd427494632ad5ed0fe086e6862fe35a503a6980b0f6076c358`. Se verificaron descarga, extracción e integridad en Windows; el arranque completo con Docker Desktop sigue pendiente de SVM. Los apartados sobre runs anteriores conservan el historial; no describen el estado actual del empaquetado.
+- Cookie HttpOnly/SameSite Strict por instalación, Host y Origin exactos, token CSRF para escrituras y autorización por permisos.
+- La instalación representa una identidad local; no pretende aislar procesos maliciosos ni administradores del host. HTTP loopback usa cookie sin Secure; no trasladar ese ajuste a internet.
+- Validación frontend/backend, límites de cuerpo/profundidad/detalles/dinero, rate limiting, CSP con nonce, errores depurados y traceId, API no-store.
+- Identidad SQL runtime con SELECT/INSERT; migrador administrativo separado. Encrypt=True con certificado autofirmado confiado sólo en la red local, no validación pública de identidad.
+- Idempotencia por propietario, transacción de cabecera/detalles y consultas que filtran propietario.
+- Novasoft real deshabilitado por defecto. Requiere configuración privada completa; la UI sólo anuncia la capacidad del servidor. Login/token permanecen en C#, host HTTPS fijo, sin redirects ni reintentos automáticos de POST.
 
-**Decisión vigente:** el propietario aprobó el riesgo residual SQL para evaluación local con datos ficticios. La [aceptación SQL-LOCAL-2026-10-09](docs/sql-risk-acceptance.md) y su inventario exacto permiten tratar sólo los hallazgos conocidos; los demás controles siguen siendo obligatorios. Los resultados que siguen conservan el historial anterior a esta decisión. La CI run12 generó el ZIP; el arranque completo en Windows sigue pendiente.
+## Secretos
 
-Esta entrega se limita al ZIP local, GitHub privado y distribución controlada. No es una publicación web ni una auditoría de seguridad concluida.
+`local.env` y `novasoft.local.json` se generan/configuran en el equipo y tienen permisos del propietario. El segundo se monta como secreto Docker de sólo lectura. No son un almacén cifrado contra un administrador local. No incluirlos en Git, ZIP, capturas o reportes. No distribuir credenciales/tokens del examen ni el PDF original. Los backups de uso son privados; el backup distribuido tiene esquema vacío.
 
-Detectar y gestionar vulnerabilidades de terceros forma parte del proceso habitual de DevSecOps. Los hallazgos de la imagen SQL no significan que la demo carezca de protección; tampoco son inofensivos por aparecer en software oficial. Véase la [interpretación para el evaluador](docs/SECURITY.md#interpretación-de-los-hallazgos-de-terceros). La aceptación es una decisión separada: el propietario la autorizó expresamente para evaluación local, con inventario y vigencia en [SQL-LOCAL-2026-10-09](docs/sql-risk-acceptance.md).
+## DevSecOps y riesgo aceptado
 
-## Perfil de confianza
+Build/analizadores, pruebas, NuGet/npm, Gitleaks, Semgrep, Trivy, SBOM y ZAP son controles distintos. Un reporte faltante o herramienta fallida no equivale a aprobación. El estado de ejecución vigente está en [TESTING](docs/TESTING.md); CI15 sólo acredita su commit anterior. Los ajustes se verifican localmente por decisión del propietario.
 
-LocalEvaluation sirve Angular/API en http://127.0.0.1:5080; dentro de Docker escucha 0.0.0.0:8080. SQL no publica puerto al host. La instalación es una sola identidad local; no pretende aislar usuarios del mismo equipo ni procesos maliciosos con acceso al host.
+SQL-LOCAL-2026-10-09 conserva la aceptación autorizada de 71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL del inventario fijado. Motivo: evaluación local con datos ficticios, SQL exigido y alternativas oficiales revisadas sin eliminar hallazgos. Aislamiento y mínimo privilegio reducen exposición; no corrigen el software del proveedor. Caduca el 24/10/2026 02:32 UTC y limita nuevas entregas, no apaga instalaciones. [Decisión e inventario](docs/sql-risk-acceptance.md).
 
-La cookie de sesión es HttpOnly/SameSite=Strict, con nombre y protección de datos por instalación. El HTTP loopback requiere cookie sin Secure; no debe exponerse en LAN/internet. Las escrituras requieren sesión, Host/Origin exactos y X-CSRF-TOKEN. CORS por sí solo no autentica. Los repositorios verifican propietario, las operaciones requieren permiso y Accounts real está bloqueado en local.
+Detectar y gestionar hallazgos es habitual en DevSecOps. No es evidencia de que sean inocuos ni autorización para ignorarlos. Nuevos hallazgos, CRITICAL, digest diferente o excepción vencida bloquean. ZAP baseline y escáneres no constituyen un pentest exhaustivo.
 
-Los ejemplos públicos son ficticios y no consultan SQL. La API no acepta propietario, fecha, número ni totales definitivos desde el navegador. Usa límites de cuerpo/detalles, rate limiting, errores estructurados y traceId.
+## Respuesta y pendientes externos
 
-## Secretos y datos
+Reportar al propietario por canal privado con versión, pasos y traceId depurado. Ante filtración: detener distribución, revocar/rotar secretos y preservar evidencia depurada. Borrar un secreto de Git no lo revoca.
 
-No versionar local.env, contraseñas SQL, cookies, credenciales/tokens Novasoft, PDF con credenciales, backups de usuarios ni logs con datos personales. El script genera claves de instalación y restringe su archivo. No adjuntar salidas completas de docker inspect o compose config.
-
-Migrador y API usan identidades SQL diferentes. Runtime sólo tiene SELECT e INSERT sobre Facturas/DetalleFactura; init revoca UPDATE/DELETE anteriores y verifica que no haya privilegios administrativos/de esquema indebidos. En la red Docker aislada, Encrypt=True con TrustServerCertificate=True cifra la conexión pero no valida la identidad del certificado autofirmado. Esa excepción no se traslada a otros entornos.
-
-El backup de release será esquema vacío, restaurado y comprobado. Backups posteriores del evaluador son privados. Restore usa una base nueva y no sustituye la activa automáticamente.
-
-## Verificación y gates
-
-El workflow GitHub prepara NuGet/npm Audit, analizadores .NET, reglas TypeScript Semgrep, Gitleaks, Trivy, pruebas, SBOM, restore y ZAP baseline local. NuGet NU1900–NU1905 bloquean; npm moderate o superior y Trivy high/critical bloquean. Feeds/herramientas fallidos no son aprobaciones. ZAP baseline no equivale a pentest exhaustivo.
-
-Las pruebas de seguridad están en Test/Security y las de propiedad/persistencia en Test/Invoices. [CI 37994136672](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37994136672), commit `b0b7e25eb93f93b2870281bc2bc716a38ff2b463`, aprobó 159 pruebas .NET sin omisiones, incluidas cinco SQL y modelo EF; también Gitleaks, NuGet/npm Audit y Trivy filesystem/ASP.NET. Semgrep 1.179.0 aprobó 31 archivos con 0 hallazgos/errores; usa PyPI con hashes en venv aislado y Python 3.12.3. Backup/restore, CHECKDB, migradores, siete respuestas API/no-store, ambos OpenAPI y 1 navegador live API/SQL pasaron. Trivy SQL 2022 es el único gate previo a empaquetado bloqueante: 71 ocurrencias HIGH y 24 CVE únicos; el candidato 2025 tiene el mismo diagnóstico. En aquel run no existía excepción SQL; la aceptación vigente se documenta por separado. ZIP final y Windows con Docker siguen pendientes. WDAC limita ejecutables locales; Docker Desktop y WSL ya están instalados, pero falta habilitar SVM en BIOS y completar el primer inicio de Docker; la evidencia backend corresponde a CI Linux. No hay certificado ni pentest realizado.
-
-La captura del run7 reveló CSS global bloqueado pese al éxito funcional. El defecto está corregido: el navegador real del run8 comprobó estilos efectivos y nonce/CSP. El gate ZAP pasó con informativos risk 0 revisados y API no-store comprobada; ninguna alerta fue rechazada. Exit 2 no se acepta automáticamente: el gate valida JSON, origen, severidad/subtipo y rutas exactas de assets públicos. Sus excepciones HTTP-loopback 10035-1/10011 están acotadas a riesgo bajo; no se aplicaron en las alertas aceptadas del run8. La aceptación SQL vigente sólo cubre el inventario aprobado; los nuevos hallazgos y los errores de análisis siguen bloqueando.
-
-El host web/JWT opcional no tiene IdP ni despliegue verificado y queda fuera de la entrega. El cliente real Novasoft tiene pruebas controladas aprobadas, sin prueba de conexión real; local fuerza simulación.
-
-La [evaluación de riesgo del runtime SQL](docs/sql-runtime-risk-assessment.md) documenta digests, fuentes primarias y diagnóstico binario ejecutado. Confirma símbolos asociados a 9 CVE Go HIGH sin restricción Windows en SQL 2022; no demuestra explotabilidad remota. SQL 2025 también falla el escaneo. No se aplicaron exclusiones.
-
-## Reportar y responder
-
-Informar al propietario por el canal privado acordado para la evaluación, con versión/commit, pasos mínimos y traceId depurado. No publicar secretos ni datos personales en issues, capturas o reportes públicos. La identidad propietaria está documentada en el README.
-
-Ante filtración, detener distribución, revocar/rotar la credencial afectada, preservar evidencia depurada y publicar otra versión corregida. Borrar un secreto del historial no lo revoca. Para volver a una versión anterior, comprobar compatibilidad de esquema y conservar backup; no hacer restore destructivo implícito.
-
-Las políticas reales de rama, permisos del evaluador, cuota de CI y descarga desde SharePoint se verifican antes de cerrar la entrega. Un YAML y un hash no bastan para demostrar que esas condiciones ya se cumplieron.
+GitHub main se observó sin protección. Su refuerzo queda preparado/documentado y aplazado al reanudar trabajo remoto; no se afirma que la CI impida pushes directos. SharePoint, invitaciones y un segundo PC del evaluador están fuera de la ejecución local actual.

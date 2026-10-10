@@ -169,15 +169,25 @@ public sealed class NovasoftClientTests
     }
 
     [Fact]
-    public async Task LocalModeCannotCallRealProviderEvenWhenRealFlagIsEnabled()
+    public async Task LocalModeCannotCallRealProviderUnlessExplicitlyEnabled()
     {
         using var harness = new ClientHarness((_, _) => throw new InvalidOperationException("No request expected."));
-        var gateway = new AccountsGateway(new() { IsLocal = true, RealEnabled = true }, harness.Client, new SimulatedAccountsStore(new AccountsClock()));
+        var gateway = new AccountsGateway(new() { IsLocal = true, RealEnabled = false }, harness.Client, new SimulatedAccountsStore(new AccountsClock()));
 
         var error = await Assert.ThrowsAsync<AccountsIntegrationException>(() => gateway.GetAsync(AccountExecutionMode.Real, "alice", null, CancellationToken.None));
 
         Assert.Equal("ACCOUNTS_REAL_DISABLED", error.Code);
         Assert.Equal(0, harness.Handler.Count);
+    }
+
+    [Fact]
+    public async Task ConfiguredLocalModeCallsProviderThroughAuthenticatedClient()
+    {
+        using var harness = new ClientHarness((_, index) => index == 1 ? ClientHarness.Login() : ClientHarness.Json("[]"));
+        var gateway = new AccountsGateway(new() { IsLocal = true, RealEnabled = true }, harness.Client, new SimulatedAccountsStore(new AccountsClock()));
+        var result = await gateway.GetAsync(AccountExecutionMode.Real, "alice", null, CancellationToken.None);
+        Assert.Empty(result);
+        Assert.Equal(2, harness.Handler.Count);
     }
 
     private sealed class ClientHarness : IDisposable

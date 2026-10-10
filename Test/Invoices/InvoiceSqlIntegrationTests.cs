@@ -2,6 +2,8 @@ using Domain.Entities;
 using FluentAssertions;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Persistence.Context;
 using Persistence.Repositories;
 
@@ -15,6 +17,64 @@ public sealed class InvoiceSqlIntegrationTests
 {
     public static bool SqlAvailable =>
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FACTURACION_TEST_SQL_CONNECTION"));
+
+    [Fact(Skip = "Requires a dedicated SQL Server via FACTURACION_TEST_SQL_CONNECTION.", SkipUnless = nameof(SqlAvailable))]
+    [Trait("Category", "SqlIntegration")]
+    public async Task VarcharMigration_PreservesExistingUnicodeAndVerifiesAllRequiredSqlTypes()
+    {
+        await using var database = await InvoiceTestDatabase.CreateAsync("20261009000100_InitialInvoices");
+        await using var context = database.Context();
+        var entity = InvoiceTestData.Entity();
+        // Raw Unicode literals seed the previous schema independently of the new EF mapping.
+        await context.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO dbo.Facturas (Id,Date,OwnerSubject,IdempotencyKey,RequestFingerprint,
+                Document,FirstName,LastName,Address,Phone,Gross,Discount,Tax,Total,CreatedAtUtc,UpdatedAtUtc)
+            SELECT {entity.Id},{entity.Date},{entity.OwnerSubject},{entity.IdempotencyKey},
+                {entity.RequestFingerprint},{entity.Document},N'José 漢字',N'Muñoz',N'Calle Ñ 日本',N'+57 123',
+                {entity.Gross},{entity.Discount},{entity.Tax},{entity.Total},{entity.CreatedAtUtc},{entity.UpdatedAtUtc}
+            """, TestContext.Current.CancellationToken);
+        await context.Database.MigrateAsync(TestContext.Current.CancellationToken);
+        var invoice = await context.Invoices.SingleAsync(TestContext.Current.CancellationToken);
+        invoice.FirstName.Should().Be("José 漢字");
+        invoice.LastName.Should().Be("Muñoz");
+        invoice.Address.Should().Be("Calle Ñ 日本");
+        invoice.Phone.Should().Be("+57 123");
+        var unicodeInvoice = InvoiceTestData.Entity();
+        unicodeInvoice.FirstName = new string('漢', 100);
+        unicodeInvoice.LastName = "Muñoz 日本";
+        unicodeInvoice.Address = "Calle Ñ 東京";
+        context.Invoices.Add(unicodeInvoice);
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        context.ChangeTracker.Clear();
+        var savedUnicode = await context.Invoices.SingleAsync(item => item.Id == unicodeInvoice.Id,
+            TestContext.Current.CancellationToken);
+        savedUnicode.FirstName.Should().Be(unicodeInvoice.FirstName);
+        savedUnicode.LastName.Should().Be(unicodeInvoice.LastName);
+        savedUnicode.Address.Should().Be(unicodeInvoice.Address);
+        await context.Database.OpenConnectionAsync(TestContext.Current.CancellationToken);
+        await using var command = context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = """
+            SELECT OBJECT_NAME(c.object_id) + '.' + c.name, t.name, c.max_length
+            FROM sys.columns c JOIN sys.types t ON c.user_type_id=t.user_type_id
+            WHERE c.object_id IN (OBJECT_ID('dbo.Facturas'), OBJECT_ID('dbo.DetalleFactura'));
+            """;
+        var columns = new Dictionary<string, (string Type, short Length)>();
+        await using (var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken))
+            while (await reader.ReadAsync(TestContext.Current.CancellationToken))
+                columns.Add(reader.GetString(0), (reader.GetString(1), reader.GetInt16(2)));
+        columns["Facturas.Document"].Should().Be(("varchar", (short)15));
+        columns["Facturas.FirstName"].Should().Be(("varchar", (short)400));
+        columns["Facturas.LastName"].Should().Be(("varchar", (short)400));
+        columns["Facturas.Address"].Should().Be(("varchar", (short)800));
+        columns["Facturas.Phone"].Should().Be(("varchar", (short)120));
+        columns["Facturas.Date"].Type.Should().Be("datetime");
+        columns["Facturas.Number"].Type.Should().Be("int");
+        columns["DetalleFactura.Code"].Type.Should().Be("int");
+        columns["DetalleFactura.Quantity"].Type.Should().Be("int");
+        foreach (var name in new[] { "Gross", "Discount", "Tax", "Total" })
+            columns["Facturas." + name].Type.Should().Be("money");
+        columns["DetalleFactura.UnitPrice"].Type.Should().Be("money");
+    }
 
     [Fact(Skip = "Requires a dedicated SQL Server via FACTURACION_TEST_SQL_CONNECTION.", SkipUnless = nameof(SqlAvailable))]
     [Trait("Category", "SqlIntegration")]
@@ -184,7 +244,7 @@ public sealed class InvoiceSqlIntegrationTests
     {
         public AppDbContext Context() => new(options);
 
-        public static async Task<InvoiceTestDatabase> CreateAsync()
+        public static async Task<InvoiceTestDatabase> CreateAsync(string? targetMigration = null)
         {
             var configured = Environment.GetEnvironmentVariable("FACTURACION_TEST_SQL_CONNECTION");
             Assert.SkipWhen(string.IsNullOrWhiteSpace(configured),
@@ -200,7 +260,7 @@ public sealed class InvoiceSqlIntegrationTests
             try
             {
                 await using var context = database.Context();
-                await context.Database.MigrateAsync(TestContext.Current.CancellationToken);
+                await context.GetService<IMigrator>().MigrateAsync(targetMigration, TestContext.Current.CancellationToken);
                 return database;
             }
             catch

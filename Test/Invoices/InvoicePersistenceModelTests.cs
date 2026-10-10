@@ -32,9 +32,16 @@ public sealed class InvoicePersistenceModelTests
             .Should().Be(SqlServerValueGenerationStrategy.IdentityColumn);
         invoice.FindProperty(nameof(InvoiceEntity.Id))!.ValueGenerated.Should().Be(ValueGenerated.Never);
         invoice.FindProperty(nameof(InvoiceEntity.Document))!.GetColumnType().Should().Be("varchar(15)");
+        invoice.FindProperty(nameof(InvoiceEntity.FirstName))!.GetColumnType().Should().Be("varchar(400)");
+        invoice.FindProperty(nameof(InvoiceEntity.LastName))!.GetColumnType().Should().Be("varchar(400)");
+        invoice.FindProperty(nameof(InvoiceEntity.Address))!.GetColumnType().Should().Be("varchar(800)");
+        invoice.FindProperty(nameof(InvoiceEntity.Phone))!.GetColumnType().Should().Be("varchar(120)");
         invoice.FindProperty(nameof(InvoiceEntity.Date))!.GetColumnType().Should().Be("datetime");
         line.FindProperty(nameof(InvoiceLineEntity.UnitPrice))!.GetColumnType().Should().Be("money");
         line.FindProperty(nameof(InvoiceLineEntity.Code))!.GetColumnType().Should().Be("int");
+        line.FindProperty(nameof(InvoiceLineEntity.Quantity))!.GetColumnType().Should().Be("int");
+        foreach (var name in new[] { "Gross", "Discount", "Tax", "Total" })
+            invoice.FindProperty(name)!.GetColumnType().Should().Be("money");
         invoice.GetIndexes().Should().Contain(index => index.IsUnique &&
             index.Properties.Select(property => property.Name).SequenceEqual(IdempotencyIndexProperties));
         line.GetForeignKeys().Should().ContainSingle().Which.PrincipalEntityType.Should().BeSameAs(invoice);

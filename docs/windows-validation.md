@@ -1,3 +1,7 @@
+# Evidencia histórica de ci.15
+
+Este archivo acredita exclusivamente el ZIP ci.15. Para los ajustes actuales consulte TESTING.md y el recibo local del nuevo paquete.
+
 # Validación final del paquete en Windows
 
 Fecha UTC: 2026-10-10T04:03:46.5494951Z.

@@ -149,7 +149,7 @@ public sealed class LocalEvaluationHttpTests
     }
 
     [Fact]
-    public async Task LocalSession_CannotEnableRealAccounts()
+    public async Task DefaultLocalSession_CannotEnableRealAccounts()
     {
         using var factory = new LocalEvaluationFactory();
         using var client = factory.Client();
@@ -162,6 +162,19 @@ public sealed class LocalEvaluationHttpTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         using var problem = await JsonAsync(response);
         problem.RootElement.GetProperty("code").GetString().Should().Be("access.denied");
+    }
+
+    [Fact]
+    public async Task ServerConfiguredLocalSession_AdvertisesRealAccountsWithoutDisclosingCredentials()
+    {
+        using var factory = new LocalEvaluationFactory(enableRealAccounts: true);
+        using var client = factory.Client();
+        using var response = await client.GetAsync("/api/v1/session", TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var text = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        using var json = JsonDocument.Parse(text);
+        json.RootElement.GetProperty("data").GetProperty("canUseRealAccounts").GetBoolean().Should().BeTrue();
+        text.Should().NotContain("fake-test-password").And.NotContain("test-user").And.NotContain("test-connection");
     }
 
     [Fact]

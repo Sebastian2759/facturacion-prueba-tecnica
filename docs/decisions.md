@@ -4,7 +4,7 @@ Fecha: 9 de octubre de 2026. Decisiones aceptadas para la entrega local; las evi
 
 ## D01. Alcance local y propiedad personal
 
-Se canceló publicación Azure/Cloudflare. La entrega será ZIP Windows x64 con internet, GitHub personal privado de Sebastian2759 y carga SharePoint por el usuario. No requiere suscripción ni IdP cloud. El host JWT existente queda opcional, fuera de entrega y sin verificación de despliegue.
+Se canceló publicación Azure/Cloudflare. La entrega vigente es local Windows x64 con internet. GitHub personal existente y SharePoint quedan sin cambios/publicaciones mientras el propietario mantenga el alcance sólo local. No requiere suscripción ni IdP cloud. El host JWT existente queda opcional, fuera de entrega y sin verificación de despliegue.
 
 ## D02. Extender Template sin alterar sus capas
 
@@ -16,7 +16,7 @@ La coincidencia de mapper utiliza el nombre más específico para distinguir Inv
 
 Cambiar EntityBase a int rompería convenciones generales. Se conserva Guid como clave técnica y se añade Number int IDENTITY único para el consecutivo visible. La FK de detalle usa Guid. Identity puede dejar huecos por rollback; no se promete numeración fiscal continua.
 
-El mapeo explicita VARCHAR(15), DATETIME, INT y MONEY. C# utiliza decimal para dinero.
+El mapeo explicita VARCHAR(15), DATETIME, INT y MONEY. La segunda migración corrige nombres/apellidos/dirección/teléfono a VARCHAR UTF-8 (400/400/800/120 bytes) para conservar Unicode. Los límites de aplicación siguen en 100/100/200/30 caracteres. C# utiliza decimal para dinero.
 
 ## D04. IVA, precisión y límites
 
@@ -46,7 +46,7 @@ Docker publica sólo 127.0.0.1:5080; el proceso interno escucha 0.0.0.0:8080. SQ
 
 La API no migra en requests. Un proceso administrativo inicializa/migra; runtime sólo tiene SELECT e INSERT sobre las tablas de factura. init revoca UPDATE/DELETE antiguos y rechaza privilegios efectivos indebidos. La migración/snapshot se escribieron manualmente porque WDAC bloqueó el tooling; el gate de modelo SQL/EF ya pasó en CI y seguirá siendo obligatorio.
 
-La release lleva un backup SQL Server de esquema vacío, en lugar del seed persistido inicialmente propuesto. La UI tiene ejemplos ficticios fuera de SQL. El run7 comprobó backup, restore real, CHECKDB, migradores y creación/consulta posterior de factura mediante smoke. Restore del evaluador crea otra base y no sobrescribe ni cambia destino automáticamente; la instalación Windows sigue pendiente.
+La release lleva un backup SQL Server de esquema vacío, en lugar del seed persistido inicialmente propuesto. La UI tiene ejemplos ficticios fuera de SQL. El run7 comprobó backup, restore real, CHECKDB, migradores y creación/consulta posterior de factura mediante smoke. Restore del evaluador crea otra base y no sobrescribe ni cambia destino automáticamente; la instalación ci15 en Windows fue verificada; cada versión posterior necesita su propia evidencia.
 
 ## D09. Binarios precompilados, internet y licencias
 
@@ -56,9 +56,9 @@ SQL Developer se configura para evaluación y se obtienen componentes de sus fue
 
 ## D10. Accounts simulado y evidencia real separada
 
-Local bloquea llamadas reales y muestra simulación. El cliente real implementa login, token/expiración, GET/POST y errores, con pruebas HTTP controladas. No ha realizado llamadas reales.
+Local mantiene simulación por defecto y permite modo real sólo con credenciales privadas y habilitación explícita del servidor. La sesión anuncia la capacidad y concede el permiso correspondiente; la UI permite seleccionar el origen. Los secretos no se distribuyen. Véase novasoft-real.md.
 
-fecIng se mapea a fecha/hora; no se añade estCli sin respaldo del Swagger consultado. No hay fallback silencioso a simulación ni reintento automático de POST externo que pueda duplicar cuentas. Una aceptación de POST no se presenta como una cuenta completa devuelta por el proveedor.
+fecIng se mapea a fecha/hora; no se añade estCli al POST: el Swagger vigente lo define en AccountsUpd, no en AccountsParams. No hay fallback silencioso a simulación ni reintento automático de POST externo que pueda duplicar cuentas. Una aceptación de POST no se presenta como una cuenta completa devuelta por el proveedor.
 
 ## D11. Contrato de errores compatible
 
@@ -68,7 +68,7 @@ Se conservan campos de ResponseBase y se añaden code/fieldErrors/traceId. Probl
 
 Build no equivale a tests; mocks no equivalen a SQL; YAML no equivale a CI ejecutado; VERIFYONLY no sustituye restore. Un escáner/feed fallido bloquea. NuGet Audit transitivo y NU1900–NU1905, npm, analizadores, Gitleaks, Semgrep, Trivy, SBOM y ZAP local tienen evidencia separada.
 
-La release final sólo procede desde commit/árbol limpio y gates aprobados. No se modifica WDAC. [CI 37994136672](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/37994136672) (`b0b7e25eb93f93b2870281bc2bc716a38ff2b463`) aprobó 159 tests .NET, incluidas cinco integraciones SQL, y Gitleaks/NuGet/npm/Semgrep/Trivy filesystem/ASP.NET. Backup/restore, CHECKDB, migradores, siete respuestas API/no-store, ambos OpenAPI, 1 E2E live API/SQL y gate ZAP pasaron. SQL 2022 mantiene el único gate previo a empaquetado bloqueante: 71 ocurrencias HIGH, 24 CVE únicos; el candidato SQL 2025 tiene el mismo resultado. No se aplica excepción. El diagnóstico binario previo confirmó símbolos de 9 CVE Go HIGH sin restricción Windows, sin demostrar explotabilidad remota. El ZIP final y Windows con Docker siguen pendientes.
+Las evidencias deben corresponder al código/payload verificado. CI15 es el corte anterior. Los ajustes locales requieren build, pruebas, migración/restore, contrato y controles de seguridad locales; no se atribuyen a un run remoto inexistente. La aceptación SQL vigente es SQL-LOCAL-2026-10-09 y no exime hallazgos nuevos o errores de escaneo.
 
 ## D13. Node LTS fijado
 

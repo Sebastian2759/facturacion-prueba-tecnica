@@ -1,14 +1,6 @@
-# Evaluación del riesgo de la imagen SQL Server
+# Análisis histórico del riesgo de la imagen SQL Server
 
-**Estado vigente — Windows verificado:** `Aplicacion-1.0.0-ci.15.zip`, commit `89be6447e9f69fb7b6b24be2dd90b9fd0fbff6c6`, generado por [CI run15](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38022085155), fue descargado y probado sin modificar en Windows 11 x64 con Docker Desktop y los lanzadores de PowerShell 5.1. Pasaron arranque desde extracción nueva, factura por API y navegador, persistencia después de detener/iniciar, backup, restauración en una base nueva y CHECKDB. SHA-256: `fd333c43e0ad90a9ef1055481761c211557b1fa95eb6975373ecc15f74799652`. SQL mantiene riesgo aceptado, no corregido. Las referencias a SVM desactivado o pruebas Windows pendientes que se conservan más abajo pertenecen a cortes históricos anteriores a esta validación.
-
-[Detalle de la prueba Windows](windows-validation.md).
-
-**Entrega anterior — run12, sustituida:** [CI 38018319032 / run12](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38018319032) terminó correctamente sobre el commit `5b1efa2c75fba7ed7fa839d8addc78693b78424f` y produjo `Aplicacion-1.0.0-ci.12.zip`. Estado: `release-verified-with-accepted-risk`, con SQL-LOCAL-2026-10-09 visible en el manifiesto. SHA-256 del ZIP: `ad415b466dfcedd427494632ad5ed0fe086e6862fe35a503a6980b0f6076c358`. Se verificaron descarga, extracción e integridad en Windows; el arranque completo con Docker Desktop sigue pendiente de SVM. Los apartados sobre runs anteriores conservan el historial; no describen el estado actual del empaquetado.
-
-**Decisión vigente:** el propietario aprobó el riesgo residual SQL para evaluación local con datos ficticios. La [aceptación SQL-LOCAL-2026-10-09](sql-risk-acceptance.md) y su inventario exacto permiten tratar sólo los hallazgos conocidos; los demás controles siguen siendo obligatorios. Los resultados que siguen conservan el historial anterior a esta decisión. La CI run12 generó el ZIP; el arranque completo en Windows sigue pendiente.
-
-La detección de estos componentes afectados es un resultado del proceso de revisión DevSecOps. No se atribuye a una demo sin controles ni implica que los fallos sean aceptables por ser habituales. Su gestión requiere análisis, reducción de exposición y corrección verificada; la [explicación para el evaluador](SECURITY.md#interpretación-de-los-hallazgos-de-terceros) distingue este contexto de una aceptación formal del riesgo. Los hallazgos permanecen abiertos con riesgo aceptado por el propietario según la decisión vigente indicada arriba.
+Este análisis conserva el diagnóstico anterior a la aceptación. El estado vigente está en sql-risk-acceptance.md/json y el recibo del paquete: 71 HIGH aceptados, 0 CRITICAL. Las frases históricas de bloqueo no describen la autorización actual.
 
 ## Alternativa oficial RHEL comprobada el 9 de octubre de 2026
 

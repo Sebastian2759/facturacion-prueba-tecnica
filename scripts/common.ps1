@@ -49,6 +49,11 @@ function Protect-LocalFile {
 }
 
 function Initialize-LocalSettings {
+    $providerPath = Join-Path $script:ReleaseRoot 'novasoft.local.json'
+    if (-not (Test-Path -LiteralPath $providerPath)) {
+        Write-Utf8 $providerPath '{"Novasoft":{"Enabled":false}}'
+        Protect-LocalFile $providerPath
+    }
     $path = Join-Path $script:ReleaseRoot 'local.env'
     if (Test-Path -LiteralPath $path) { return }
     $installation = [Guid]::NewGuid().ToString()

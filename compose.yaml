@@ -49,6 +49,7 @@ services:
       Local__InstallationId: ${INSTALLATION_ID:?Falta la configuración local}
       ConnectionStrings__AppDbContext: 'Server=database;Database=${DATABASE_NAME:-FacturacionLocal};User ID=facturacion_runtime;Password=${SQL_RUNTIME_PASSWORD};Encrypt=True;TrustServerCertificate=True'
       Novasoft__Enabled: 'false'
+    secrets: [novasoft]
     ports: ['127.0.0.1:5080:8080']
     read_only: true
     tmpfs: ['/tmp:rw,noexec,nosuid,size=64m']
@@ -62,6 +63,9 @@ services:
     restart: unless-stopped
 volumes:
   sql-data:
+secrets:
+  novasoft:
+    file: ./novasoft.local.json
 networks:
   private:
     internal: true

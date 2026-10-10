@@ -14,7 +14,7 @@ function Expect-Rejection([string]$Name, [scriptblock]$Action, [string]$MessageP
     if (-not $failure -or $failure -notmatch $MessagePattern) { throw "Expected rejection did not occur: $Name" }
     Pass $Name
 }
-foreach ($name in @('common.ps1', 'start.ps1', 'stop.ps1', 'backup.ps1', 'restore.ps1', 'diagnose.ps1', 'verify-release.ps1')) {
+foreach ($name in @('common.ps1', 'start.ps1', 'stop.ps1', 'backup.ps1', 'restore.ps1', 'diagnose.ps1', 'verify-release.ps1', 'configure-novasoft.ps1')) {
     $source = Join-Path (Join-Path $repo 'scripts') $name
     $text = [IO.File]::ReadAllText($source, [Text.Encoding]::UTF8)
     $tokens = $null; $errors = $null
@@ -106,6 +106,25 @@ $accepted.sqlRiskAcceptance.image = 'different-image'
 Write-Utf8 (Join-Path $package 'release.json') ($accepted | ConvertTo-Json -Depth 5)
 Write-FixtureChecksums
 Expect-Rejection 'Reject SQL acceptance for different package image' { & $verify -Root $package 6>$null } 'aceptaci'
+$accepted.sqlRiskAcceptance.image = 'synthetic-image'
+$accepted.status = 'local-verified-with-accepted-risk'
+$accepted.sourceCommit = 'fixture-commit'
+$accepted.version = '0.0.0-local'
+$accepted.backupVerified = $true
+Write-Utf8 (Join-Path $package 'release.json') ($accepted | ConvertTo-Json -Depth 5)
+Write-FixtureChecksums
+Expect-Rejection 'Reject local package without receipt' { & $verify -Root $package 6>$null } 'Falta evidencia'
+[IO.Directory]::CreateDirectory((Join-Path $package 'docs')) | Out-Null
+$files += 'docs/local-verification.json'
+$receipt = @{ environment = 'Windows Docker Desktop'; status = 'passed-with-accepted-sql-risk'; sourceCommit = 'different'; version = $accepted.version }
+Write-Utf8 (Join-Path $package 'docs/local-verification.json') ($receipt | ConvertTo-Json)
+Write-FixtureChecksums
+Expect-Rejection 'Reject local receipt for another commit' { & $verify -Root $package 6>$null } 'no corresponde'
+$receipt.sourceCommit = $accepted.sourceCommit
+Write-Utf8 (Join-Path $package 'docs/local-verification.json') ($receipt | ConvertTo-Json)
+Write-FixtureChecksums
+& $verify -Root $package 6>$null
+Pass 'Verify local receipt bound to version and commit'
 # Execute the real CMD wrappers against synthetic scripts: no Docker or data changes.
 $launcherRoot = Join-Path $fixture 'launcher fixtures with spaces'
 [IO.Directory]::CreateDirectory((Join-Path $launcherRoot 'scripts')) | Out-Null

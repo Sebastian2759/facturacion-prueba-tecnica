@@ -21,10 +21,16 @@ public sealed class InvoiceConfiguration : IEntityTypeConfiguration<InvoiceEntit
         builder.Property(invoice => invoice.Date).HasColumnType("datetime").IsRequired();
         builder.Property(invoice => invoice.Document).HasColumnType("varchar(15)")
             .HasMaxLength(InvoiceRules.DocumentMaxLength).IsRequired();
-        builder.Property(invoice => invoice.FirstName).HasMaxLength(InvoiceRules.NameMaxLength).IsRequired();
-        builder.Property(invoice => invoice.LastName).HasMaxLength(InvoiceRules.NameMaxLength).IsRequired();
-        builder.Property(invoice => invoice.Address).HasMaxLength(InvoiceRules.AddressMaxLength).IsRequired();
-        builder.Property(invoice => invoice.Phone).HasMaxLength(InvoiceRules.PhoneMaxLength).IsRequired();
+        // VARCHAR with UTF-8 preserves Unicode accepted by the original schema.
+        // SQL lengths are bytes; reserve four per application character.
+        builder.Property(invoice => invoice.FirstName).HasMaxLength(InvoiceRules.NameMaxLength * 4)
+            .HasColumnType("varchar(400)").IsUnicode().UseCollation("Latin1_General_100_CI_AS_SC_UTF8").IsRequired();
+        builder.Property(invoice => invoice.LastName).HasMaxLength(InvoiceRules.NameMaxLength * 4)
+            .HasColumnType("varchar(400)").IsUnicode().UseCollation("Latin1_General_100_CI_AS_SC_UTF8").IsRequired();
+        builder.Property(invoice => invoice.Address).HasMaxLength(InvoiceRules.AddressMaxLength * 4)
+            .HasColumnType("varchar(800)").IsUnicode().UseCollation("Latin1_General_100_CI_AS_SC_UTF8").IsRequired();
+        builder.Property(invoice => invoice.Phone).HasMaxLength(InvoiceRules.PhoneMaxLength * 4)
+            .HasColumnType("varchar(120)").IsUnicode().UseCollation("Latin1_General_100_CI_AS_SC_UTF8").IsRequired();
         builder.Property(invoice => invoice.OwnerSubject).HasMaxLength(InvoiceRules.OwnerMaxLength)
             .IsUnicode(false).UseCollation("Latin1_General_100_BIN2").IsRequired();
         builder.Property(invoice => invoice.IdempotencyKey).IsRequired();

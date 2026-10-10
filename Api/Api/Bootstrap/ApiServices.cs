@@ -55,12 +55,16 @@ public static class ApiServices
         builder.Services.AddAdapterServices();
         builder.Services.AddApplicationServices();
         builder.Services.AddPersistenceServices(builder.Configuration);
+        var providerOptions = builder.Configuration.GetSection("Novasoft").Get<NovasoftOptions>() ?? new();
+        var realEnabled = builder.Configuration.GetValue<bool>("Novasoft:Enabled");
+        if (realEnabled && !providerOptions.IsConfigured)
+            throw new InvalidOperationException("Novasoft requiere configuración privada completa antes de habilitar el modo real.");
         builder.Services.AddSingleton(new AccountIntegrationOptions
         {
             IsLocal = isLocal,
-            RealEnabled = !isLocal && builder.Configuration.GetValue<bool>("Novasoft:Enabled")
+            RealEnabled = realEnabled
         });
-        builder.Services.AddSingleton(builder.Configuration.GetSection("Novasoft").Get<NovasoftOptions>() ?? new());
+        builder.Services.AddSingleton(providerOptions);
         builder.Services.AddSingleton<SimulatedAccountsStore>();
         builder.Services.AddSingleton<NovasoftTokenCache>();
         builder.Services.AddHttpClient<NovasoftClient>(client =>
