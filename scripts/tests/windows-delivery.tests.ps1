@@ -63,6 +63,18 @@ function Write-FixtureChecksums {
 Write-FixtureChecksums
 & $verify -Root $package 6>$null
 Pass 'Verify intact synthetic package in a path with spaces'
+# Reproduce the actual start -> common -> verifier script scopes in a fresh
+# Windows PowerShell process; importing Utility in this test runner hid the bug.
+$nestedProbe = Join-Path $fixture 'nested-start.ps1'
+$probeText = @'
+param([string]$Common, [string]$Verifier, [string]$Package)
+. $Common
+& $Verifier -Root $Package
+'@
+Write-Utf8 $nestedProbe $probeText
+& powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File $nestedProbe -Common (Join-Path $fixture 'common.ps1') -Verifier $verify -Package $package
+if ($LASTEXITCODE -ne 0) { throw 'Nested Windows PowerShell verifier failed.' }
+Pass 'Fresh Windows PowerShell common/verifier script scopes verify the intact package'
 Write-Utf8 (Join-Path $package 'first.txt') 'Changed after checksum creation'
 Expect-Rejection 'Reject modified file' { & $verify -Root $package 6>$null } 'Integridad no v'
 Write-FixtureChecksums
