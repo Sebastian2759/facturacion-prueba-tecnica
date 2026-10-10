@@ -55,7 +55,7 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     mem_limit: 512m
-    networks: [private]
+    networks: [private, web]
     depends_on:
       database:
         condition: service_healthy
@@ -65,3 +65,5 @@ volumes:
 networks:
   private:
     internal: true
+  web:
+    driver: bridge

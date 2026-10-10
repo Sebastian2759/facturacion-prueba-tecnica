@@ -111,3 +111,8 @@ La CI 38018319032 aprobó 159 pruebas .NET sin omisiones, 28 unitarias Angular, 
 Se generaron y verificaron backup vacío/restore/CHECKDB, SBOM, manifiesto y checksums; el ZIP fue extraído y revalidado en CI. Descargado en Windows, se verificó primero el hash del artefacto GitHub, luego el ZIP interno y todos los archivos extraídos. Gitleaks adicional del paquete extraído: cero hallazgos. Pasaron 16 pruebas sintéticas Windows de los scripts/manifiesto; no equivalen al arranque de Docker Desktop.
 
 El run11 ya validaba la aceptación, pero el wrapper heredó exit 1 del diagnóstico opcional SQL 2025. La corrección sólo restablece éxito después de validar los gates requeridos. Cinco regresiones adicionales comprueban ese caso y el rechazo de fallos, JSON inválido y nuevos hallazgos. Run12 confirma la corrección en CI real.
+# Regresión de arranque en Windows
+
+La prueba real con Windows PowerShell 5.1 y Docker Desktop 4.94 detectó carga incompleta de funciones del módulo Utility y ausencia del puerto publicado al conectar la API sólo a una red interna. El verificador importa explícitamente el módulo; SQL conserva su red privada y la API añade una red web con publicación exclusiva en loopback. Los CMD conservan el código de salida incluso después de `pause`, e `iniciar.cmd` transmite `-NoBrowser`.
+
+El pipeline exige un job Windows con PowerShell 5.1 antes de generar el paquete. Sus 26 comprobaciones incluyen integridad, ACL, rutas y ejecución de los cinco CMD con éxito y error. Son fixtures; la prueba completa de instalación en Docker se registra por separado.

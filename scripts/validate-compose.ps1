@@ -24,8 +24,16 @@ try {
         if (@($configuration.services.$service.tmpfs).Count -ne 1 -or $configuration.services.$service.tmpfs[0] -ne '/tmp:rw,noexec,nosuid,size=64m') { throw "El montaje temporal de $service no es válido." }
         if (-not $configuration.services.$service.read_only) { throw "El sistema de archivos de $service debe ser de sólo lectura." }
     }
-    if (-not $configuration.networks.private.internal) { throw 'La red de los contenedores de evaluación debe ser interna.' }
-    Write-Host 'Compose válido: loopback, SQL sin puerto, red interna, lectura sola y tmpfs configurados.'
+    if (-not $configuration.networks.private.internal) { throw 'La red SQL debe ser interna.' }
+    foreach ($service in @('database', 'migrator')) {
+        $networks = @($configuration.services.$service.networks.PSObject.Properties.Name)
+        if ($networks.Count -ne 1 -or $networks[0] -ne 'private') { throw "$service debe pertenecer exclusivamente a la red privada." }
+    }
+    $appNetworks = @($configuration.services.app.networks.PSObject.Properties.Name)
+    if ($appNetworks.Count -ne 2 -or 'private' -notin $appNetworks -or 'web' -notin $appNetworks) { throw 'La aplicación debe usar las redes private y web.' }
+    if ($configuration.networks.web.driver -ne 'bridge' -or
+        ($configuration.networks.web.PSObject.Properties['internal'] -and $configuration.networks.web.internal)) { throw 'La red web debe permitir publicar el puerto loopback.' }
+    Write-Host 'Compose válido: web en loopback, SQL y migrador en red privada, lectura sola y tmpfs configurados.'
 } finally {
     foreach ($key in $original.Keys) { [Environment]::SetEnvironmentVariable($key, $original[$key], 'Process') }
 }

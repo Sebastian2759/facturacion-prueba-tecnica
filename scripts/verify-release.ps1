@@ -1,6 +1,9 @@
 param([string]$Root = (Join-Path $PSScriptRoot '..'))
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+# Windows PowerShell 5.1 can autoload the Utility cmdlets without its script
+# functions. Import the complete module before using Get-FileHash.
+Import-Module Microsoft.PowerShell.Utility -Force -ErrorAction Stop
 $rootPath = [IO.Path]::GetFullPath($Root).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
 $sumPath = Join-Path $rootPath 'SHA256SUMS.txt'
 if (-not (Test-Path -LiteralPath $sumPath)) { throw 'Este directorio no contiene un paquete de evaluación generado. Descargue el ZIP de release completo.' }

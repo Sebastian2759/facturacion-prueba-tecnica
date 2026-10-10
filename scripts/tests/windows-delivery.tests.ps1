@@ -1,6 +1,7 @@
 param([string]$ReportPath)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+Import-Module Microsoft.PowerShell.Utility -Force -ErrorAction Stop
 if ($env:OS -ne 'Windows_NT') { throw 'Run these checks on Windows; they verify NTFS permissions and Windows PowerShell compatibility.' }
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $fixture = Join-Path $repo ('artifacts/windows delivery tests/' + [Guid]::NewGuid().ToString('N'))
@@ -93,6 +94,41 @@ $accepted.sqlRiskAcceptance.image = 'different-image'
 Write-Utf8 (Join-Path $package 'release.json') ($accepted | ConvertTo-Json -Depth 5)
 Write-FixtureChecksums
 Expect-Rejection 'Reject SQL acceptance for different package image' { & $verify -Root $package 6>$null } 'aceptaci'
+# Execute the real CMD wrappers against synthetic scripts: no Docker or data changes.
+$launcherRoot = Join-Path $fixture 'launcher fixtures with spaces'
+[IO.Directory]::CreateDirectory((Join-Path $launcherRoot 'scripts')) | Out-Null
+foreach ($entry in @(@('iniciar', 'start'), @('detener', 'stop'), @('backup', 'backup'), @('diagnosticar', 'diagnose'), @('restaurar', 'restore'))) {
+    $launcher = Join-Path $launcherRoot ($entry[0] + '.cmd')
+    Copy-Item -LiteralPath (Join-Path $repo ($entry[0] + '.cmd')) -Destination $launcher
+    foreach ($expectedExit in @(0, 7)) {
+        $body = 'param([switch]$NoBrowser, [string]$BackupPath)' + "`r`n"
+        if ($entry[0] -eq 'iniciar') { $body += 'if (-not $NoBrowser) { exit 91 }' + "`r`n" }
+        if ($entry[0] -eq 'restaurar') { $body += 'if ($BackupPath -ne "backup with spaces.bak") { exit 92 }' + "`r`n" }
+        $body += "exit $expectedExit"
+        Write-Utf8 (Join-Path $launcherRoot ('scripts/' + $entry[1] + '.ps1')) $body
+        $arguments = ''
+        if ($entry[0] -eq 'iniciar') { $arguments = ' -NoBrowser' }
+        if ($entry[0] -eq 'restaurar') { $arguments = ' -BackupPath "backup with spaces.bak"' }
+        $info = New-Object Diagnostics.ProcessStartInfo
+        $info.FileName = $env:ComSpec
+        $info.Arguments = '/d /c ""' + $launcher + '"' + $arguments + '"'
+        $info.UseShellExecute = $false
+        $info.CreateNoWindow = $true
+        $info.RedirectStandardInput = $true
+        $info.RedirectStandardOutput = $true
+        $info.RedirectStandardError = $true
+        $process = [Diagnostics.Process]::Start($info)
+        try {
+            $process.StandardInput.WriteLine('')
+            $process.StandardInput.Close()
+            $output = $process.StandardOutput.ReadToEnd()
+            $errorOutput = $process.StandardError.ReadToEnd()
+            $process.WaitForExit()
+            if ($process.ExitCode -ne $expectedExit) { throw "Launcher $($entry[0]) returned $($process.ExitCode), expected $expectedExit. $errorOutput $output" }
+        } finally { $process.Dispose() }
+        Pass "CMD $($entry[0]) preserves exit $expectedExit and supported arguments"
+    }
+}
 $report = [ordered]@{
     status = 'windows-script-checks-passed-not-an-installation-test'
     verifiedUtc = [DateTime]::UtcNow.ToString('o')
