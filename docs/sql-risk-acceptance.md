@@ -26,4 +26,4 @@ La decisión efectiva de cada paquete figura en `release.json` y `docs/sql-risk-
 
 El propietario debe revisar la decisión antes de vencer o antes de cambiar imagen, datos, exposición o finalidad. No cubre producción, internet/LAN, información real, otras imágenes SQL ni nuevas vulnerabilidades. Corregir exige una imagen utilizable y repetir el análisis, las pruebas SQL, migración, backup/restore y aplicación. No se programa vigilancia automática con esta decisión.
 
-Esta autorización permite superar únicamente el bloqueo conocido de SQL. La generación del ZIP depende del resto de CI; el arranque completo en Docker Desktop Windows sigue pendiente de validación. No constituye pentest ni certificación de seguridad.
+Esta autorización cubre únicamente el inventario conocido de SQL. El paquete 1.0.2-local.2 fue comprobado desde una extracción nueva en Docker Desktop Windows; el recibo está en evidence/1.0.2-local.2/windows-final.json. No constituye pentest ni certificación de seguridad.

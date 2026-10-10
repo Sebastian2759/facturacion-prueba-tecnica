@@ -1,0 +1,139 @@
+{
+  "status": "windows-script-checks-passed-not-an-installation-test",
+  "verifiedUtc": "2026-10-10T05:25:06.0332414Z",
+  "powerShellVersion": "7.6.5",
+  "sourceCommit": "56eed9a5b91a5eb62ea6ba60f77acd67ef362da4",
+  "testScriptSha256": "1bcf0b85d68c839ead733bded44177d73b9a99f122b5b788419e6b9f426d5336",
+  "checks": [
+    {
+      "check": "Evaluator scripts parse in the actual PowerShell engine on Windows",
+      "result": "passed"
+    },
+    {
+      "check": "Distinct random database credentials generated without disclosure",
+      "result": "passed"
+    },
+    {
+      "check": "Valid installation identifier generated",
+      "result": "passed"
+    },
+    {
+      "check": "NTFS ACL restricted to current user with inheritance disabled",
+      "result": "passed"
+    },
+    {
+      "check": "Repeated initialization preserves settings and ownership",
+      "result": "passed"
+    },
+    {
+      "check": "Reject missing checksums",
+      "result": "passed"
+    },
+    {
+      "check": "Verify intact synthetic package in a path with spaces",
+      "result": "passed"
+    },
+    {
+      "check": "Fresh Windows PowerShell common/verifier script scopes verify the intact package",
+      "result": "passed"
+    },
+    {
+      "check": "Fresh Windows PowerShell startup restricts both private settings files after verification",
+      "result": "passed"
+    },
+    {
+      "check": "Reject modified file",
+      "result": "passed"
+    },
+    {
+      "check": "Reject missing file",
+      "result": "passed"
+    },
+    {
+      "check": "Reject unapproved package status",
+      "result": "passed"
+    },
+    {
+      "check": "Reject unsafe path: ../outside.txt",
+      "result": "passed"
+    },
+    {
+      "check": "Reject unsafe path: ..\\outside.txt",
+      "result": "passed"
+    },
+    {
+      "check": "Reject unsafe path: C:\\outside.txt",
+      "result": "passed"
+    },
+    {
+      "check": "Verify synthetic local package with explicit risk acceptance",
+      "result": "passed"
+    },
+    {
+      "check": "Reject SQL acceptance in production package",
+      "result": "passed"
+    },
+    {
+      "check": "Reject SQL acceptance for different package image",
+      "result": "passed"
+    },
+    {
+      "check": "Reject local package without receipt",
+      "result": "passed"
+    },
+    {
+      "check": "Reject local receipt for another commit",
+      "result": "passed"
+    },
+    {
+      "check": "Verify local receipt bound to version and commit",
+      "result": "passed"
+    },
+    {
+      "check": "CMD iniciar preserves exit 0 and supported arguments",
+      "result": "passed"
+    },
+    {
+      "check": "CMD iniciar preserves exit 7 and supported arguments",
+      "result": "passed"
+    },
+    {
+      "check": "CMD detener preserves exit 0 and supported arguments",
+      "result": "passed"
+    },
+    {
+      "check": "CMD detener preserves exit 7 and supported arguments",
+      "result": "passed"
+    },
+    {
+      "check": "CMD backup preserves exit 0 and supported arguments",
+      "result": "passed"
+    },
+    {
+      "check": "CMD backup preserves exit 7 and supported arguments",
+      "result": "passed"
+    },
+    {
+      "check": "CMD diagnosticar preserves exit 0 and supported arguments",
+      "result": "passed"
+    },
+    {
+      "check": "CMD diagnosticar preserves exit 7 and supported arguments",
+      "result": "passed"
+    },
+    {
+      "check": "CMD restaurar preserves exit 0 and supported arguments",
+      "result": "passed"
+    },
+    {
+      "check": "CMD restaurar preserves exit 7 and supported arguments",
+      "result": "passed"
+    }
+  ],
+  "exclusions": [
+    "Docker/WSL installation",
+    "Container startup on Windows",
+    "Real Novasoft connectivity",
+    "Final application ZIP approval"
+  ]
+}

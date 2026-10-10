@@ -1,0 +1,27 @@
+
+> facturacion@1.0.0 build
+> ng build
+
+> Building...
+√ Building...
+Initial chunk files | Names          |  Raw size | Estimated transfer size
+main-53CGJNIR.js    | main           | 320.37 kB |                87.87 kB
+styles-D2RBCBTE.css | styles         |  22.97 kB |                 4.82 kB
+
+                    | Initial total  | 343.34 kB |                92.69 kB
+
+Lazy chunk files    | Names          |  Raw size | Estimated transfer size
+chunk-nRZjVniK.js   | -              |  50.91 kB |                10.77 kB
+chunk-lqgunImg.js   | accounts       |  14.56 kB |                 4.09 kB
+chunk-26j1pUbj.js   | -              |  14.31 kB |                 3.42 kB
+chunk-DYxNl7hD.js   | invoice-new    |  10.55 kB |                 3.55 kB
+chunk-CWfeVbwE.js   | invoice-detail |   4.22 kB |                 1.70 kB
+chunk-DN3ytKn8.js   | invoice-list   |   4.18 kB |                 1.70 kB
+chunk-DsVzMNVb.js   | -              |   2.02 kB |               812 bytes
+chunk-OFewIh4w.js   | access         |   1.69 kB |               851 bytes
+chunk-DnNPd0Ly.js   | -              | 574 bytes |               574 bytes
+
+Application bundle generation complete. [2.489 seconds] - 2026-10-10T05:26:08.523Z
+
+Output location: C:\Users\Priexmaster\Documents\Codex\2026-10-09\1-https-dev-azure-com-serviciosandestool-2\outputs\facturacion-app\Frontend\dist\facturacion
+

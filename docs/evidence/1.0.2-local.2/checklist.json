@@ -1,0 +1,772 @@
+{
+  "meta": {
+    "version": "1.0.2-local.2",
+    "sourceCommit": "cc1f05e764cb3550395e63ec8020a51fa5e0a004",
+    "zipSha256": "3320e99a21c843394a093663d7c525bf071f73ec61bb8f0cb32be9d590889985",
+    "checkedUtc": "2026-10-10T05:39:13.6649179Z",
+    "scope": "local only; runtime without simulations",
+    "previousEvidence": "../Checklist y ../Evidencias-adicionales de 1.0.1-local.2, conservados"
+  },
+  "criteria": [
+    {
+      "id": "E01",
+      "group": "Examen · obligatorio",
+      "criterion": "Aplicación web con C#; arquitectura libre (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "155 tests backend aprobados, sin fallos ni omitidos, en Docker .NET 10 con SQL Server dedicado. Se retiran tests de módulos eliminados y se añaden regresiones de seguridad y migración.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E02",
+      "group": "Examen · obligatorio",
+      "criterion": "Proyecto/solución para Visual Studio (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "Example.sln y sus nueve proyectos incluidos y compilados. La solución anterior fue abierta en Visual Studio con 9/9 proyectos; esta versión acredita build y tests por SDK.",
+      "action": "No se atribuye una nueva apertura/compilación interactiva del IDE a este corte."
+    },
+    {
+      "id": "E03",
+      "group": "Examen · obligatorio",
+      "criterion": "Formulario de presentación HTML5 para una factura con uno o varios artículos (PDF pp. 1–2).",
+      "status": "Cumple",
+      "evidence": "Frontend/src/index.html; facturas/invoice-new.html, invoice-new.ts e invoice-form-model.ts. Formularios HTML5 reactivos; hasta 100 líneas. No se exige usar la tecnología ASP.NET Web Forms.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E04",
+      "group": "Examen · obligatorio",
+      "criterion": "Fecha de hoy, DATETIME, sólo lectura (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "SQL real: Date datetime. CreateInvoiceCommand asigna fecha del servidor America/Bogota; UI muestra fecha no editable. El valor definitivo se calcula al guardar.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E05",
+      "group": "Examen · obligatorio",
+      "criterion": "Número INT IDENTITY, sólo lectura, generado al guardar (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "SQL real: Number int, is_identity=1. InvoiceConfiguration.UseIdentityColumn; UI no recibe un número editable. Creación y consulta verificadas.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E06",
+      "group": "Examen · obligatorio",
+      "criterion": "Documento VARCHAR(15) (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "SQL real Document varchar, max_length=15; validación máxima 15 en frontend/backend.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E07",
+      "group": "Examen · obligatorio",
+      "criterion": "Nombres VARCHAR, longitud elegida (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "FirstName es VARCHAR(400) con collation UTF-8, confirmado por sys.columns y tests SQL. Se reservan bytes para conservar Unicode; límites funcionales de caracteres sin cambios. Migración y nuevas escrituras probadas.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E08",
+      "group": "Examen · obligatorio",
+      "criterion": "Apellidos VARCHAR, longitud elegida (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "LastName es VARCHAR(400) con collation UTF-8, confirmado por sys.columns y tests SQL. Se reservan bytes para conservar Unicode; límites funcionales de caracteres sin cambios. Migración y nuevas escrituras probadas.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E09",
+      "group": "Examen · obligatorio",
+      "criterion": "Dirección VARCHAR, longitud elegida (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "Address es VARCHAR(800) con collation UTF-8, confirmado por sys.columns y tests SQL. Se reservan bytes para conservar Unicode; límites funcionales de caracteres sin cambios. Migración y nuevas escrituras probadas.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E10",
+      "group": "Examen · obligatorio",
+      "criterion": "Teléfono VARCHAR, longitud elegida (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "Phone es VARCHAR(120) con collation UTF-8, confirmado por sys.columns y tests SQL. Se reservan bytes para conservar Unicode; límites funcionales de caracteres sin cambios. Migración y nuevas escrituras probadas.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E11",
+      "group": "Examen · obligatorio",
+      "criterion": "Código del artículo INT (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "SQL real DetalleFactura.Code int; InvoiceLineConfiguration y validación de entero positivo.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E12",
+      "group": "Examen · obligatorio",
+      "criterion": "Cantidad INT (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "SQL real DetalleFactura.Quantity int; frontend y backend rechazan decimales, cero y negativos.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E13",
+      "group": "Examen · obligatorio",
+      "criterion": "Precio unitario MONEY (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "SQL real UnitPrice money; cálculo C# decimal, precio positivo con máximo dos decimales.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E14",
+      "group": "Examen · obligatorio",
+      "criterion": "Valor bruto sin IVA, MONEY, sólo lectura (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "InvoiceCalculator suma cantidad × precio; Gross money en SQL; invoice-totals muestra el valor del servidor sin entrada editable.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E15",
+      "group": "Examen · obligatorio",
+      "criterion": "Descuento 5 % desde bruto ≥ 500.000; debajo, cero; MONEY y sólo lectura (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "InvoiceCalculator y pruebas de 499999.99, 500000 y 500000.01 aprobadas; Discount money en SQL.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E16",
+      "group": "Examen · obligatorio",
+      "criterion": "IVA 19 %, MONEY y sólo lectura (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "Tax money y calculador 19 %. Decisión D04: base bruto menos descuento; el PDF no precisa la base. Bruto 500000 produce descuento 25000, IVA 90250.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E17",
+      "group": "Examen · obligatorio",
+      "criterion": "Total de factura MONEY y sólo lectura (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "Total = bruto − descuento + IVA, calculado por C#; Total money en SQL y resumen no editable. Caso 500000: total 565250.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E18",
+      "group": "Examen · obligatorio",
+      "criterion": "Rechazar guardado sin al menos un artículo (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "CreateInvoiceValidator.NotEmpty y calculador rechazan cero líneas. UI conserva al menos una fila y valida su contenido.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E19",
+      "group": "Examen · obligatorio",
+      "criterion": "Documento del cliente obligatorio (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "CreateInvoiceValidator.NotEmpty, formularios required/no espacios y CHECK de SQL para documento no vacío.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E20",
+      "group": "Examen · obligatorio",
+      "criterion": "Código de artículo obligatorio (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "invoiceLineForm required y positiveInteger; InvoiceLineInputValidator y calculador validan antes de persistir.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E21",
+      "group": "Examen · obligatorio",
+      "criterion": "Cantidad obligatoria (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "invoiceLineForm required y positiveInteger; validación equivalente en backend.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E22",
+      "group": "Examen · obligatorio",
+      "criterion": "Precio unitario obligatorio (PDF p. 1).",
+      "status": "Cumple",
+      "evidence": "invoiceLineForm required y money; backend valida rango, signo y precisión.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E23",
+      "group": "Examen · obligatorio",
+      "criterion": "Botón Grabar guarda en tabla Facturas (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "Botón “Grabar factura”; CreateInvoiceCommand/InvoiceRepository; tabla dbo.Facturas con detalle relacionado. Prueba Windows con API, navegador y persistencia.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E24",
+      "group": "Examen · obligatorio",
+      "criterion": "Confirmación de éxito con número de factura creada (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "invoice-detail.ts: “Factura #… creada correctamente”; respuesta 201 con número SQL, navegación al detalle y caso E2E live.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E25",
+      "group": "Examen · obligatorio",
+      "criterion": "Crear base de datos y tablas de factura (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "DatabaseMigrator y scripts de inicio crean FacturacionLocal, Facturas y DetalleFactura; primer arranque desde ZIP nuevo verificado.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "E26",
+      "group": "Examen · obligatorio",
+      "criterion": "Consumir Novasoft mediante C# (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "Consulta por C# y pantalla sin interceptación: NEXOUI261010B se recupera desde Novasoft. Login y Bearer permanecen en backend. No existe almacén simulado; Cuentas requiere credenciales privadas del servidor.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E27",
+      "group": "Examen · obligatorio",
+      "criterion": "Obtener token real mediante Login de Novasoft (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "Consulta por C# y pantalla sin interceptación: NEXOUI261010B se recupera desde Novasoft. Login y Bearer permanecen en backend. No existe almacén simulado; Cuentas requiere credenciales privadas del servidor.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E28",
+      "group": "Examen · obligatorio",
+      "criterion": "Enviar autorización Bearer al servicio (PDF p. 3).",
+      "status": "Cumple",
+      "evidence": "Consulta por C# y pantalla sin interceptación: NEXOUI261010B se recupera desde Novasoft. Login y Bearer permanecen en backend. No existe almacén simulado; Cuentas requiere credenciales privadas del servidor.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E29",
+      "group": "Examen · obligatorio",
+      "criterion": "Crear Accounts por POST al servicio real (PDF p. 3).",
+      "status": "Cumple",
+      "evidence": "La versión anterior creó y consultó la cuenta real NEXOUI261010B desde el formulario. Este corte conserva el cliente POST, valida el formulario/contrato con respuestas controladas y comprueba la consulta real; no se repite la escritura externa.",
+      "action": "La evidencia anterior del POST se conserva como histórica. Las consultas actuales usan el registro ya autorizado."
+    },
+    {
+      "id": "E30",
+      "group": "Examen · obligatorio",
+      "criterion": "Listar Accounts con GET al servicio real (PDF p. 3).",
+      "status": "Cumple",
+      "evidence": "Consulta por C# y pantalla sin interceptación: NEXOUI261010B se recupera desde Novasoft. Login y Bearer permanecen en backend. No existe almacén simulado; Cuentas requiere credenciales privadas del servidor.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E31",
+      "group": "Examen · obligatorio",
+      "criterion": "Consultar una Account por código con GET (PDF p. 3).",
+      "status": "Cumple",
+      "evidence": "Consulta por C# y pantalla sin interceptación: NEXOUI261010B se recupera desde Novasoft. Login y Bearer permanecen en backend. No existe almacén simulado; Cuentas requiere credenciales privadas del servidor.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "E32",
+      "group": "Examen · obligatorio",
+      "criterion": "Mostrar en pantalla resultados del consumo real (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "Consulta por C# y pantalla sin interceptación: NEXOUI261010B se recupera desde Novasoft. Login y Bearer permanecen en backend. No existe almacén simulado; Cuentas requiere credenciales privadas del servidor.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "O01",
+      "group": "Examen · opcional",
+      "criterion": "Avisar por entrada no numérica en INT/MONEY antes de enviar a DB (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "Inputs number, positiveInteger/money, mensajes de fila y save() bloquea form.invalid. Backend también rechaza binding/valores inválidos.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "O02",
+      "group": "Examen · opcional",
+      "criterion": "Validar todos los campos diligenciados y mostrar mensaje (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "Cliente completo requerido en invoiceForm/CreateInvoiceValidator. Mensaje general y foco en primer input inválido antes de enviar.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "O03",
+      "group": "Examen · opcional",
+      "criterion": "Grilla de facturas y enlace desde captura (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "invoice-list muestra tabla paginada; “Ver mis facturas” desde invoice-new. En perfil local incluye las facturas de la instalación.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "O04",
+      "group": "Examen · opcional",
+      "criterion": "Estilos CSS (PDF p. 2).",
+      "status": "Cumple",
+      "evidence": "Frontend/src/styles.css y estilos compartidos; revisión real de estilos/CSP y escritorio/móvil en las pruebas locales.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "O05",
+      "group": "Examen · opcional",
+      "criterion": "Mostrar Accounts en un formulario web (PDF p. 3).",
+      "status": "Cumple",
+      "evidence": "Consulta por C# y pantalla sin interceptación: NEXOUI261010B se recupera desde Novasoft. Login y Bearer permanecen en backend. No existe almacén simulado; Cuentas requiere credenciales privadas del servidor.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "O06",
+      "group": "Examen · opcional",
+      "criterion": "Crear Accounts desde formulario web consumiendo WebAPI (PDF p. 3).",
+      "status": "Cumple",
+      "evidence": "La versión anterior creó y consultó la cuenta real NEXOUI261010B desde el formulario. Este corte conserva el cliente POST, valida el formulario/contrato con respuestas controladas y comprueba la consulta real; no se repite la escritura externa.",
+      "action": "La evidencia anterior del POST se conserva como histórica. Las consultas actuales usan el registro ya autorizado."
+    },
+    {
+      "id": "A01",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Usar la plantilla y respetar sus capas.",
+      "status": "Cumple",
+      "evidence": "Base Template 3393c2e; Domain/Application/Api/Infraestructure; Domain sin dependencias de proyecto, Application sólo referencia Domain. CQRS/MediatR y repositorios por convención.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "A02",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Última versión estable de Angular.",
+      "status": "Cumple",
+      "evidence": "package.json fija Angular/core y CLI 22.2.2. Consulta al registro npm oficial en este corte devuelve latest=22.2.2 para ambos; evidencia angular-latest.json.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "A03",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Componentes reutilizables.",
+      "status": "Cumple",
+      "evidence": "shared/FormField, Feedback, Icon e InvoiceTotals usados en vistas reales; módulos por facturas, cuentas, core y shared.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "A04",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Lazy loading.",
+      "status": "Cumple",
+      "evidence": "app.routes.ts usa loadComponent con import dinámico para las pantallas.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "A05",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Formularios tipados, separación de responsabilidades y ciclo de vida.",
+      "status": "Cumple",
+      "evidence": "Reactive Forms tipados, TypeScript strict/strictTemplates, signals, servicios API y takeUntilDestroyed; switchMap descarta previews obsoletos.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "A06",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Validators claros en backend.",
+      "status": "Cumple",
+      "evidence": "FluentValidation por caso de uso, ValidationBehavior y reglas de dominio antes de persistir; pruebas de límites y errores.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "A07",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "BaseResponse adaptado al frontend.",
+      "status": "Cumple",
+      "evidence": "ResponseBase conserva campos y añade code/fieldErrors/traceId. ProblemDetails para fallos HTTP; Angular normaliza ambos y mantiene datos del formulario.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "A08",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Contrato frontend/backend documentado y comprobado.",
+      "status": "Cumple",
+      "evidence": "OpenAPI exportado por el backend nuevo y comprobado contra los modelos Angular. Se eliminan los campos mode de Accounts; las escrituras antiguas con campos ajenos al contrato se rechazan. El adaptador mantiene el contrato Novasoft revisado.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "A09",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Código limpio y compilación/formato.",
+      "status": "Cumple",
+      "evidence": "Se eliminan fixtures de portada, endpoints DemoInvoices/DemoArchitecture, almacén en memoria y selector de simulación. Migración protegida, pruebas, guía, arquitectura y decisiones actualizadas; build y formato aprobados.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "A10",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Documentación de arquitectura, decisiones y solución del requerimiento.",
+      "status": "Cumple",
+      "evidence": "README, docs/ARCHITECTURE.md, decisions.md, requirements.md, implementation-contract.md, TESTING.md y SECURITY.md existen e incluyen flujos y límites.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "A11",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Documentación con estado final claro y consistente.",
+      "status": "Cumple",
+      "evidence": "Se eliminan fixtures de portada, endpoints DemoInvoices/DemoArchitecture, almacén en memoria y selector de simulación. Migración protegida, pruebas, guía, arquitectura y decisiones actualizadas; build y formato aprobados.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "A12",
+      "group": "Compromisos · arquitectura y frontend",
+      "criterion": "Explicación inequívoca del contrato Novasoft.",
+      "status": "Cumple",
+      "evidence": "OpenAPI exportado por el backend nuevo y comprobado contra los modelos Angular. Se eliminan los campos mode de Accounts; las escrituras antiguas con campos ajenos al contrato se rechazan. El adaptador mantiene el contrato Novasoft revisado.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "T01",
+      "group": "Compromisos · pruebas y funcionamiento",
+      "criterion": "Pruebas backend ejecutadas.",
+      "status": "Cumple",
+      "evidence": "155 tests backend aprobados, sin fallos ni omitidos, en Docker .NET 10 con SQL Server dedicado. Se retiran tests de módulos eliminados y se añaden regresiones de seguridad y migración.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "T02",
+      "group": "Compromisos · pruebas y funcionamiento",
+      "criterion": "Persistencia probada con SQL Server real.",
+      "status": "Cumple",
+      "evidence": "Ocho tests SQL reales: agregado, concurrencia, rollback, paginación, privilegios, VARCHAR UTF-8, retirada/rollback de tabla vacía y negativa a borrar la tabla si contiene datos. Modelo y snapshot coherentes.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "T03",
+      "group": "Compromisos · pruebas y funcionamiento",
+      "criterion": "Pruebas frontend unitarias y proxy.",
+      "status": "Cumple",
+      "evidence": "Node 24.21.0 / npm 11.13.0: 28 unitarias Angular y 4 tests de proxy aprobados localmente.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "T04",
+      "group": "Compromisos · pruebas y funcionamiento",
+      "criterion": "Pruebas de navegador y recorrido completo.",
+      "status": "Cumple",
+      "evidence": "9 casos de navegador con API controlada, 1 recorrido live Edge/API/SQL y 1 consulta live Novasoft aprobados. Las respuestas controladas sólo existen en tests, fuera del runtime.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "T05",
+      "group": "Compromisos · pruebas y funcionamiento",
+      "criterion": "Diseño responsive y accesibilidad básica.",
+      "status": "Cumple",
+      "evidence": "Pruebas móvil/escritorio y axe sin violaciones detectadas en los casos cubiertos; no equivale a certificación completa de accesibilidad.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "T06",
+      "group": "Compromisos · pruebas y funcionamiento",
+      "criterion": "Backup, restauración real y persistencia después de reiniciar.",
+      "status": "Cumple",
+      "evidence": "Backup vacío del paquete restaurado y comprobado con CHECKDB. ZIP final: backup con factura, restauración en otra base con comparación de datos y reinicio sin pérdida; recibo windows-final.json.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "T07",
+      "group": "Compromisos · pruebas y funcionamiento",
+      "criterion": "Cubrir todos los tipos SQL exigidos con pruebas.",
+      "status": "Cumple",
+      "evidence": "Ocho tests SQL reales: agregado, concurrencia, rollback, paginación, privilegios, VARCHAR UTF-8, retirada/rollback de tabla vacía y negativa a borrar la tabla si contiene datos. Modelo y snapshot coherentes.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "T08",
+      "group": "Compromisos · pruebas y funcionamiento",
+      "criterion": "Pruebas de scripts Windows y del ZIP original.",
+      "status": "Cumple",
+      "evidence": "31 comprobaciones de scripts Windows aprobadas, incluido proceso limpio PowerShell 5.1 y ACL de ambos archivos privados; ZIP final extraído y operado con los CMD originales.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "D01",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "ZIP con aplicación compilada, fuentes, tests y documentación.",
+      "status": "Cumple",
+      "evidence": "Aplicacion-1.0.2-local.2.zip contiene aplicación compilada sin simuladores, fuentes, tests, documentos, SBOM, backup vacío y evidencias propias. No incluye credenciales ni datos introducidos en las pruebas locales.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "D02",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Inicio mediante un comando tras descomprimir.",
+      "status": "Cumple",
+      "evidence": "iniciar.cmd original probado desde extracción nueva con espacios en ruta y Windows PowerShell 5.1. Requiere Docker Linux operativo, internet inicial y puerto 5080 libre.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "D03",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "README y guía HTML con pasos y animaciones.",
+      "status": "Cumple",
+      "evidence": "LEEME.html offline, CSS animado con prefers-reduced-motion, comandos copiables y solución de fallos; guía general y validación Windows adjuntas.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "D04",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Backup de base de datos incluido y utilidades de respaldo.",
+      "status": "Cumple",
+      "evidence": "Backup distribuido de esquema vacío, comprobado/restaurado; backup.cmd y restaurar.cmd para el uso posterior. Los respaldos con datos de pruebas no se redistribuyen.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "D05",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Evaluación Windows con internet sin SDK/Node.",
+      "status": "Cumple",
+      "evidence": "Paquete de binarios linux-x64 sobre Docker Desktop. Windows 11 Pro x64 local probado. No requiere compilar; sí Docker/WSL/virtualización y descarga inicial de imágenes.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "D06",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Verificar si este PC necesita BIOS/Docker.",
+      "status": "Cumple",
+      "evidence": "Motor Docker operativo; app activa y SQL healthy. Puerto web publicado sólo en 127.0.0.1. La verificación Windows confirmó hipervisor/SVM activos; no hace falta otro cambio de BIOS para este equipo.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "D07",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Repositorio GitHub personal.",
+      "status": "Cumple",
+      "evidence": "API GitHub confirma Sebastian2759/facturacion-prueba-tecnica privado, propietario tipo User. Correo personal requerido verificado en preparación; ninguna publicación cloud en el alcance vigente.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "D08",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Código de entrega identificable y sincronizado.",
+      "status": "Cumple",
+      "evidence": "Código local identificado por cc1f05e764cb3550395e63ec8020a51fa5e0a004. Rama codex/ajustes-evaluacion-local; ZIP vinculado al mismo commit. Sin push ni cambios remotos.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "D09",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Carpeta lista para cargar a SharePoint.",
+      "status": "Cumple",
+      "evidence": "Aplicacion-1.0.2-local.2.zip contiene aplicación compilada sin simuladores, fuentes, tests, documentos, SBOM, backup vacío y evidencias propias. No incluye credenciales ni datos introducidos en las pruebas locales.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "D10",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Archivo realmente cargado en SharePoint y descargable por el evaluador.",
+      "status": "Fuera de alcance",
+      "evidence": "El propietario indicó «no solo local por el momento». No se realizan cargas, invitaciones, pushes ni configuración de protecciones remotas.",
+      "action": "Retomar SharePoint/acceso del evaluador/protección de rama cuando el propietario vuelva a incluirlos en alcance. El repositorio remoto no recibe estos ajustes."
+    },
+    {
+      "id": "D11",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Evaluador con acceso al repositorio privado.",
+      "status": "Fuera de alcance",
+      "evidence": "El propietario indicó «no solo local por el momento». No se realizan cargas, invitaciones, pushes ni configuración de protecciones remotas.",
+      "action": "Retomar SharePoint/acceso del evaluador/protección de rama cuando el propietario vuelva a incluirlos en alcance. El repositorio remoto no recibe estos ajustes."
+    },
+    {
+      "id": "D12",
+      "group": "Compromisos · entrega y evaluación",
+      "criterion": "Descarga duradera de artefactos/evidencias.",
+      "status": "Cumple",
+      "evidence": "ZIP y evidencia están guardados localmente; no dependen de enlaces temporales de Actions. Compartirlos con el evaluador queda aplazado.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "S01",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "CI ejecutada con controles de calidad y seguridad.",
+      "status": "Fuera de alcance",
+      "evidence": "El workflow existe y CI15 fue aprobado para su versión histórica. Este commit se verificó localmente; no se ejecutó una nueva CI remota.",
+      "action": "No atribuir CI15 al código nuevo. Ejecutar CI al retomar la sincronización remota."
+    },
+    {
+      "id": "S02",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Escaneo de secretos en historial, fuentes y paquete.",
+      "status": "Cumple",
+      "evidence": "Gitleaks: historial de 28 commits, código y paquete sin hallazgos. Configuración privada, claves locales y backups de pruebas excluidos de la entrega.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "S03",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Dependencias auditadas y toolchain reproducible.",
+      "status": "Cumple",
+      "evidence": "Locks NuGet/npm y versiones fijadas; auditorías npm/NuGet y feeds obligatorios aprobados. No equivale a garantía frente a vulnerabilidades aún desconocidas.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S04",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Análisis estático.",
+      "status": "Cumple",
+      "evidence": "Analizadores .NET y formato aprobados; Semgrep 1.179.0: 30 archivos, 3 reglas, cero hallazgos/errores. Alcance acotado, no pentest exhaustivo.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "S05",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Escaneo de filesystem e imagen de aplicación.",
+      "status": "Cumple",
+      "evidence": "Trivy del paquete e imágenes API/migrador nuevas: sin HIGH/CRITICAL. SQL revisado por separado, con los mismos 71 HIGH aceptados y 0 CRITICAL.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "S06",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Evaluación de la vulnerabilidad residual SQL y aceptación explícita.",
+      "status": "Aceptado con riesgo",
+      "evidence": "SQL-LOCAL-2026-10-09 vigente: 71 ocurrencias HIGH, 24 CVE únicos, 0 CRITICAL. Aprobada por el propietario para datos ficticios/evaluación local.",
+      "action": "Mantener seguimiento a corrección del proveedor y reevaluar antes de nuevos paquetes. Vence 24/10/2026 02:32 UTC (23/10 21:32 Colombia). La aplicación no se apaga al vencer; el gate de empaquetado sí rechaza una aceptación vencida."
+    },
+    {
+      "id": "S07",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Excepción acotada; fallar ante novedades o errores de escaneo.",
+      "status": "Cumple",
+      "evidence": "assert-sql-risk.ps1 exige inventario/image/digest/vigencia y reportes válidos. Nuevos hallazgos, CRITICAL o errores bloquean; pruebas de la política incluidas.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S08",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "DAST básico con ZAP y revisión de resultados.",
+      "status": "Cumple",
+      "evidence": "ZAP baseline local del corte actual: gate passed con informativos revisados y sin alertas rechazadas. Seis respuestas autenticadas del smoke verifican no-store, incluido rechazo de Accounts sin configuración.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "S09",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Aplicación local y SQL sin exposición pública.",
+      "status": "Cumple",
+      "evidence": "Docker actual: web 127.0.0.1:5080; SQL sin puerto publicado. API tiene salida de red por bridge; no se afirma aislamiento total de internet.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S10",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Sesión, Host/Origin y protección CSRF.",
+      "status": "Cumple",
+      "evidence": "Cookies HttpOnly/SameSite Strict, guards de Host/Origin y token antiforgery para escrituras; tests HTTP/locales aprobados. Una identidad por instalación, no cuentas multiusuario.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S11",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Validación, límites de entrada y rate limiting.",
+      "status": "Cumple",
+      "evidence": "Validadores, JSON depth 16, límite 256 KiB, máximo 100 artículos, límites de dinero y 30 escrituras/120 lecturas por minuto en ApiServices.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S12",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Autorización y aislamiento de consultas.",
+      "status": "Cumple",
+      "evidence": "ICurrentUser/permiso Evaluate y filtros por propietario; número ajeno responde 404, idempotencia por propietario; casos A/B verificados.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S13",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Mínimo privilegio SQL y migrador separado.",
+      "status": "Cumple",
+      "evidence": "API con SELECT/INSERT sólo sobre tablas de facturas; migrador administrativo separado. Tests SQL reales de permisos y verificación del migrador aprobados.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S14",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Errores depurados, traceId y prevención de fuga por logs/caché.",
+      "status": "Cumple",
+      "evidence": "GlobalExceptionHandler/ApiProblems, logs HTTP/EF restringidos y API Cache-Control:no-store; sin credenciales del proveedor en frontend.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S15",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Cabeceras de navegador y CSP funcional.",
+      "status": "Cumple",
+      "evidence": "CSP con nonce, nosniff, DENY y Referrer-Policy; estilos/CDK comprobados en navegador real, además del recorrido de guardado.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S16",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Idempotencia y atomicidad de facturas.",
+      "status": "Cumple",
+      "evidence": "Clave UUID y fingerprint; índice único owner/key, reintento 200, conflicto 409, alta 201; SQL real comprueba concurrencia y rollback.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S17",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Secretos locales únicos y recuperación no destructiva.",
+      "status": "Cumple",
+      "evidence": "Inicio genera secretos aleatorios y restringe local.env; restauración en otra base, sin sobrescribir automáticamente. Paquete excluye datos privados.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "S18",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Integridad de entrega, SBOM e imágenes fijadas.",
+      "status": "Cumple",
+      "evidence": "ZIP nuevo verificado por hash externo y manifiesto interno, antes y después de operar. Incluye SBOM; imágenes oficiales fijadas por digest. Estado explícito local-verified-with-accepted-risk.",
+      "action": "Sin acción adicional para el alcance local."
+    },
+    {
+      "id": "S19",
+      "group": "DevSecOps · controles implementados",
+      "criterion": "Límites de seguridad y respuesta a incidentes documentados.",
+      "status": "Cumple",
+      "evidence": "SECURITY.md delimita HTTP loopback, certificado SQL autofirmado, identidad única, datos ficticios, rotación y reporte privado. Detectar vulnerabilidades es habitual; no significa que sean inocuas.",
+      "action": "Sin pendiente identificado para este criterio."
+    },
+    {
+      "id": "V01",
+      "group": "Verificaciones adicionales · no exigidas literalmente por el examen",
+      "criterion": "Protección de main que impida saltarse los checks.",
+      "status": "Fuera de alcance",
+      "evidence": "El propietario indicó «no solo local por el momento». No se realizan cargas, invitaciones, pushes ni configuración de protecciones remotas.",
+      "action": "Retomar SharePoint/acceso del evaluador/protección de rama cuando el propietario vuelva a incluirlos en alcance. El repositorio remoto no recibe estos ajustes."
+    },
+    {
+      "id": "V02",
+      "group": "Verificaciones adicionales · no exigidas literalmente por el examen",
+      "criterion": "Instalación en un segundo PC representativo del evaluador.",
+      "status": "No verificado",
+      "evidence": "No se ejecutó la prueba en otro PC por instrucción explícita del usuario. La instalación local ya fue verificada.",
+      "action": "Fuera de estas pruebas adicionales; requiere otro equipo para acreditarse."
+    },
+    {
+      "id": "V03",
+      "group": "Verificaciones adicionales · no exigidas literalmente por el examen",
+      "criterion": "Pentest exhaustivo o certificación de seguridad.",
+      "status": "Fuera de alcance",
+      "evidence": "Se acordaron controles DevSecOps. No se realizó ni se prometió una certificación; ZAP/escáneres no la sustituyen.",
+      "action": "No presentarlo como pentest concluido."
+    },
+    {
+      "id": "X01",
+      "group": "Alcance retirado por el usuario",
+      "criterion": "Publicación de API/base de datos en Azure.",
+      "status": "Fuera de alcance",
+      "evidence": "El usuario retiró expresamente la publicación Azure/Cloudflare.",
+      "action": "No se considera incumplimiento del alcance vigente."
+    },
+    {
+      "id": "X02",
+      "group": "Alcance retirado por el usuario",
+      "criterion": "Publicación del frontend en Cloudflare.",
+      "status": "Fuera de alcance",
+      "evidence": "Solicitud posterior: dejarlo sin publicación Azure y Cloudflare.",
+      "action": "No se considera incumplimiento del alcance vigente."
+    },
+    {
+      "id": "X03",
+      "group": "Alcance retirado por el usuario",
+      "criterion": "Demo pública en internet y cuentas cloud para alojarla.",
+      "status": "Fuera de alcance",
+      "evidence": "La evaluación vigente es local con ZIP y GitHub personal.",
+      "action": "No es necesaria para cerrar la entrega local; Novasoft real sigue siendo un requisito independiente."
+    }
+  ]
+}

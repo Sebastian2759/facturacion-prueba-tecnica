@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "checkedUtc": "2026-10-10T05:39:13.6649179Z",
+  "version": "1.0.2-local.2",
+  "sourceCommit": "cc1f05e764cb3550395e63ec8020a51fa5e0a004",
+  "zipSha256": "3320e99a21c843394a093663d7c525bf071f73ec61bb8f0cb32be9d590889985",
+  "runtime": "C:\\Users\\Priexmaster\\Documents\\Codex\\2026-10-09\\1-https-dev-azure-com-serviciosandestool-2\\work\\evaluacion final sin simulacion 2",
+  "checks": [
+    "ZIP checksum",
+    "fresh extraction with spaces in path",
+    "original iniciar.cmd under Windows PowerShell 5.1",
+    "version and commit match",
+    "API SQL invoice and idempotency",
+    "original backup.cmd checksum and VERIFYONLY",
+    "original restaurar.cmd into new database",
+    "restored count and values plus CHECKDB",
+    "original detener.cmd and iniciar.cmd",
+    "same invoices after restart",
+    "immutable package files still match checksums"
+  ],
+  "privateConfigExcluded": true
+}

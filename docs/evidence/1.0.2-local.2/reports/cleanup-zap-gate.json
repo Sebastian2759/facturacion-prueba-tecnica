@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "scannerExitCode": 2,
+  "accepted": [
+    {
+      "alertRef": "10109",
+      "risk": 0,
+      "path": "/",
+      "reason": "modern-application-informational"
+    },
+    {
+      "alertRef": "10109",
+      "risk": 0,
+      "path": "/",
+      "reason": "modern-application-informational"
+    },
+    {
+      "alertRef": "10049-1",
+      "risk": 0,
+      "path": "/",
+      "reason": "non-storable-response-with-api-no-store-assertions"
+    },
+    {
+      "alertRef": "10049-1",
+      "risk": 0,
+      "path": "/",
+      "reason": "non-storable-response-with-api-no-store-assertions"
+    },
+    {
+      "alertRef": "10049-1",
+      "risk": 0,
+      "path": "/robots.txt",
+      "reason": "non-storable-response-with-api-no-store-assertions"
+    },
+    {
+      "alertRef": "10049-1",
+      "risk": 0,
+      "path": "/sitemap.xml",
+      "reason": "non-storable-response-with-api-no-store-assertions"
+    },
+    {
+      "alertRef": "10049-3",
+      "risk": 0,
+      "path": "/favicon.svg",
+      "reason": "exact-published-public-static-asset"
+    },
+    {
+      "alertRef": "10049-3",
+      "risk": 0,
+      "path": "/main-53CGJNIR.js",
+      "reason": "exact-published-public-static-asset"
+    },
+    {
+      "alertRef": "10049-3",
+      "risk": 0,
+      "path": "/styles-D2RBCBTE.css",
+      "reason": "exact-published-public-static-asset"
+    }
+  ],
+  "rejected": [],
+  "apiNoStoreChecked": true
+}

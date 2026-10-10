@@ -1,11 +1,13 @@
 # Contexto vigente
 
-Nexo resuelve facturación HTML5/C#/SQL y Accounts sobre Template (base 3393c2e7b02f7d0ea439b461b8fba5d561107681).
+Nexo resuelve facturación HTML5/C#/SQL y Accounts sobre Template, base 3393c2e7b02f7d0ea439b461b8fba5d561107681.
 
-El propietario pidió corregir el checklist y después indicó **sólo local por el momento**. No subir archivos ni modificar GitHub/SharePoint o publicar Azure/Cloudflare. Mantener repo y paquete locales con evidencia separada. La CI15 del código anterior se conserva como historial, no como validación de nuevos cambios.
+El propietario autorizó publicar la última versión y documentación en su GitHub personal público, y preparar la carpeta para SharePoint con referencias cruzadas. La aplicación mantiene ejecución local Windows; esta autorización no implica desplegar Azure/Cloudflare ni publicar un servicio web.
 
-La facturación usa VARCHAR UTF-8 para los cuatro textos del cliente, mediante una segunda migración; no editar la migración inicial aplicada. Mantener límites de UI y validar conservación de datos. Accounts usa exclusivamente Novasoft con configuración privada del servidor. No hay almacenamiento simulado, fixtures de portada ni endpoints DemoArchitecture; las dobles de prueba viven únicamente en tests. Nunca incluir credenciales del PDF, tokens, novasoft.local.json o local.env en entrega/evidencias.
+La versión Windows 1.0.2-local.2 conserva su ZIP y checksum probado. La publicación incorpora el mismo código funcional y documentación actualizada; sus evidencias se identifican en docs/evidence/README.md. No atribuir los resultados locales a una CI nueva.
 
-Referencias actuales: [README](../README.md), [requisitos](requirements.md), [arquitectura](ARCHITECTURE.md), [decisiones](decisions.md), [Novasoft](novasoft-real.md), [pruebas](TESTING.md), [seguridad](../SECURITY.md).
+Accounts usa exclusivamente Novasoft con configuración privada del servidor. Sin simuladores en runtime. Los dobles de prueba viven en Test y Frontend/e2e. No publicar credenciales del PDF, tokens, novasoft.local.json, local.env o backups privados.
 
-Docker/WSL ya funcionan en este PC. No pedir nuevamente habilitar SVM. WDAC se conserva; las pruebas backend completas se ejecutan con Linux en Docker. Riesgo SQL aceptado según SQL-LOCAL-2026-10-09, con inventario y vigencia exactos. El ejemplo DemoArchitecture fue retirado. La tercera migración sólo elimina su tabla si está vacía; ante datos existentes se detiene sin borrarlos.
+VARCHAR UTF-8 conserva textos mediante migración; no editar migraciones ya aplicadas. La tercera migración retira la tabla del ejemplo sólo si está vacía. Docker/WSL funcionan en el equipo de preparación. Se conserva WDAC y las pruebas backend completas se ejecutaron en Linux Docker. SQL-LOCAL-2026-10-09 mantiene el inventario y plazo aprobados.
+
+Referencias: [README](../README.md), [requisitos](requirements.md), [arquitectura](ARCHITECTURE.md), [decisiones](decisions.md), [evidencias](evidence/README.md) y [seguridad](../SECURITY.md).

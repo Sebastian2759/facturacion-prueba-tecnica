@@ -1,0 +1,20 @@
+Id|uniqueidentifier|16|NULL
+Number|int|4|NULL
+Date|datetime|8|NULL
+OwnerSubject|varchar|64|Latin1_General_100_BIN2
+IdempotencyKey|uniqueidentifier|16|NULL
+RequestFingerprint|char|64|SQL_Latin1_General_CP1_CI_AS
+Document|varchar|15|SQL_Latin1_General_CP1_CI_AS
+FirstName|varchar|400|Latin1_General_100_CI_AS_SC_UTF8
+LastName|varchar|400|Latin1_General_100_CI_AS_SC_UTF8
+Address|varchar|800|Latin1_General_100_CI_AS_SC_UTF8
+Phone|varchar|120|Latin1_General_100_CI_AS_SC_UTF8
+Gross|money|8|NULL
+Discount|money|8|NULL
+Tax|money|8|NULL
+Total|money|8|NULL
+CreatedAtUtc|datetime2|8|NULL
+UpdatedAtUtc|datetime2|8|NULL
+IsActive|bit|1|NULL
+
+(18 rows affected)

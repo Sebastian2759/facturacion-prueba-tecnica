@@ -1,0 +1,17 @@
+
+> facturacion@1.0.0 test
+> ng test --watch=false
+
+> Building...
+√ Building...
+Application bundle generation complete. [1.799 seconds] - 2026-10-10T05:24:28.185Z
+
+
+ RUN  v5.0.0 C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Frontend
+
+
+ Test Files  5 passed (5)
+      Tests  28 passed (28)
+   Start at  00:24:29
+   Duration  2.57s (environment 71%, setup 21%, transform 4%, import 1%, tests 1%, worker 1%)
+

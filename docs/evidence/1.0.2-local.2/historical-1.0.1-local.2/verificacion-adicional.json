@@ -1,0 +1,33 @@
+{
+  "recordedUtc": "2026-10-10T05:15:14.375968+00:00",
+  "scope": "Pruebas adicionales locales solicitadas; segundo PC excluido por el usuario.",
+  "novasoft": {
+    "result": "passed",
+    "code": "NEXOUI261010B",
+    "method": "Formulario real de Cuentas en http://127.0.0.1:5080/cuentas",
+    "observations": [
+      "Consulta previa sin resultados para este código.",
+      "Un solo envío del formulario de creación con datos ficticios.",
+      "Pantalla mostró Solicitud aceptada: NEXOUI261010B.",
+      "Consultar esta cuenta mostró Respuesta del servicio real, un resultado, Prueba Formulario."
+    ],
+    "httpStatus": null,
+    "limit": "Se verificaron mensajes y resultado de la interfaz; no se capturó el estado HTTP del POST.",
+    "screenshot": "novasoft-formulario.jpg"
+  },
+  "visualStudio": {
+    "result": "passed",
+    "product": "Microsoft Visual Studio Insiders",
+    "version": "18.11.12224.323",
+    "solution": "source/Example.sln de la extracción del ZIP 1.0.1-local.2",
+    "loadedProjects": 9,
+    "totalProjects": 9,
+    "limit": "Comprobación de apertura y carga en IDE; no se afirma una nueva compilación ni depuración desde el IDE.",
+    "screenshot": "visual-studio-solucion.jpg"
+  },
+  "secondPc": {
+    "result": "not_run",
+    "reason": "Excluido explícitamente por el usuario."
+  },
+  "zipModified": false
+}

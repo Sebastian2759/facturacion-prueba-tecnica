@@ -1,40 +1,95 @@
 # Nexo · Facturación y Accounts
 
-Aplicación Angular 22.2.2 + C# .NET 10 + SQL Server basada en Template. El alcance vigente es **evaluación local en Windows x64 con Docker e internet**. No se publican estos ajustes en Azure, Cloudflare, GitHub ni SharePoint por indicación del propietario.
+Aplicación de facturación con **Angular, C# y SQL Server**, e integración con el servicio de pruebas **Novasoft**. Incluye ejecución local automatizada, código fuente, documentación de arquitectura y evidencias reproducibles.
 
-## Evaluación
+**Angular 22.2.2** · **.NET 10** · **SQL Server 2022** · **Docker Compose**
 
-En el ZIP completo, abra `LEEME.html` y haga doble clic en `iniciar.cmd`. Abra http://127.0.0.1:5080. Docker Desktop debe estar iniciado en modo Linux. No necesita SDK .NET, Node ni Visual Studio para ejecutar el paquete. Si Docker ya funciona, no necesita cambiar la BIOS.
+[Evaluar la aplicación](docs/evaluator-guide.md) · [Arquitectura](docs/ARCHITECTURE.md) · [Decisiones](docs/decisions.md) · [Resultados y evidencias](docs/evidence/README.md) · [DevSecOps](SECURITY.md)
 
-| Comando | Función |
+## Qué resuelve
+
+- Formulario HTML5 de facturación con datos del cliente y uno o varios artículos.
+- Validación de campos, cálculo de descuento e IVA y vista previa calculada por el backend.
+- Guardado transaccional de cabecera y detalle, consecutivo SQL y consulta paginada.
+- Idempotencia para reintentos de guardado y persistencia después de reiniciar.
+- Consulta y creación de cuentas en Novasoft mediante C#, con credenciales y token sólo en el servidor.
+
+## Evaluación en Windows
+
+El paquete **Aplicacion-1.0.2-local.2.zip**, suministrado junto con la carpeta de entrega para SharePoint, incluye binarios compilados, fuentes, scripts y backup de esquema vacío. La descarga de código de GitHub sirve para revisar o desarrollar; el ZIP de aplicación es el paquete preparado para ejecutar.
+
+1. Abra Docker Desktop con contenedores Linux y Compose funcionando.
+2. Verifique el SHA-256 del ZIP y extráigalo en una carpeta local.
+3. Ejecute `iniciar.cmd` en la carpeta extraída.
+4. Abra `http://127.0.0.1:5080/facturas`.
+5. Para Cuentas, ejecute `configurar-novasoft.cmd`, introduzca las credenciales de prueba en privado y reinicie con `detener.cmd` / `iniciar.cmd`.
+
+No requiere Node, SDK .NET ni Visual Studio para ejecutar el paquete. El primer inicio descarga las imágenes oficiales; Novasoft requiere conectividad al proveedor. [Guía completa y casos de evaluación](docs/evaluator-guide.md).
+
+## Arquitectura
+
+```mermaid
+flowchart LR
+  UI[Angular: formularios y vistas] --> Host[Host local: HTTP y sesión]
+  Host --> App[Application: CQRS y validadores]
+  App --> Domain[Domain: reglas y contratos]
+  App --> Infra[Infrastructure: adaptadores]
+  Infra --> SQL[(SQL Server)]
+  Infra --> Nova[Novasoft HTTPS]
+  Migrator[Migrador separado] --> SQL
+```
+
+Se conservan las capas y convenciones de Template: Domain, Application, Api e Infraestructure, CQRS/MediatR, FluentValidation, mapper y repositorios. Los adaptadores implementan los contratos del dominio; Domain no depende de infraestructura. Angular utiliza componentes standalone, rutas con lazy loading, Reactive Forms tipados y componentes compartidos para campos, errores e iconos.
+
+| Decisión | Resultado |
 |---|---|
-| iniciar.cmd | Comprueba integridad y prepara aplicación/base. |
-| detener.cmd | Detiene sin borrar facturas. |
-| diagnosticar.cmd | Diagnóstico sin mostrar secretos. |
-| backup.cmd / restaurar.cmd | Backup privado y restauración en una base nueva. |
-| configurar-novasoft.cmd | Configura en privado las credenciales de prueba del proveedor. |
-| configurar-novasoft.cmd -Disable | Deshabilita la conexión real y retira sus credenciales del archivo. |
+| Calculador único en C# decimal | Preview y guardado usan las mismas reglas monetarias. |
+| Validación frontend y backend | Orientación inmediata y comprobación del lado servidor. |
+| Transacción e Idempotency-Key | Cabecera/detalles consistentes y reintentos sin duplicar la factura. |
+| Guid interno + número INT IDENTITY | Compatibilidad con la plantilla y consecutivo visible requerido. |
+| ResponseBase y ProblemDetails normalizados | Errores por campo, código y traceId utilizables por Angular. |
+| Tipos desde OpenAPI | Contrato de transporte comprobado entre frontend y backend. |
+| Migrador separado del runtime | Permisos administrativos fuera de las solicitudes de la aplicación. |
 
-Accounts usa exclusivamente Novasoft. Configure sus credenciales privadas y reinicie para habilitar consultas y altas. Sin configuración se muestra un estado explícito, sin datos ni altas simuladas. Las altas reales escriben en el servicio de pruebas: use sólo datos ficticios. No distribuya `novasoft.local.json`, `local.env`, backups privados ni el PDF original que contiene credenciales.
+[Mapa de capas y persistencia](docs/ARCHITECTURE.md) · [Contrato HTTP](docs/implementation-contract.md) · [Justificación de decisiones](docs/decisions.md)
 
-## Requerimiento y decisiones
+## Verificación de la versión entregada
 
-- Formulario HTML5, backend C#, cabecera y detalle persistidos en Facturas/DetalleFactura.
-- Número SQL INT IDENTITY y fecha DATETIME del servidor, no editables.
-- Documento VARCHAR(15); nombres/apellidos/dirección/teléfono VARCHAR con UTF-8. Capacidad SQL en bytes 400/400/800/120, límites de aplicación 100/100/200/30 caracteres. La migración preserva textos Unicode existentes.
-- Código/cantidad INT y precio/importes MONEY. C# decimal; descuento 5 % desde bruto 500.000; IVA 19 % sobre bruto menos descuento. Cálculo y preview comparten implementación.
-- Validación FluentValidation, idempotencia, transacción, errores por campo y traceId.
-- Accounts: login/Bearer/GET/POST mediante C#, con secreto sólo servidor y origen explícito en pantalla.
+| Comprobación | Resultado registrado |
+|---|---|
+| Backend | 155 aprobadas, 0 fallidas, 0 omitidas; incluye 8 integraciones SQL. |
+| Frontend | 28 pruebas unitarias y 4 del proxy aprobadas. |
+| Navegador con HTTP controlado | 9 recorridos aprobados. |
+| Navegador y SQL reales | Creación, consulta y persistencia de factura. |
+| Novasoft real | Consulta desde UI; creación autorizada y consulta posterior documentadas por versión. |
+| Entrega Windows | Extracción nueva, inicio, backup, restauración y conservación tras reinicio. |
 
-## Arquitectura y documentación
+Los informes identifican versión, entorno y alcance. Las respuestas controladas pertenecen a las pruebas; la aplicación usa SQL y Novasoft reales. Consulte [evidencias y trazabilidad](docs/evidence/README.md) para distinguir ejecución local, CI e integración externa.
 
-[Arquitectura](docs/ARCHITECTURE.md) · [Decisiones](docs/decisions.md) · [Requisitos](docs/requirements.md) · [Contrato](docs/implementation-contract.md) · [Pruebas](docs/TESTING.md) · [Seguridad](SECURITY.md) · [Operación](docs/operations.md) · [Novasoft](docs/novasoft-real.md)
+![Consulta real en Novasoft desde la interfaz](docs/evidence/1.0.2-local.2/accounts-live.png)
 
-Se conservan Domain/Application/Api/Infraestructure, CQRS/MediatR, validadores, mapper y repositorios de Template. Angular usa componentes standalone reutilizables, rutas con lazy loading, Reactive Forms tipados y contrato generado desde OpenAPI.
+## DevSecOps
 
-## Desarrollo y verificación
+La solución incorpora sesión y protección CSRF, Host/Origin exactos, autorización, CSP, límites de entrada, errores depurados, permisos SQL mínimos y configuración privada de secretos. El flujo de calidad contempla pruebas, auditorías NuGet/npm, Gitleaks, Semgrep, Trivy, SBOM y ZAP baseline.
 
-`Example.sln` es la solución para Visual Studio con SDK .NET 10.0.401. Node 24.21.0 y npm 11.13.0 están fijados para reproducibilidad.
+[Controles y gestión de vulnerabilidades](SECURITY.md) · [Decisión SQL documentada](docs/sql-risk-acceptance.md) · [Workflow de calidad](.github/workflows/quality.yml)
+
+## Navegar por el código
+
+| Ruta | Contenido |
+|---|---|
+| [Frontend/src/app](Frontend/src/app) | core, shared, facturas y cuentas. |
+| [Core/Application](Core/Application) | Casos de uso y validadores. |
+| [Core/Domain](Core/Domain) | Entidades, calculador y contratos. |
+| [Infraestructure](Infraestructure) | Persistencia EF y adaptador Novasoft. |
+| [Api/LocalEvaluation](Api/LocalEvaluation) | Host de la entrega Windows. |
+| [Tools/DatabaseMigrator](Tools/DatabaseMigrator) | Inicialización de SQL. |
+| [Test](Test) | Pruebas backend y de integración. |
+| [scripts](scripts) | Operación y controles de entrega. |
+
+## Desarrollo
+
+Versiones fijadas: SDK .NET **10.0.401**, Node **24.21.0**, npm **11.13.0**. Abra `Example.sln` o ejecute:
 
 ```powershell
 dotnet restore Example.sln --locked-mode
@@ -45,12 +100,14 @@ npm run build --prefix Frontend
 npm test --prefix Frontend
 ```
 
-Las integraciones SQL requieren `FACTURACION_TEST_SQL_CONNECTION` hacia un servidor exclusivo de pruebas; crean/eliminan sólo bases InvoiceTests_<guid>. No use una base de negocio. En este Windows, WDAC puede impedir cargar DLL de API: la verificación completa se realiza en el SDK oficial dentro de Docker sin cambiar esa política.
+Las integraciones SQL requieren `FACTURACION_TEST_SQL_CONNECTION` hacia un servidor exclusivo de pruebas. [Cómo reproducir la verificación](docs/TESTING.md).
 
-El resultado de una versión se acredita con su manifiesto y evidencias; un checkout o payload preparado no equivale a un ZIP verificado. CI15 es la referencia anterior y no prueba los cambios posteriores. Consulte [pruebas](docs/TESTING.md) para el corte local vigente.
+## Documentación
 
-## Riesgo residual y propiedad
+- [Requisitos y cobertura](docs/requirements.md).
+- [Guía del evaluador](docs/evaluator-guide.md) y [operación](docs/delivery.md).
+- [Arquitectura](docs/ARCHITECTURE.md), [decisiones](docs/decisions.md) y [contrato API](docs/implementation-contract.md).
+- [Integración Novasoft](docs/novasoft-real.md).
+- [Pruebas](docs/TESTING.md), [evidencias](docs/evidence/README.md) y [seguridad](SECURITY.md).
 
-SQL-LOCAL-2026-10-09 está aceptado explícitamente para datos ficticios y uso local: 71 ocurrencias HIGH, 24 CVE únicos, 0 CRITICAL en el inventario aprobado. [Motivo y vigencia](docs/sql-risk-acceptance.md). La aceptación no corrige las vulnerabilidades y no autoriza publicar el servicio.
-
-Propietario personal: Sebastian2759. [Repositorio existente](https://github.com/Sebastian2759/facturacion-prueba-tecnica), privado. Los ajustes locales no se atribuyen a un commit remoto ni a un nuevo run de Actions. Protección de main, invitaciones y SharePoint quedan aplazados mientras se mantenga el alcance sólo local.
+Desarrollo: **Sebastián Forero · [Sebastian2759](https://github.com/Sebastian2759)**. Basado en la plantilla indicada para la prueba técnica; la procedencia se conserva en la documentación de arquitectura.

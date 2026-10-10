@@ -4,3 +4,6 @@
 *.jpg binary
 *.pdf binary
 *.bak binary
+
+# Preserve the exact bytes of published verification receipts and reports.
+docs/evidence/1.0.2-local.2/** -text -whitespace

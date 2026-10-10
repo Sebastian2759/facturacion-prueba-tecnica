@@ -8,7 +8,7 @@ Esta entrega se ejecuta en **Windows x64 con Docker Desktop en modo Linux**. La 
 
 ## 1. Obtener el ZIP local
 
-Use el ZIP y checksum de la carpeta local de entrega. Las publicaciones y permisos de SharePoint/GitHub están aplazados. El paquete incluye fuentes y documentación para revisar sin acceso remoto.
+Use el ZIP y checksum de la carpeta de entrega. El [repositorio GitHub](https://github.com/Sebastian2759/facturacion-prueba-tecnica) contiene los fuentes, documentación y evidencias. La carpeta para SharePoint incluye también la guía HTML para lectura local.
 
 Antes de extraer, compare el SHA-256 del ZIP en PowerShell:
 
@@ -53,7 +53,7 @@ En `local.env` se guardan únicamente secretos de esta instalación. El archivo 
 4. Configure Novasoft con configurar-novasoft.cmd, reinicie y abra Cuentas para consultar o registrar cuentas en el proveedor. Sin credenciales verá el estado de configuración pendiente. Las facturas se almacenan en SQL.
 5. Detenga y vuelva a iniciar: las facturas deben permanecer disponibles.
 
-La sesión local se establece al abrir la aplicación y las escrituras requieren antiforgery. No necesita una cuenta cloud. Accounts real permanece bloqueado en este host incluso si se configura accidentalmente una bandera de activación.
+La sesión local se establece al abrir la aplicación y las escrituras requieren antiforgery. Accounts se habilita mediante configuración privada completa de Novasoft y reinicio.
 
 ## 5. Detener, diagnosticar y respaldar
 
@@ -88,10 +88,10 @@ Los resultados de CI, sus limitaciones y las incidencias pendientes se revisan j
 
 ## Distribución posterior
 
-El alcance actual es local. Si se reanuda la distribución, copie ZIP, checksum y evidencias; compruebe permisos y descarga del evaluador. No incluya secretos ni backups personales.
+La aplicación se ejecuta localmente. Para distribuir la entrega, copie el paquete, checksum, LEEME y guía HTML; compruebe permisos y descarga del evaluador en SharePoint. El código y la documentación se consultan en GitHub. No incluya secretos ni backups personales.
 
 Consulte `docs/operations.md` para soporte, actualizaciones controladas y detalles técnicos.
 
 ## Novasoft real
 
-Ejecute configurar-novasoft.cmd, introduzca credenciales de prueba, detenga/inicie y elija Novasoft real en Cuentas. No se incluyen credenciales en el ZIP. Consulte [la guía](novasoft-real.md).
+Ejecute configurar-novasoft.cmd, introduzca credenciales de prueba, detenga/inicie y abra Cuentas. No se incluyen credenciales en el ZIP. Consulte [la guía](novasoft-real.md).

@@ -1,0 +1,15 @@
+{
+  "status": "functional-passed",
+  "sourceCommit": "cc1f05e764cb3550395e63ec8020a51fa5e0a004",
+  "version": "1.0.2-local.2",
+  "checkedUtc": "2026-10-10T05:36:28.6205850Z",
+  "backupEmpty": true,
+  "backupChecksum": true,
+  "restoreNewDatabase": true,
+  "checkDb": true,
+  "smoke": true,
+  "liveBrowser": true,
+  "openApi": true,
+  "runtime": "C:\\Users\\Priexmaster\\Documents\\Codex\\2026-10-09\\1-https-dev-azure-com-serviciosandestool-2\\work\\evaluacion limpieza local 2",
+  "databaseContainer": "49edd702003022f28622a77fc5b81c42fa39401eb9b6a3d07b403981d5ff5244"
+}

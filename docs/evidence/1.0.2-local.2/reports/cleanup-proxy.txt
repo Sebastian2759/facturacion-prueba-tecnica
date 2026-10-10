@@ -1,0 +1,16 @@
+
+> facturacion@1.0.0 test:proxy
+> node --test proxy.conf.spec.cjs
+
+✔ same-origin reads reach the API with its target Host (214.3572ms)
+✔ trusted development writes adapt Origin and retain cookie and CSRF header (14.5252ms)
+✔ foreign and absent write origins never reach the backend (10.4977ms)
+✔ unexpected incoming Host and foreign read Origin never reach the backend (3.5369ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 582.5157

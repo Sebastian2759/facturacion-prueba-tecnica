@@ -1,6 +1,6 @@
 # Requisitos y trazabilidad
 
-Fuente: examen práctico proporcionado por el usuario y plantilla Template. El PDF define el ejercicio; no se distribuye con el código si contiene credenciales. Las decisiones de producto/seguridad adicionales se distinguen del enunciado. La entrega online fue cancelada; queda evaluación local Windows x64 con internet; nuevas publicaciones GitHub/SharePoint están aplazadas.
+Fuente: examen práctico proporcionado por el usuario y plantilla Template. El PDF define el ejercicio; no se distribuye con el código si contiene credenciales. Las decisiones de producto/seguridad adicionales se distinguen del enunciado. La aplicación se evalúa localmente en Windows x64 con internet. El código y la documentación se preparan para GitHub público y el paquete se entrega con referencias para SharePoint.
 
 ## Facturación
 
@@ -63,6 +63,6 @@ No se incluye edición/eliminación de facturas, emisión fiscal, multiusuario l
 
 El cierre requiere crear y recuperar una factura de múltiples líneas contra SQL Server real, verificar número/fecha/totales, errores, idempotencia y propietario A/B; luego repetir el recorrido después de restaurar el backup en una base distinta.
 
-El backup final será esquema vacío. El listado muestra sólo facturas persistidas; el smoke crea su propia factura. El ZIP y documentos deben identificar el mismo commit, con evidencias locales. Los accesos remotos están aplazados por el propietario.
+El backup final será esquema vacío. El listado muestra sólo facturas persistidas; el smoke crea su propia factura. El ZIP y documentos deben identificar el mismo commit, con evidencias locales. El repositorio público permite consultar los fuentes y evidencias; el paquete distribuido mantiene su versión y checksum.
 
 Estado actual y resultados: [TESTING.md](TESTING.md). SQL conserva la aceptación explícita SQL-LOCAL-2026-10-09. El historial CI no sustituye las pruebas del código ajustado.

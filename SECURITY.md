@@ -17,7 +17,7 @@ La aplicación usa datos ficticios y sólo publica HTTP en 127.0.0.1:5080. SQL n
 
 ## DevSecOps y riesgo aceptado
 
-Build/analizadores, pruebas, NuGet/npm, Gitleaks, Semgrep, Trivy, SBOM y ZAP son controles distintos. Un reporte faltante o herramienta fallida no equivale a aprobación. El estado de ejecución vigente está en [TESTING](docs/TESTING.md); CI15 sólo acredita su commit anterior. Los ajustes se verifican localmente por decisión del propietario.
+Build/analizadores, pruebas, NuGet/npm, Gitleaks, Semgrep, Trivy, SBOM y ZAP son controles distintos. Un reporte faltante o herramienta fallida no equivale a aprobación. El estado de ejecución vigente está en [TESTING](docs/TESTING.md); CI15 sólo acredita su commit anterior. Las evidencias de la versión Windows están en docs/evidence; los resultados remotos se identifican por ejecución y commit.
 
 SQL-LOCAL-2026-10-09 conserva la aceptación autorizada de 71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL del inventario fijado. Motivo: evaluación local con datos ficticios, SQL exigido y alternativas oficiales revisadas sin eliminar hallazgos. Aislamiento y mínimo privilegio reducen exposición; no corrigen el software del proveedor. Caduca el 24/10/2026 02:32 UTC y limita nuevas entregas, no apaga instalaciones. [Decisión e inventario](docs/sql-risk-acceptance.md).
 
@@ -27,4 +27,4 @@ Detectar y gestionar hallazgos es habitual en DevSecOps. No es evidencia de que 
 
 Reportar al propietario por canal privado con versión, pasos y traceId depurado. Ante filtración: detener distribución, revocar/rotar secretos y preservar evidencia depurada. Borrar un secreto de Git no lo revoca.
 
-GitHub main se observó sin protección. Su refuerzo queda preparado/documentado y aplazado al reanudar trabajo remoto; no se afirma que la CI impida pushes directos. SharePoint, invitaciones y un segundo PC del evaluador están fuera de la ejecución local actual.
+El repositorio público permite revisar código y resultados; la publicación no concede acceso a secretos ni al servicio local. La evidencia Windows corresponde al equipo de preparación; el checklist registra el alcance de la verificación. Los permisos de distribución en SharePoint se comprueban al cargar la entrega.

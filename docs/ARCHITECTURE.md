@@ -55,7 +55,7 @@ La clave única owner/idempotencyKey protege concurrencia; la huella del cuerpo 
 
 dbo.Facturas y dbo.DetalleFactura tienen relación y FK; la numeración no pretende ser contigua ante rollback. La tercera migración retira la tabla del ejemplo heredado sólo cuando está vacía; no elimina datos existentes.
 
-El migrador aplica esquema con credencial administrativa separada. Runtime sólo tiene SELECT e INSERT en Facturas/DetalleFactura; init revoca UPDATE/DELETE previos del rol y comprueba privilegios efectivos. La API no aplica migraciones en requests. El snapshot manual, el modelo y las cinco integraciones SQL superaron CI. El run7 comprobó además init, backup vacío, restore a otra base, CHECKDB y smoke de API con persistencia. La portada abre el listado de facturas persistidas del usuario.
+El migrador aplica esquema con credencial administrativa separada. Runtime sólo tiene SELECT e INSERT en Facturas/DetalleFactura; init revoca UPDATE/DELETE previos del rol y comprueba privilegios efectivos. La API no aplica migraciones en requests. El corte 1.0.2-local.2 acredita modelo, snapshot y 8 pruebas de integración SQL dentro de 155 pruebas backend locales; véase docs/evidence/README.md. El run7 comprobó además init, backup vacío, restore a otra base, CHECKDB y smoke de API con persistencia. La portada abre el listado de facturas persistidas del usuario.
 
 ## HTTP y frontend
 

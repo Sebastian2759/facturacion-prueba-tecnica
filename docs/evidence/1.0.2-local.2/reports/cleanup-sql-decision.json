@@ -1,0 +1,15 @@
+{
+  "status": "accepted-risk",
+  "acceptanceId": "SQL-LOCAL-2026-10-09",
+  "owner": "Sebastian Forero / Sebastian2759",
+  "profile": "local-evaluation",
+  "image": "mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090",
+  "expiresAtUtc": "2026-10-24T02:32:00Z",
+  "highFindings": 71,
+  "criticalFindings": 0,
+  "reportSha256": "522aa75737d56f9eaf41052e50ff52d73fa839965637bba5302b2bb15236ce73",
+  "policySha256": "bc5083461e0c1a9202dfa1ead6aab80ce5f2252fa977352045fb976f7e0243bc",
+  "evaluatedAtUtc": "2026-10-10T05:29:55.4712517+00:00",
+  "runId": null,
+  "sourceCommit": null
+}

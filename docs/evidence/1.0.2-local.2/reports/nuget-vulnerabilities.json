@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://api.nuget.org/v3/index.json",
+    "C:/Program Files (x86)/Microsoft SDKs/NuGetPackages/"
+  ],
+  "projects": [
+    {
+      "path": "C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Api/Api/Api.csproj"
+    },
+    {
+      "path": "C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Core/Domain/Domain.csproj"
+    },
+    {
+      "path": "C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Core/Application/Application.csproj"
+    },
+    {
+      "path": "C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Infraestructure/Infraestructure/Infraestructure.csproj"
+    },
+    {
+      "path": "C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Infraestructure/Persistence/Persistence.csproj"
+    },
+    {
+      "path": "C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Infraestructure/Adapters/Adapters.csproj"
+    },
+    {
+      "path": "C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Test/Test.csproj"
+    },
+    {
+      "path": "C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Api/LocalEvaluation/LocalEvaluation.csproj"
+    },
+    {
+      "path": "C:/Users/Priexmaster/Documents/Codex/2026-10-09/1-https-dev-azure-com-serviciosandestool-2/outputs/facturacion-app/Tools/DatabaseMigrator/DatabaseMigrator.csproj"
+    }
+  ]
+}

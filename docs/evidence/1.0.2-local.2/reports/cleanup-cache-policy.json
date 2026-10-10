@@ -1,0 +1,41 @@
+{
+  "baseUrl": "http://127.0.0.1:5080",
+  "checks": [
+    {
+      "method": "GET",
+      "path": "/api/v1/session",
+      "status": 200,
+      "cacheControl": "no-store, no-cache"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invoices",
+      "status": 201,
+      "cacheControl": "no-store"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/invoices/1",
+      "status": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/invoices",
+      "status": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/invoices",
+      "status": 200,
+      "cacheControl": "no-store"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/accounts",
+      "status": 403,
+      "cacheControl": "no-store"
+    }
+  ]
+}

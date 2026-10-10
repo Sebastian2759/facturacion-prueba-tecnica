@@ -4,7 +4,7 @@ Fecha: 9 de octubre de 2026. Decisiones aceptadas para la entrega local; las evi
 
 ## D01. Alcance local y propiedad personal
 
-Se canceló publicación Azure/Cloudflare. La entrega vigente es local Windows x64 con internet. GitHub personal existente y SharePoint quedan sin cambios/publicaciones mientras el propietario mantenga el alcance sólo local. No requiere suscripción ni IdP cloud. El host JWT existente queda opcional, fuera de entrega y sin verificación de despliegue.
+La aplicación se ejecuta localmente en Windows x64 con internet. Por autorización del propietario, el código y la documentación se publican en GitHub personal y se prepara una carpeta de distribución para SharePoint. No requiere suscripción ni IdP cloud. El host JWT existente queda opcional, fuera de entrega y sin verificación de despliegue.
 
 ## D02. Extender Template sin alterar sus capas
 
