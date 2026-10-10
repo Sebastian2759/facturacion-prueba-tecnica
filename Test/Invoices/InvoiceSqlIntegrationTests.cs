@@ -240,6 +240,33 @@ public sealed class InvoiceSqlIntegrationTests
         }
     }
 
+    [Fact(Skip = "Requires dedicated SQL Server.", SkipUnless = nameof(SqlAvailable))]
+    [Trait("Category", "SqlIntegration")]
+    public async Task RetireTemplateExample_RemovesEmptyTableAndCanRollback()
+    {
+        await using var database = await InvoiceTestDatabase.CreateAsync();
+        await using var context = database.Context();
+        var tables = await context.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM sys.tables WHERE name='DemoArchitectures'").SingleAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(0, tables);
+        await context.GetService<IMigrator>().MigrateAsync("20261010000100_InvoiceVarcharFields", TestContext.Current.CancellationToken);
+        tables = await context.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM sys.tables WHERE name='DemoArchitectures'").SingleAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(1, tables);
+        await context.Database.MigrateAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact(Skip = "Requires dedicated SQL Server.", SkipUnless = nameof(SqlAvailable))]
+    [Trait("Category", "SqlIntegration")]
+    public async Task RetireTemplateExample_RefusesToEraseUnexpectedData()
+    {
+        await using var database = await InvoiceTestDatabase.CreateAsync("20261010000100_InvoiceVarcharFields");
+        await using var context = database.Context();
+        await context.Database.ExecuteSqlRawAsync("INSERT dbo.DemoArchitectures (Id, Name, Description, CreatedAtUtc, UpdatedAtUtc) VALUES (NEWID(), N'Legacy', N'Preserve', SYSUTCDATETIME(), SYSUTCDATETIME())", TestContext.Current.CancellationToken);
+        var failure = await Assert.ThrowsAsync<SqlException>(() => context.Database.MigrateAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(51001, failure.Number);
+        var count = await context.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM dbo.DemoArchitectures").SingleAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(1, count);
+    }
+
     private sealed class InvoiceTestDatabase(string databaseName, DbContextOptions<AppDbContext> options) : IAsyncDisposable
     {
         public AppDbContext Context() => new(options);

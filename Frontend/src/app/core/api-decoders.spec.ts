@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { AccountWire, Envelope, InvoiceWire, SessionWire, TotalsWire } from './api-contract';
+import type {
+  AcceptedAccountWire,
+  AccountsResultWire,
+  AccountWire,
+  Envelope,
+  InvoiceWire,
+  SessionWire,
+  TotalsWire,
+} from './api-contract';
 import {
   decodeAcceptedAccount,
   decodeAccountsResult,
@@ -73,16 +81,16 @@ describe('Generated OpenAPI transport decoders', () => {
     },
   );
   it('preserves legitimate nullable account fields and normalizes numeric classifiers', () => {
-    const result = decodeAccountsResult({ mode: 'simulated', accounts: [account] });
+    const result = decodeAccountsResult({ accounts: [account] });
     expect(result.accounts[0].firstName).toBeNull();
     expect(result.accounts[0].phone).toBeNull();
     expect(result.accounts[0].personType).toBe(1);
   });
-  it('rejects unknown response modes instead of relabelling them as simulated or real', () => {
-    expect(() => decodeAccountsResult({ mode: 'unknown', accounts: [] })).toThrow(ApiError);
-    expect(() =>
-      decodeAcceptedAccount({ mode: 'unknown', code: 'DEMO001', accepted: true }),
-    ).toThrow(ApiError);
+  it('rejects missing account fields and unknown session modes', () => {
+    expect(() => decodeAccountsResult({} as AccountsResultWire)).toThrow(ApiError);
+    expect(() => decodeAcceptedAccount({ accepted: true } as AcceptedAccountWire)).toThrow(
+      ApiError,
+    );
     const session: SessionWire = {
       mode: 'unknown',
       authenticated: true,

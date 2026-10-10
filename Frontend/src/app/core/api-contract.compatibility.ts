@@ -53,8 +53,6 @@ type ReadResponse =
   paths['/api/v1/invoices/{number}']['get']['responses'][200]['content']['application/json'];
 type ListResponse =
   paths['/api/v1/invoices']['get']['responses'][200]['content']['application/json'];
-type DemoResponse =
-  paths['/api/v1/demo/invoices']['get']['responses'][200]['content']['application/json'];
 type SessionResponse =
   paths['/api/v1/session']['get']['responses'][200]['content']['application/json'];
 type AccountsResponse =
@@ -75,7 +73,7 @@ export type ApiContractChecks = [
       paths['/api/v1/accounts']['post']['requestBody']['content']['application/json']
     >
   >,
-  Assert<SameKeys<CreateAccountWire, AccountWire & { mode: string }>>,
+  Assert<SameKeys<CreateAccountWire, AccountWire>>,
   Assert<
     Same<
       CreateInvoiceWire,
@@ -95,7 +93,6 @@ export type ApiContractChecks = [
   Assert<Same<RepeatCreateResponse, CreateResponse>>,
   Assert<Same<ReadResponse, Envelope<InvoiceResultWire>>>,
   Assert<Same<ListResponse, Envelope<InvoicePageWire>>>,
-  Assert<Same<DemoResponse, ListResponse>>,
   Assert<Same<SessionResponse, Envelope<SessionWire>>>,
   Assert<Same<AccountsResponse, Envelope<AccountsResultWire>>>,
   Assert<Same<AcceptedResponse, Envelope<AcceptedAccountWire>>>,

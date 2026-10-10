@@ -6,9 +6,24 @@ namespace Test.Security;
 
 public sealed class LocalEvaluationHttpTests
 {
+    [Fact]
+    public async Task LegacySimulatedWrite_IsRejectedBeforeCallingProvider()
+    {
+        using var factory = new LocalEvaluationFactory(enableRealAccounts: true);
+        using var client = factory.Client();
+        var session = await LocalEvaluationFactory.SessionAsync(client);
+        using var request = LocalEvaluationFactory.Preview(session, csrfToken: session.CsrfToken,
+            json: """{"mode":"simulated","code":"LEGACY"}""");
+        request.RequestUri = new Uri("/api/v1/accounts", UriKind.Relative);
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     [Theory]
     [InlineData("/api/v1/inexistente")]
     [InlineData("/api/v1/inexistente.json")]
+    [InlineData("/api/v1/demo/invoices")]
+    [InlineData("/api/v1/demo-architectures")]
     public async Task UnknownApiRoute_ReturnsProblemInsteadOfAngularHtml(string path)
     {
         using var factory = new LocalEvaluationFactory();
@@ -23,14 +38,13 @@ public sealed class LocalEvaluationHttpTests
     }
 
     [Fact]
-    public async Task PublicStaticAssetsAndFixture_AreAccessibleBeforeLocalSession()
+    public async Task PublicStaticAssets_AreAccessibleBeforeLocalSession()
     {
         using var factory = new LocalEvaluationFactory();
         using var client = factory.Client();
 
         using var index = await client.GetAsync("/", TestContext.Current.CancellationToken);
         using var asset = await client.GetAsync("/main.js", TestContext.Current.CancellationToken);
-        using var fixture = await client.GetAsync("/api/v1/demo/invoices", TestContext.Current.CancellationToken);
         using var health = await client.GetAsync("/health/live", TestContext.Current.CancellationToken);
 
         index.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -40,11 +54,7 @@ public sealed class LocalEvaluationHttpTests
         asset.Headers.GetValues("X-Content-Type-Options").Should().Contain("nosniff");
         asset.Headers.GetValues("Content-Security-Policy").Should().ContainSingle()
             .Which.Should().Contain("frame-ancestors 'none'");
-        fixture.StatusCode.Should().Be(HttpStatusCode.OK);
         health.StatusCode.Should().Be(HttpStatusCode.OK);
-        using var json = await JsonAsync(fixture);
-        json.RootElement.GetProperty("data").GetProperty("items").GetArrayLength().Should().BeGreaterThan(0);
-        fixture.Headers.CacheControl!.NoStore.Should().BeTrue();
     }
 
     [Theory]
@@ -154,7 +164,7 @@ public sealed class LocalEvaluationHttpTests
         using var factory = new LocalEvaluationFactory();
         using var client = factory.Client();
         var session = await LocalEvaluationFactory.SessionAsync(client);
-        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/accounts?mode=real");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/accounts");
         request.Headers.TryAddWithoutValidation("Cookie", session.Cookie);
 
         using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);

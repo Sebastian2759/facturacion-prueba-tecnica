@@ -29,7 +29,4 @@ export class InvoiceApi {
   detail(number: string) {
     return this.api.get(`/api/v1/invoices/${encodeURIComponent(number)}`, decodeInvoiceResult);
   }
-  demo() {
-    return this.api.get('/api/v1/demo/invoices', decodeInvoicePage);
-  }
 }

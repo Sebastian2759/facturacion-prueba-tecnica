@@ -47,10 +47,10 @@ En `local.env` se guardan únicamente secretos de esta instalación. El archivo 
 
 ## 4. Recorrido de evaluación
 
-1. Consulte los ejemplos fijos y abra el formulario de factura.
+1. Abra el listado de facturas y el formulario de creación.
 2. Añada detalles, pruebe valores vacíos/no válidos y el umbral de descuento de `500000`.
 3. Guarde una factura, compruebe el número asignado y consulte su detalle en el listado.
-4. Abra Accounts y pruebe crear/listar/consultar una cuenta simulada. La pantalla identifica el modo; los datos creados en esta simulación se pierden al reiniciar la API y caducan a los siete días. Las facturas sí se almacenan en SQL.
+4. Configure Novasoft con configurar-novasoft.cmd, reinicie y abra Cuentas para consultar o registrar cuentas en el proveedor. Sin credenciales verá el estado de configuración pendiente. Las facturas se almacenan en SQL.
 5. Detenga y vuelva a iniciar: las facturas deben permanecer disponibles.
 
 La sesión local se establece al abrir la aplicación y las escrituras requieren antiforgery. No necesita una cuenta cloud. Accounts real permanece bloqueado en este host incluso si se configura accidentalmente una bandera de activación.
@@ -64,7 +64,7 @@ La sesión local se establece al abrir la aplicación y las escrituras requieren
 | Crear backup | `backup.cmd` | Genera y verifica un `.bak` en `backups/`. Contiene los datos locales actuales. |
 | Restaurar una copia | `restaurar.cmd -BackupPath "C:\ruta\backup.bak"` | Crea una base nueva; no sustituye la base usada por la aplicación. |
 
-El backup `database/demo.bak` de la entrega contiene **el esquema migrado vacío**, sin facturas ni datos personales. Los ejemplos públicos viven como fixtures fuera de SQL. CI restaura este backup en una base diferente, comprueba sus tablas, historial de migraciones, ausencia de datos y consistencia; después crea y consulta una factura ficticia mediante la API conectada a esa restauración.
+El backup `database/demo.bak` de la entrega contiene **el esquema migrado vacío**, sin facturas ni datos personales. CI restaura este backup en una base diferente, comprueba sus tablas, historial de migraciones, ausencia de datos y consistencia; después crea y consulta una factura ficticia mediante la API conectada a esa restauración.
 
 Para cambiar a una copia restaurada, haga primero un backup, detenga la aplicación y cambie únicamente `DATABASE_NAME` en `local.env` por el nombre nuevo mostrado por el comando de restauración. Ejecute `iniciar.cmd`. Las facturas conservan su propietario original: restaurar un backup de otra instalación no transfiere la titularidad de sus registros.
 

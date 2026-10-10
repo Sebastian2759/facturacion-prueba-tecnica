@@ -6,8 +6,6 @@ public sealed class CreateAccountValidator : AbstractValidator<CreateAccountRequ
 {
     public CreateAccountValidator()
     {
-        RuleFor(request => request.Mode).Must(mode => mode is "simulated" or "real")
-            .WithMessage("El modo debe ser simulated o real.");
         RuleFor(request => request.Code).NotEmpty().Matches("^[A-Za-z0-9_-]{1,15}$");
         RuleFor(request => request.IdentificationType).NotEmpty().Matches("^[A-Za-z0-9]{1,2}$");
         RuleFor(request => request.Document).NotEmpty().Matches("^[A-Za-z0-9-]{1,15}$");

@@ -45,7 +45,7 @@ El HTML compilado contiene `ngCspNonce="__CSP_NONCE__"`: el host del paquete sus
 
 ### Accounts
 
-Se muestran el modo devuelto y el resultado real del contrato: una creación devuelve **aceptación**, no una cuenta completa inventada; el usuario consulta después por código. Los registros simulados se reinician con el servidor. Los códigos de clasificación no tienen etiquetas de negocio inventadas cuando Swagger sólo define números.
+Se muestra el resultado del contrato de Novasoft: una creación devuelve **aceptación**, no una cuenta completa inventada; el usuario consulta después por código. No hay datos simulados en ejecución. Si falta la configuración de Novasoft, la pantalla informa la condición y no permite consultas ni altas. Los códigos de clasificación no tienen etiquetas de negocio inventadas cuando Swagger sólo define números.
 
 ### Errores y contrato
 

@@ -8,7 +8,6 @@ Contrato acordado para coordinar backend y Angular. Las respuestas mantienen `Re
 - `POST /api/v1/invoices`: `{ document, firstName, lastName, address, phone, details: [{ code, quantity, unitPrice }] }`; cabecera `Idempotency-Key` UUID obligatoria. `data: { invoice: InvoiceDetailDto }`.
 - `GET /api/v1/invoices?page=1&pageSize=10`: `data: { items: InvoiceListDto[], page, pageSize, totalCount }`.
 - `GET /api/v1/invoices/{number}`: `data: { invoice: InvoiceDetailDto }`.
-- `GET /api/v1/demo/invoices`: ejemplos fijos públicos, misma envoltura de listado. Ninguna consulta a datos privados.
 
 `InvoiceDetailDto`: `id`, `number`, `date`, `document`, `firstName`, `lastName`, `address`, `phone`, `details`, `gross`, `discount`, `tax`, `total`. Cada detalle contiene `code`, `quantity`, `unitPrice`, `lineTotal`. `InvoiceListDto`: `number`, `date`, `document`, `firstName`, `lastName`, `total`.
 
@@ -20,15 +19,15 @@ Precio unitario, importe de cada línea, bruto y total no pueden superar `999999
 
 `ICurrentUser` (Domain/Contracts/Security) ofrece `Subject`, `CanEvaluate`, `CanUseRealAccounts`. Subject procede de identidad validada, no del Request. El perfil local emplea un propietario fijo de instalación y sesión local protegida; no usa identidad cloud. Los casos de uso verifican permiso y los repositorios filtran por propietario.
 
-`GET /api/v1/session` ofrece `{ mode: 'local', authenticated, canEvaluate, canUseRealAccounts: false, csrfToken }` dentro de `data` en la entrega local. El host local crea una cookie HttpOnly por instalación y entrega el token antiforgery; Angular lo envía en `X-CSRF-TOKEN` para POST. El navegador debe enviar el origen exacto de la instalación. Angular y API se sirven desde el mismo origen. El host web y sus contratos de identidad son extensiones de código fuera del alcance de esta entrega: no se configura OIDC, Azure ni Cloudflare.
+`GET /api/v1/session` ofrece `{ mode: 'local', authenticated, canEvaluate, canUseRealAccounts, csrfToken }` dentro de `data` en la entrega local. El host local crea una cookie HttpOnly por instalación y entrega el token antiforgery; Angular lo envía en `X-CSRF-TOKEN` para POST. El navegador debe enviar el origen exacto de la instalación. Angular y API se sirven desde el mismo origen. El host web y sus contratos de identidad son extensiones de código fuera del alcance de esta entrega: no se configura OIDC, Azure ni Cloudflare.
 
 ## Accounts
 
-- `GET /api/v1/accounts?code=...&mode=simulated`: `data: { mode, accounts: AccountDto[] }`. `code` es opcional.
-- `POST /api/v1/accounts`: `{ mode, code, identificationType, document, name, firstName?, lastName?, email, personType, cityCode, departmentCode, countryCode, address?, additionalAddress?, phone?, customerType, website?, registeredAt, externalCode? }`.
-- La creación devuelve `data: { mode, code, accepted: true }`: la respuesta genérica del proveedor indica aceptación, no un objeto creado. La UI ofrece una consulta posterior explícita.
+- `GET /api/v1/accounts?code=...`: `data: { accounts: AccountDto[] }`. `code` es opcional.
+- `POST /api/v1/accounts`: `{ code, identificationType, document, name, firstName?, lastName?, email, personType, cityCode, departmentCode, countryCode, address?, additionalAddress?, phone?, customerType, website?, registeredAt, externalCode? }`.
+- La creación devuelve `data: { code, accepted: true }`: la respuesta genérica del proveedor indica aceptación, no un objeto creado. La UI ofrece una consulta posterior explícita.
 
-La respuesta siempre indica `mode: 'simulated' | 'real'`; no cambia a simulación tras fallar una llamada real. El perfil local usa simulación por defecto. Sólo la configuración privada completa habilita la capacidad real de sesión. Se verificaron login, GET general, POST único autorizado y GET por código desde C#; consulte novasoft-real.md. No se distribuyen sus credenciales.
+Accounts no recibe ni devuelve un selector de modo. La configuración privada completa habilita el acceso al único proveedor: Novasoft. Los permisos se comprueban en el controlador y el caso de uso. Las credenciales no se distribuyen.
 
 ## Errores
 

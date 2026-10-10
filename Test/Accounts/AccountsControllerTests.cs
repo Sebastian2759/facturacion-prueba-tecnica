@@ -15,7 +15,7 @@ public sealed class AccountsControllerTests
     public async Task Get_SendsQueryAndPreservesResultStatusAndTrace()
     {
         var request = new GetAccountsRequest { Code = "TEST001" };
-        var expected = ResponseBase<GetAccountsResponse>.Ok(new("simulated", []));
+        var expected = ResponseBase<GetAccountsResponse>.Ok(new([]));
         var mediator = new Mock<IMediator>(MockBehavior.Strict);
         mediator.Setup(instance => instance.Send(request, It.IsAny<CancellationToken>())).ReturnsAsync(expected);
         var controller = CreateController(mediator.Object);
@@ -33,7 +33,7 @@ public sealed class AccountsControllerTests
     public async Task Create_SendsCommandAndPreservesAcceptedCodeAnd201()
     {
         var request = AccountTestData.Request();
-        var expected = ResponseBase<CreateAccountResponse>.Created(new("simulated", request.Code, true));
+        var expected = ResponseBase<CreateAccountResponse>.Created(new(request.Code, true));
         var mediator = new Mock<IMediator>(MockBehavior.Strict);
         mediator.Setup(instance => instance.Send(request, It.IsAny<CancellationToken>())).ReturnsAsync(expected);
         var controller = CreateController(mediator.Object);
@@ -43,7 +43,7 @@ public sealed class AccountsControllerTests
         Assert.Equal(201, result.StatusCode);
         var response = Assert.IsType<ResponseBase<CreateAccountResponse>>(result.Value);
         Assert.True(response.Data!.Accepted);
-        Assert.Equal(request.Code, response.Data.Code);
+        Assert.Equal(request.Code, response.Data!.Code);
         Assert.Equal("test-trace", response.TraceId);
         mediator.VerifyAll();
     }

@@ -7,7 +7,7 @@ El servicio externo de pruebas se consume desde C#, nunca directamente desde Ang
 1. Inicie la aplicación una vez para preparar Docker y configuración.
 2. Ejecute `configurar-novasoft.cmd`; introduzca usuario, conexión y contraseña de prueba del examen. La contraseña se solicita oculta.
 3. Ejecute `detener.cmd` y `iniciar.cmd`, y recargue el navegador.
-4. En Cuentas seleccione **Novasoft real**. Consultar usa GET; Crear envía POST al proveedor. Use un código de prueba nuevo y datos ficticios. Consulte ese código después de guardar.
+4. Abra Cuentas; la conexión Novasoft es el único origen. Consultar usa GET; Crear envía POST al proveedor. Use un código de prueba nuevo y datos ficticios. Consulte ese código después de guardar.
 5. Para retirar la conexión: `configurar-novasoft.cmd -Disable` y reinicie.
 
 `novasoft.local.json` tiene ACL del propietario y se monta como secreto Docker de sólo lectura en `/run/secrets/novasoft`. No va en Git, ZIP ni evidencias. No es un almacén cifrado: un administrador del host sigue siendo de confianza. El login/token permanecen en backend. El perfil distribuido está deshabilitado; habilitar sin credenciales completas impide iniciar. Cambiar valores del navegador no concede permiso.

@@ -10,7 +10,7 @@ Navegador Angular
   → Application: Request / Validator / Command o Query / Response
   → Domain: entidades, calculador, puertos, reglas
   → Infraestructure: repositorio EF / mapper / gateway Accounts
-  → SQL Server privado; Accounts simulado por defecto o real con configuración privada
+  → SQL Server privado; Accounts conectado exclusivamente a Novasoft con configuración privada
 
 DatabaseMigrator → SQL Server (identidad administrativa separada)
 ```
@@ -25,11 +25,11 @@ Domain no referencia otras capas. Application depende de Domain y contiene DTO/c
 | Core/Application/UseCases/Invoices y Accounts | Validación y orquestación; Command/Query implementa IRequestHandler. |
 | Core/Application/Dtos | Contratos de lectura de facturas. |
 | Infraestructure/Persistence | Configuraciones EF, repositorio específico y migraciones. |
-| Infraestructure/Adapters | IMapperAdapter, gateway simulado y cliente Novasoft. |
+| Infraestructure/Adapters | IMapperAdapter, gateway y cliente Novasoft. |
 | Api/Api | Controladores, contratos de error y servicios HTTP compartidos. |
 | Api/LocalEvaluation | Ejecutable de la entrega; cookie, Host/Origin y antiforgery. |
 | Tools/DatabaseMigrator | Inicialización y migración explícitas. |
-| Frontend/src/app | core, facturas, cuentas, demo y shared. |
+| Frontend/src/app | core, facturas, cuentas y shared. |
 
 El repositorio específico hereda RepositoryGeneric y añade consultas que necesitan propiedad, paginación e idempotencia. Se registra con el helper por convención. El mapper usa IMapperAdapter y coincidencia de nombre de entidad más específica para evitar confundir Invoice con InvoiceLine.
 
@@ -53,9 +53,9 @@ La clave única owner/idempotencyKey protege concurrencia; la huella del cuerpo 
 | Precio, líneas e importes | money | Tipo exigido; cálculos en C# decimal y presentación a dos decimales. |
 | Propietario | identificador opaco de 64 caracteres | Hash SHA-256 de issuer/sub separados por longitud. |
 
-dbo.Facturas y dbo.DetalleFactura tienen relación y FK; la numeración no pretende ser contigua ante rollback. El modelo también conserva la tabla pedagógica DemoArchitectures.
+dbo.Facturas y dbo.DetalleFactura tienen relación y FK; la numeración no pretende ser contigua ante rollback. La tercera migración retira la tabla del ejemplo heredado sólo cuando está vacía; no elimina datos existentes.
 
-El migrador aplica esquema con credencial administrativa separada. Runtime sólo tiene SELECT e INSERT en Facturas/DetalleFactura; init revoca UPDATE/DELETE previos del rol y comprueba privilegios efectivos. La API no aplica migraciones en requests. El snapshot manual, el modelo y las cinco integraciones SQL superaron CI. El run7 comprobó además init, backup vacío, restore a otra base, CHECKDB y smoke de API con persistencia. Los ejemplos de portada están fuera de SQL.
+El migrador aplica esquema con credencial administrativa separada. Runtime sólo tiene SELECT e INSERT en Facturas/DetalleFactura; init revoca UPDATE/DELETE previos del rol y comprueba privilegios efectivos. La API no aplica migraciones en requests. El snapshot manual, el modelo y las cinco integraciones SQL superaron CI. El run7 comprobó además init, backup vacío, restore a otra base, CHECKDB y smoke de API con persistencia. La portada abre el listado de facturas persistidas del usuario.
 
 ## HTTP y frontend
 
@@ -85,11 +85,11 @@ La revisión visual del run7 detectó CSS global bloqueado aunque el recorrido f
 
 LocalEvaluation sirve Angular/API en el mismo origen, publica sólo loopback y protege escrituras con cookie/Origin/CSRF. Su propietario es la instalación; no un usuario cloud. Las pruebas A/B comprueban aislamiento de las consultas y cookies de instalaciones diferentes. Véase [seguridad](../SECURITY.md).
 
-Accounts local usa almacenamiento simulado por propietario que se reinicia con el proceso. La creación devuelve aceptación, no una cuenta del proveedor inventada. El cliente real implementa login y expiración de token, destino HTTPS fijo, timeout y errores normalizados; se verificaron login, consultas y una creación ficticia autorizada, con consulta posterior por código. Se prohíbe cambiar silenciosamente de real a simulado.
+Accounts local usa el servicio Novasoft; sin configurar credenciales privadas no se habilitan consultas ni altas. La creación devuelve aceptación, no una cuenta del proveedor inventada. El cliente real implementa login y expiración de token, destino HTTPS fijo, timeout y errores normalizados; se verificaron login, consultas y una creación ficticia autorizada, con consulta posterior por código. No existe ruta de ejecución simulada.
 
 Api/Api conserva un host JWT opcional, fuera del alcance de entrega y sin IdP configurado. Su rechazo de modo local es defensa adicional de diseño, no evidencia de un despliegue web validado.
 
-Los HTML y reportes DemoArchitecture en docs/architecture son documentación histórica de Template, no un grafo actualizado de este sistema. Build y evidencia actual están en [TESTING](TESTING.md).
+Los diagramas del ejemplo heredado se retiraron para evitar documentación ajena al sistema. Build y evidencia actual están en [TESTING](TESTING.md).
 
 Evidencia vigente: [pruebas locales](TESTING.md). Las ejecuciones CI históricas corresponden a versiones anteriores; no acreditan estos ajustes.
 

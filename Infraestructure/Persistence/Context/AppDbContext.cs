@@ -5,9 +5,6 @@ namespace Persistence.Context;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public DbSet<DemoArchitectureEntity> DemoArchitectures
-        => Set<DemoArchitectureEntity>();
-
     public DbSet<InvoiceEntity> Invoices => Set<InvoiceEntity>();
     public DbSet<InvoiceLineEntity> InvoiceLines => Set<InvoiceLineEntity>();
 

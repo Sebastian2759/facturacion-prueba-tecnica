@@ -39,11 +39,9 @@ $listed = Invoke-SmokeRequest '/api/v1/invoices'
 if (-not $listed.isSuccess) { throw 'No se pudo consultar la lista de facturas.' }
 $replayed = Invoke-SmokeRequest '/api/v1/invoices' -Method POST -ExpectedStatus @(200, 201) -Body $body -Headers $headers
 if ($replayed.data.invoice.number -ne $number) { throw 'La repetición idempotente generó otro número.' }
-$accounts = Invoke-SmokeRequest '/api/v1/accounts?mode=simulated'
-if ($accounts.data.mode -ne 'simulated' -or $accounts.data.accounts.Count -lt 1) { throw 'La simulación de Accounts no está disponible.' }
-Invoke-SmokeRequest '/api/v1/accounts?mode=real' -ExpectedStatus @(403) | Out-Null
+Invoke-SmokeRequest '/api/v1/accounts' -ExpectedStatus @(403) | Out-Null
 if ($CacheEvidencePath) {
     $evidence = [ordered]@{ baseUrl = $BaseUrl; checks = @($cacheChecks.ToArray()) }
     [IO.File]::WriteAllText($CacheEvidencePath, ($evidence | ConvertTo-Json -Depth 5), (New-Object Text.UTF8Encoding $false))
 }
-Write-Host 'Smoke local correcto: sesión/antiforgery, guardado/lista/detalle SQL, cálculo, idempotencia, Accounts simuladas, bloqueo real y no-store en las siete respuestas.'
+Write-Host 'Smoke local correcto: sesión/antiforgery, guardado/lista/detalle SQL, cálculo, idempotencia, bloqueo de Accounts sin configurar y no-store en las seis respuestas.'

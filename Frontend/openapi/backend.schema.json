@@ -113,6 +113,7 @@
         "type": "object"
       },
       "CreateAccountRequest": {
+        "additionalProperties": false,
         "properties": {
           "additionalAddress": {
             "type": [
@@ -173,9 +174,6 @@
               "string"
             ]
           },
-          "mode": {
-            "type": "string"
-          },
           "name": {
             "type": "string"
           },
@@ -213,13 +211,9 @@
           },
           "code": {
             "type": "string"
-          },
-          "mode": {
-            "type": "string"
           }
         },
         "required": [
-          "mode",
           "code",
           "accepted"
         ],
@@ -269,13 +263,9 @@
               "$ref": "#/components/schemas/AccountDto"
             },
             "type": "array"
-          },
-          "mode": {
-            "type": "string"
           }
         },
         "required": [
-          "mode",
           "accounts"
         ],
         "type": "object"
@@ -1002,7 +992,7 @@
     }
   },
   "info": {
-    "description": "Facturas propias, cálculo autoritativo y Accounts con modo explícito.",
+    "description": "Facturas propias, cálculo autoritativo y cuentas integradas con Novasoft.",
     "title": "Facturación · API",
     "version": "v1"
   },
@@ -1011,13 +1001,6 @@
     "/api/v1/accounts": {
       "get": {
         "parameters": [
-          {
-            "in": "query",
-            "name": "Mode",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "in": "query",
             "name": "Code",
@@ -1097,35 +1080,6 @@
         },
         "tags": [
           "Accounts"
-        ]
-      }
-    },
-    "/api/v1/demo/invoices": {
-      "get": {
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseBaseOfListInvoicesResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseBaseOfListInvoicesResponse"
-                }
-              },
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseBaseOfListInvoicesResponse"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "DemoInvoices"
         ]
       }
     },
@@ -1432,9 +1386,6 @@
   "tags": [
     {
       "name": "Accounts"
-    },
-    {
-      "name": "DemoInvoices"
     },
     {
       "name": "Invoices"

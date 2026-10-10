@@ -3,12 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ApiClient } from '../core/api-client';
-import {
-  AcceptedAccount,
-  AccountsMode,
-  AccountsResult,
-  CreateAccountWire,
-} from '../core/api-contract';
+import { AcceptedAccount, AccountsResult, CreateAccountWire } from '../core/api-contract';
 import { decodeAcceptedAccount, decodeAccountsResult } from '../core/api-decoders';
 import { ApiError, normalizeError } from '../core/api-error';
 import { AuthSession } from '../core/auth-session';
@@ -34,7 +29,6 @@ export class Accounts {
   private readonly api = inject(ApiClient);
   private readonly destroyRef = inject(DestroyRef);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  protected readonly mode = signal<AccountsMode>('simulated');
   protected readonly tab = signal<'list' | 'create'>('list');
   protected readonly code = new FormControl('', {
     nonNullable: true,
@@ -92,16 +86,8 @@ export class Accounts {
   constructor() {
     this.load();
   }
-  protected setMode(mode: AccountsMode): void {
-    if (this.saving() || this.loading() || (mode === 'real' && !this.auth.canUseRealAccounts()))
-      return;
-    this.mode.set(mode);
-    this.accepted.set(null);
-    this.result.set(null);
-    this.load();
-  }
   protected load(): void {
-    if (this.loading() || this.saving()) return;
+    if (this.loading() || this.saving() || !this.auth.canUseRealAccounts()) return;
     if (this.code.invalid) {
       this.code.markAsTouched();
       return;
@@ -111,7 +97,7 @@ export class Accounts {
     this.result.set(null);
     this.api
       .get(
-        `/api/v1/accounts?mode=${this.mode()}&code=${encodeURIComponent(this.code.value.trim())}`,
+        `/api/v1/accounts?code=${encodeURIComponent(this.code.value.trim())}`,
         decodeAccountsResult,
       )
       .pipe(
@@ -127,7 +113,7 @@ export class Accounts {
     return this.error()?.fieldErrors[path]?.join(' ') ?? '';
   }
   protected create(): void {
-    if (this.saving()) return;
+    if (this.saving() || !this.auth.canUseRealAccounts()) return;
     this.form.markAllAsTouched();
     if (this.form.invalid) {
       this.error.set(new ApiError('Revisa los campos de la cuenta antes de enviarla.'));
@@ -141,7 +127,6 @@ export class Accounts {
       ...raw,
       code: raw.code.trim(),
       name: raw.name.trim(),
-      mode: this.mode(),
       registeredAt: `${raw.registeredAt}T00:00:00Z`,
     };
     this.saving.set(true);

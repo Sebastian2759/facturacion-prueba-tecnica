@@ -70,17 +70,14 @@ export interface Session {
   csrfToken?: string | null;
   oidc?: { authority: string; clientId: string; scope: string } | null;
 }
-export type AccountsMode = 'simulated' | 'real';
 export type Account = Omit<AccountWire, 'personType' | 'customerType'> & {
   personType: number;
   customerType: number;
 };
 export interface AccountsResult {
-  mode: AccountsMode;
   accounts: Account[];
 }
 export interface AcceptedAccount {
-  mode: AccountsMode;
   code: string;
   accepted: boolean;
 }

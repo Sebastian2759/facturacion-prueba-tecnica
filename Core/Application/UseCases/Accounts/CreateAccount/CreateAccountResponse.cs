@@ -1,3 +1,3 @@
 namespace Application.UseCases.Accounts.CreateAccount;
 
-public sealed record CreateAccountResponse(string Mode, string Code, bool Accepted);
+public sealed record CreateAccountResponse(string Code, bool Accepted);

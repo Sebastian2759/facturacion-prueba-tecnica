@@ -1,5 +1,5 @@
 /** Generated from the verified local backend OpenAPI export. Do not edit.
- * Canonical schema SHA-256: 8134e73acd7a265d099964f8d84367d0f5320db4c177ca076f859e8e3cb6b8fb
+ * Canonical schema SHA-256: 90479d27aca3ba826e4e99f2c88e561e3f8354c1b3b823e5df0aa00605b96bda
  */
 export interface paths {
   '/api/v1/accounts': {
@@ -13,7 +13,6 @@ export interface paths {
       parameters: {
         query?: {
           Code?: string;
-          Mode?: string;
         };
         header?: never;
         path?: never;
@@ -63,43 +62,6 @@ export interface paths {
         };
       };
     };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/api/v1/demo/invoices': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description OK */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            'application/json': components['schemas']['ResponseBaseOfListInvoicesResponse'];
-            'text/json': components['schemas']['ResponseBaseOfListInvoicesResponse'];
-            'text/plain': components['schemas']['ResponseBaseOfListInvoicesResponse'];
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -424,7 +386,6 @@ export interface components {
       firstName?: null | string;
       identificationType?: string;
       lastName?: null | string;
-      mode?: string;
       name?: string;
       /** Format: int32 */
       personType?: number | string;
@@ -436,7 +397,6 @@ export interface components {
     CreateAccountResponse: {
       accepted: boolean;
       code: string;
-      mode: string;
     };
     CreateInvoiceRequest: {
       address?: string;
@@ -451,7 +411,6 @@ export interface components {
     };
     GetAccountsResponse: {
       accounts: components['schemas']['AccountDto'][];
-      mode: string;
     };
     GetInvoiceByNumberResponse: {
       invoice: components['schemas']['InvoiceDetailDto'];

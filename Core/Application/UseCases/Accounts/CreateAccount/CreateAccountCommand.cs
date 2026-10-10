@@ -10,14 +10,14 @@ public sealed class CreateAccountCommand(IAccountsGateway gateway, ICurrentUser 
 {
     public async Task<ResponseBase<CreateAccountResponse>> Handle(CreateAccountRequest request, CancellationToken cancellationToken)
     {
-        var mode = AccountAccess.Authorize(request.Mode, currentUser);
+        AccountAccess.Authorize(currentUser);
         var account = new AccountRecord(
             request.Code, request.IdentificationType, request.Document, request.Name,
             request.FirstName, request.LastName, request.Email, request.PersonType,
             request.CityCode, request.DepartmentCode, request.CountryCode, request.Address,
             request.AdditionalAddress, request.Phone, request.CustomerType,
             request.Website, request.RegisteredAt, request.ExternalCode);
-        await gateway.CreateAsync(mode, currentUser.Subject, account, cancellationToken);
-        return ResponseBase<CreateAccountResponse>.Created(new(request.Mode, request.Code, true), "Cuenta aceptada. Puede consultar su código para verificarla.");
+        await gateway.CreateAsync(account, cancellationToken);
+        return ResponseBase<CreateAccountResponse>.Created(new(request.Code, true), "Cuenta aceptada. Puede consultar su código para verificarla.");
     }
 }

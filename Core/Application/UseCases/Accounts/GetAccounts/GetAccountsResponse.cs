@@ -2,4 +2,4 @@ using Application.Dtos;
 
 namespace Application.UseCases.Accounts.GetAccounts;
 
-public sealed record GetAccountsResponse(string Mode, IReadOnlyList<AccountDto> Accounts);
+public sealed record GetAccountsResponse(IReadOnlyList<AccountDto> Accounts);

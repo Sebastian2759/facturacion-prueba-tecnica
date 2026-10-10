@@ -10,7 +10,7 @@ Se canceló publicación Azure/Cloudflare. La entrega vigente es local Windows x
 
 Se mantienen Domain/Application/Api/Infraestructure, CQRS/MediatR, FluentValidation, IMapperAdapter y registro por convención. Command/Query implementa IRequestHandler; no se agregan capas Handler redundantes. El repositorio especializado hereda RepositoryGeneric para consultas por propietario y operaciones que el genérico no representa.
 
-La coincidencia de mapper utiliza el nombre más específico para distinguir InvoiceEntity e InvoiceLineEntity. Los diagramas DemoArchitecture siguen siendo material de la plantilla.
+La coincidencia de mapper utiliza el nombre más específico para distinguir InvoiceEntity e InvoiceLineEntity. El ejemplo y sus diagramas fueron retirados; las abstracciones de la arquitectura empleadas por facturación se conservan.
 
 ## D03. Guid interno y número SQL separados
 
@@ -46,7 +46,7 @@ Docker publica sólo 127.0.0.1:5080; el proceso interno escucha 0.0.0.0:8080. SQ
 
 La API no migra en requests. Un proceso administrativo inicializa/migra; runtime sólo tiene SELECT e INSERT sobre las tablas de factura. init revoca UPDATE/DELETE antiguos y rechaza privilegios efectivos indebidos. La migración/snapshot se escribieron manualmente porque WDAC bloqueó el tooling; el gate de modelo SQL/EF ya pasó en CI y seguirá siendo obligatorio.
 
-La release lleva un backup SQL Server de esquema vacío, en lugar del seed persistido inicialmente propuesto. La UI tiene ejemplos ficticios fuera de SQL. El run7 comprobó backup, restore real, CHECKDB, migradores y creación/consulta posterior de factura mediante smoke. Restore del evaluador crea otra base y no sobrescribe ni cambia destino automáticamente; la instalación ci15 en Windows fue verificada; cada versión posterior necesita su propia evidencia.
+La release lleva un backup SQL Server de esquema vacío, en lugar del seed persistido inicialmente propuesto. La UI muestra sólo facturas persistidas en SQL. El run7 comprobó backup, restore real, CHECKDB, migradores y creación/consulta posterior de factura mediante smoke. Restore del evaluador crea otra base y no sobrescribe ni cambia destino automáticamente; la instalación ci15 en Windows fue verificada; cada versión posterior necesita su propia evidencia.
 
 ## D09. Binarios precompilados, internet y licencias
 
@@ -54,11 +54,9 @@ El ZIP no requiere SDK/Node, pero sí Docker Desktop Linux/Compose y Windows x64
 
 SQL Developer se configura para evaluación y se obtienen componentes de sus fuentes oficiales. Se conservan licencias/avisos y se verifican condiciones aplicables; no se presupone una licencia comercial ni se redistribuye Docker.
 
-## D10. Accounts simulado y evidencia real separada
+## D10. Integración exclusiva con Novasoft
 
-Local mantiene simulación por defecto y permite modo real sólo con credenciales privadas y habilitación explícita del servidor. La sesión anuncia la capacidad y concede el permiso correspondiente; la UI permite seleccionar el origen. Los secretos no se distribuyen. Véase novasoft-real.md.
-
-fecIng se mapea a fecha/hora; no se añade estCli al POST: el Swagger vigente lo define en AccountsUpd, no en AccountsParams. No hay fallback silencioso a simulación ni reintento automático de POST externo que pueda duplicar cuentas. Una aceptación de POST no se presenta como una cuenta completa devuelta por el proveedor.
+Por decisión del propietario se retiran simuladores y ejemplos del runtime. Las respuestas controladas permanecen sólo en tests. Sin credenciales privadas, Cuentas informa configuración pendiente; no devuelve datos inventados. Se eliminan los campos mode de Accounts y sus tipos generados se actualizan.
 
 ## D11. Contrato de errores compatible
 
@@ -85,3 +83,9 @@ Exit 2 del baseline no se interpreta automáticamente como éxito. El gate exami
 ## D16. Semgrep reproducible desde PyPI en entorno aislado
 
 La indisponibilidad de la imagen del escáner se resolvió sin relajar el análisis. Semgrep 1.179.0 se instala desde PyPI oficial en un venv exclusivo del runner con Python 3.12, versiones/hashes de todas las dependencias y sólo wheels. No instala globalmente ni actualiza pip. CI exige pip check, versión efectiva, reporte completo, archivos examinados y cero hallazgos/errores. Métricas desactivadas y reglas locales TypeScript acotadas. El run10 confirmó Python 3.12.3 y 31 archivos examinados, sin hallazgos ni errores; no equivale a un análisis exhaustivo.
+
+## D14. Retirar el ejemplo sin perder datos
+
+La migración 20261010000200 retira DemoArchitectures únicamente cuando está vacía. Si un usuario hubiera cargado datos en la tabla del ejemplo, se detiene con un error explícito para revisarlos; no borra ni migra esos datos a facturación. Las dos migraciones anteriores permanecen inmutables. El rollback reconstruye el esquema vacío anterior. Se verifica con SQL real en bases desechables.
+
+El inicio redirige al listado de facturas propias. No se prellenan facturas ni cuentas; los estados vacíos reflejan las consultas reales. Los tests y sus dobles se conservan separados del runtime. No se incluye ninguna credencial en el paquete; ejecutar configurar-novasoft.cmd es un requisito para operar Cuentas en una instalación nueva.

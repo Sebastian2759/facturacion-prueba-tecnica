@@ -12,9 +12,8 @@ internal static class AccountTestData
         code, "CC", "900000010", "Persona Ficticia", "Persona", "Ficticia", "test@example.invalid", 1,
         "11001", "11", "169", "Calle ficticia 10", null, "3000000010", 1, "https://example.invalid", Now, "EXT-1");
 
-    public static CreateAccountRequest Request(string mode = "simulated", string code = "TEST001") => new()
+    public static CreateAccountRequest Request(string code = "TEST001") => new()
     {
-        Mode = mode,
         Code = code,
         IdentificationType = "CC",
         Document = "900000010",

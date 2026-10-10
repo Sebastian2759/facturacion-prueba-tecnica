@@ -12,6 +12,7 @@ namespace Api.Controllers.v1;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/accounts")]
 [Authorize(Policy = Permissions.Evaluate)]
+[Authorize(Policy = Permissions.RealAccounts)]
 public sealed class AccountsController(IMediator mediator) : ApiControllerBase
 {
     [HttpGet]

@@ -1,4 +1,6 @@
-# Capturas de interfaz con respuestas controladas
+# Capturas históricas de interfaz con respuestas controladas
+
+Este registro corresponde a la versión anterior a la retirada de la portada de demostración. No acredita la interfaz de la nueva entrega.
 
 Se revisaron las capturas `invoice-desktop.png` e `invoice-mobile.png` producidas por `e2e/invoices.spec.ts`, prueba `invoice and demo screens pass WCAG AA automated checks`. El escenario intercepta sesión y API con Playwright y usa exclusivamente datos ficticios. **Estas imágenes acreditan composición visual; no acreditan API real, persistencia SQL ni conectividad Novasoft.**
 

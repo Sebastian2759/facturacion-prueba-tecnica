@@ -1,11 +1,12 @@
+using System.Text.Json.Serialization;
 using Application.Base;
 using MediatR;
 
 namespace Application.UseCases.Accounts.CreateAccount;
 
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed class CreateAccountRequest : IRequest<ResponseBase<CreateAccountResponse>>
 {
-    public string Mode { get; init; } = "simulated";
     public string Code { get; init; } = string.Empty;
     public string IdentificationType { get; init; } = string.Empty;
     public string Document { get; init; } = string.Empty;

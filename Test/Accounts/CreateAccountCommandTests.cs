@@ -11,15 +11,14 @@ public sealed class CreateAccountCommandTests
     public async Task Handle_CreatesAccountWithAuthenticatedOwnerAndReportsAcceptance()
     {
         var gateway = new Mock<IAccountsGateway>(MockBehavior.Strict);
-        gateway.Setup(instance => instance.CreateAsync(AccountExecutionMode.Simulated, "issuer|alice", AccountTestData.Record(), It.IsAny<CancellationToken>()))
+        gateway.Setup(instance => instance.CreateAsync(AccountTestData.Record(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        var command = new CreateAccountCommand(gateway.Object, new AccountsCurrentUser());
+        var command = new CreateAccountCommand(gateway.Object, new AccountsCurrentUser(canUseRealAccounts: true));
 
         var response = await command.Handle(AccountTestData.Request(), CancellationToken.None);
 
         Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
-        Assert.Equal("simulated", response.Data!.Mode);
-        Assert.Equal("TEST001", response.Data.Code);
+        Assert.Equal("TEST001", response.Data!.Code);
         Assert.True(response.Data.Accepted);
         gateway.VerifyAll();
     }
@@ -30,7 +29,7 @@ public sealed class CreateAccountCommandTests
         var gateway = new Mock<IAccountsGateway>(MockBehavior.Strict);
         var command = new CreateAccountCommand(gateway.Object, new AccountsCurrentUser());
 
-        await Assert.ThrowsAsync<AccessDeniedException>(() => command.Handle(AccountTestData.Request("real"), CancellationToken.None));
+        await Assert.ThrowsAsync<AccessDeniedException>(() => command.Handle(AccountTestData.Request(), CancellationToken.None));
 
         gateway.VerifyNoOtherCalls();
     }

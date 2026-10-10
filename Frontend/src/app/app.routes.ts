@@ -1,11 +1,7 @@
 import { Routes } from '@angular/router';
 import { evaluationGuard } from './core/evaluation-guard';
 export const routes: Routes = [
-  {
-    path: '',
-    title: 'Vista general · Nexo',
-    loadComponent: () => import('./demo/demo').then((m) => m.Demo),
-  },
+  { path: '', pathMatch: 'full', redirectTo: 'facturas' },
   {
     path: 'acceso',
     title: 'Acceso · Nexo',

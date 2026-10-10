@@ -11,8 +11,8 @@ public sealed class GetAccountsQuery(IAccountsGateway gateway, ICurrentUser curr
 {
     public async Task<ResponseBase<GetAccountsResponse>> Handle(GetAccountsRequest request, CancellationToken cancellationToken)
     {
-        var mode = AccountAccess.Authorize(request.Mode, currentUser);
-        var accounts = await gateway.GetAsync(mode, currentUser.Subject, request.Code, cancellationToken);
-        return ResponseBase<GetAccountsResponse>.Ok(new(request.Mode, accounts.Select(AccountDto.FromRecord).ToArray()));
+        AccountAccess.Authorize(currentUser);
+        var accounts = await gateway.GetAsync(request.Code, cancellationToken);
+        return ResponseBase<GetAccountsResponse>.Ok(new(accounts.Select(AccountDto.FromRecord).ToArray()));
     }
 }

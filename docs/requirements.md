@@ -46,7 +46,7 @@ El contrato revisado difiere del ejemplo PDF: fecIng es fecha/hora y estCli no f
 
 El cliente real se puede habilitar mediante configuración privada del servidor. La simulación es predeterminada; configurar-novasoft.cmd y la selección explícita en Cuentas permiten evaluar login/GET/POST reales sin publicación cloud. Véase [contrato y operación](novasoft-real.md) y [evidencia](TESTING.md).
 
-Accounts simulado no es persistencia SQL: se reinicia al reiniciar el proceso. POST devuelve aceptación y permite consultar después por código; no inventa una respuesta de cuenta completa.
+Accounts consulta y registra directamente en Novasoft; requiere credenciales privadas. POST devuelve aceptación y permite consultar después por código; no inventa una respuesta de cuenta completa.
 
 ## Mejoras y límites acordados
 
@@ -63,6 +63,6 @@ No se incluye edición/eliminación de facturas, emisión fiscal, multiusuario l
 
 El cierre requiere crear y recuperar una factura de múltiples líneas contra SQL Server real, verificar número/fecha/totales, errores, idempotencia y propietario A/B; luego repetir el recorrido después de restaurar el backup en una base distinta.
 
-El backup final será esquema vacío. Los ejemplos de portada son ficticios, públicos y separados; el smoke crea su propia factura. El ZIP y documentos deben identificar el mismo commit, con evidencias locales. Los accesos remotos están aplazados por el propietario.
+El backup final será esquema vacío. El listado muestra sólo facturas persistidas; el smoke crea su propia factura. El ZIP y documentos deben identificar el mismo commit, con evidencias locales. Los accesos remotos están aplazados por el propietario.
 
 Estado actual y resultados: [TESTING.md](TESTING.md). SQL conserva la aceptación explícita SQL-LOCAL-2026-10-09. El historial CI no sustituye las pruebas del código ajustado.

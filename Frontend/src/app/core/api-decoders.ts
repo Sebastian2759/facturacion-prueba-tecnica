@@ -1,7 +1,6 @@
 import type {
   Account,
   AccountWire,
-  AccountsMode,
   AccountsResult,
   AccountsResultWire,
   AcceptedAccount,
@@ -65,9 +64,6 @@ function numeric(value: unknown, integer = false): number {
 function collection<TWire, T>(value: TWire[] | undefined, decode: (item: TWire) => T): T[] {
   if (!Array.isArray(value)) return invalid();
   return value.map(decode);
-}
-function accountsMode(value: unknown): AccountsMode {
-  return value === 'simulated' || value === 'real' ? value : invalid();
 }
 
 export function decodeTotals(wire: TotalsWire): Totals {
@@ -185,7 +181,6 @@ export function decodeAccountsResult(wire: AccountsResultWire): AccountsResult {
   object(wire);
   const value = wire;
   return {
-    mode: accountsMode(value['mode']),
     accounts: collection(value['accounts'], decodeAccount),
   };
 }
@@ -193,7 +188,6 @@ export function decodeAcceptedAccount(wire: AcceptedAccountWire): AcceptedAccoun
   object(wire);
   const value = wire;
   return {
-    mode: accountsMode(value['mode']),
     code: text(value['code']),
     accepted: flag(value['accepted']),
   };

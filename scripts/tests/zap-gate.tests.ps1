@@ -14,8 +14,7 @@ $checks = @(
     @{ method = 'GET'; path = '/api/v1/invoices/1'; status = 200; cacheControl = 'no-store' },
     @{ method = 'GET'; path = '/api/v1/invoices'; status = 200; cacheControl = 'no-store' },
     @{ method = 'POST'; path = '/api/v1/invoices'; status = 200; cacheControl = 'no-store' },
-    @{ method = 'GET'; path = '/api/v1/accounts?mode=simulated'; status = 200; cacheControl = 'no-store' },
-    @{ method = 'GET'; path = '/api/v1/accounts?mode=real'; status = 403; cacheControl = 'no-store' }
+    @{ method = 'GET'; path = '/api/v1/accounts'; status = 403; cacheControl = 'no-store' }
 )
 function Save-Cache {
     [IO.File]::WriteAllText($cachePath, (@{ baseUrl = 'http://127.0.0.1:5080'; checks = $checks } | ConvertTo-Json -Depth 6))

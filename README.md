@@ -15,7 +15,7 @@ En el ZIP completo, abra `LEEME.html` y haga doble clic en `iniciar.cmd`. Abra h
 | configurar-novasoft.cmd | Configura en privado las credenciales de prueba del proveedor. |
 | configurar-novasoft.cmd -Disable | Deshabilita la conexión real y retira sus credenciales del archivo. |
 
-El modo Accounts simulado funciona por defecto. Tras configurar Novasoft y reiniciar, la pantalla permite elegir **Novasoft real**; nunca cambia de proveedor silenciosamente. Las altas reales escriben en el servicio de pruebas: use sólo datos ficticios. No distribuya `novasoft.local.json`, `local.env`, backups privados ni el PDF original que contiene credenciales.
+Accounts usa exclusivamente Novasoft. Configure sus credenciales privadas y reinicie para habilitar consultas y altas. Sin configuración se muestra un estado explícito, sin datos ni altas simuladas. Las altas reales escriben en el servicio de pruebas: use sólo datos ficticios. No distribuya `novasoft.local.json`, `local.env`, backups privados ni el PDF original que contiene credenciales.
 
 ## Requerimiento y decisiones
 

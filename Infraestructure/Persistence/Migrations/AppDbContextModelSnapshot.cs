@@ -10,5 +10,5 @@ namespace Persistence.Migrations;
 public sealed class AppDbContextModelSnapshot : ModelSnapshot
 {
     protected override void BuildModel(ModelBuilder modelBuilder)
-        => InvoiceTextModel.Build(modelBuilder);
+        => AccountsOnlyModel.Build(modelBuilder);
 }

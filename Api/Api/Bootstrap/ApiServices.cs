@@ -43,7 +43,7 @@ public static class ApiServices
             {
                 Title = "Facturación · API",
                 Version = "v1",
-                Description = "Facturas propias, cálculo autoritativo y Accounts con modo explícito."
+                Description = "Facturas propias, cálculo autoritativo y cuentas integradas con Novasoft."
             };
             return Task.CompletedTask;
         }));
@@ -61,11 +61,9 @@ public static class ApiServices
             throw new InvalidOperationException("Novasoft requiere configuración privada completa antes de habilitar el modo real.");
         builder.Services.AddSingleton(new AccountIntegrationOptions
         {
-            IsLocal = isLocal,
             RealEnabled = realEnabled
         });
         builder.Services.AddSingleton(providerOptions);
-        builder.Services.AddSingleton<SimulatedAccountsStore>();
         builder.Services.AddSingleton<NovasoftTokenCache>();
         builder.Services.AddHttpClient<NovasoftClient>(client =>
         {

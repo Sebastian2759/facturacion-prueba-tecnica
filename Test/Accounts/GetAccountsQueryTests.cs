@@ -12,15 +12,14 @@ public sealed class GetAccountsQueryTests
     {
         var account = AccountTestData.Record();
         var gateway = new Mock<IAccountsGateway>(MockBehavior.Strict);
-        gateway.Setup(instance => instance.GetAsync(AccountExecutionMode.Simulated, "issuer|alice", "TEST001", It.IsAny<CancellationToken>()))
+        gateway.Setup(instance => instance.GetAsync("TEST001", It.IsAny<CancellationToken>()))
             .ReturnsAsync([account]);
-        var query = new GetAccountsQuery(gateway.Object, new AccountsCurrentUser());
+        var query = new GetAccountsQuery(gateway.Object, new AccountsCurrentUser(canUseRealAccounts: true));
 
         var response = await query.Handle(new() { Code = "TEST001" }, CancellationToken.None);
 
         Assert.True(response.IsSuccess);
-        Assert.Equal("simulated", response.Data!.Mode);
-        var actual = Assert.Single(response.Data.Accounts);
+        var actual = Assert.Single(response.Data!.Accounts);
         Assert.Equal(account.Code, actual.Code);
         Assert.Equal(account.IdentificationType, actual.IdentificationType);
         Assert.Equal(account.Document, actual.Document);
@@ -43,30 +42,30 @@ public sealed class GetAccountsQueryTests
     }
 
     [Theory]
-    [InlineData(false, false, "simulated")]
-    [InlineData(true, false, "real")]
-    [InlineData(false, true, "real")]
-    public async Task Handle_RejectsMissingPermissionBeforeCallingProvider(bool evaluate, bool real, string mode)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task Handle_RejectsMissingPermissionBeforeCallingProvider(bool evaluate, bool real)
     {
         var gateway = new Mock<IAccountsGateway>(MockBehavior.Strict);
         var query = new GetAccountsQuery(gateway.Object, new AccountsCurrentUser(canEvaluate: evaluate, canUseRealAccounts: real));
 
-        await Assert.ThrowsAsync<AccessDeniedException>(() => query.Handle(new() { Mode = mode }, CancellationToken.None));
+        await Assert.ThrowsAsync<AccessDeniedException>(() => query.Handle(new(), CancellationToken.None));
 
         gateway.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task Handle_DoesNotSubstituteSimulationWhenRealProviderFails()
+    public async Task Handle_PropagatesProviderFailure()
     {
         var gateway = new Mock<IAccountsGateway>(MockBehavior.Strict);
-        gateway.Setup(instance => instance.GetAsync(AccountExecutionMode.Real, "issuer|alice", null, It.IsAny<CancellationToken>()))
+        gateway.Setup(instance => instance.GetAsync(null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new AccountsIntegrationException("PROVIDER_TIMEOUT", 504, "Tiempo agotado."));
         var query = new GetAccountsQuery(gateway.Object, new AccountsCurrentUser(canUseRealAccounts: true));
 
-        var failure = await Assert.ThrowsAsync<AccountsIntegrationException>(() => query.Handle(new() { Mode = "real" }, CancellationToken.None));
+        var failure = await Assert.ThrowsAsync<AccountsIntegrationException>(() => query.Handle(new(), CancellationToken.None));
 
         Assert.Equal("PROVIDER_TIMEOUT", failure.Code);
-        gateway.Verify(instance => instance.GetAsync(AccountExecutionMode.Simulated, It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Never);
+        gateway.Verify(instance => instance.GetAsync(null, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

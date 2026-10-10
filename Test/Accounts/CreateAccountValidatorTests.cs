@@ -20,9 +20,9 @@ public sealed class CreateAccountValidatorTests
     [Fact]
     public void Validate_RejectsMissingRequiredFieldsAndInvalidRanges()
     {
-        var result = new CreateAccountValidator().Validate(new CreateAccountRequest { Mode = "untrusted", PersonType = 3, CustomerType = 6 });
+        var result = new CreateAccountValidator().Validate(new CreateAccountRequest { PersonType = 3, CustomerType = 6 });
 
-        foreach (var property in new[] { "Mode", "Code", "IdentificationType", "Document", "Name", "Email", "PersonType", "CityCode", "DepartmentCode", "CountryCode", "CustomerType", "RegisteredAt" })
+        foreach (var property in new[] { "Code", "IdentificationType", "Document", "Name", "Email", "PersonType", "CityCode", "DepartmentCode", "CountryCode", "CustomerType", "RegisteredAt" })
             Assert.Contains(result.Errors, failure => failure.PropertyName == property);
     }
 

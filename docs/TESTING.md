@@ -6,15 +6,15 @@ El corte de ajustes de octubre de 2026 usa Docker Desktop Windows con contenedor
 
 | Comprobación | Resultado observado |
 |---|---|
-| Backend .NET con SQL Server aislado | 162 aprobadas, 0 fallidas, 0 omitidas. |
+| Backend .NET con SQL Server aislado | 155 aprobadas, 0 fallidas, 0 omitidas. |
 | Migración VARCHAR UTF-8 | Preserva datos antiguos y nuevos caracteres Unicode; sys.columns confirma los tipos exigidos; snapshot sin diferencias. |
 | Frontend unitarias / proxy | 28 / 4 aprobadas. |
-| Navegador con HTTP controlado | 8 aprobadas. El caso live se ejecuta por separado. |
+| Navegador con HTTP controlado | 9 aprobadas. El caso live se ejecuta por separado. |
 | Novasoft C# real | Login/Bearer y GET general; POST único autorizado, HTTP 201; consulta del código NEXOTEST261010A, HTTP 200 y registro confirmado. |
-| Semgrep | 31 archivos, 3 reglas locales, 0 hallazgos; alcance acotado. |
+| Seguridad del paquete | Los escaneos de esta versión se registran en docs/local-verification.json; no se heredan los resultados del paquete anterior. |
 | SQL en Trivy | 71 HIGH aceptados, 0 CRITICAL; sin hallazgos nuevos fuera de la política. No es un resultado limpio. |
 
-Los resultados de instalación desde ZIP, backup/restauración, navegador live, ZAP y escaneos del paquete se registran después de construirlo en docs/local-verification.json y docs/evidence. No se deducen de compilar. No se verificó apertura interactiva del IDE Visual Studio ni controles remotos de GitHub; no hubo publicaciones.
+Los resultados de instalación desde ZIP, backup/restauración, navegador live, ZAP y escaneos del paquete se registran después de construirlo en docs/local-verification.json y docs/evidence. No se deducen de compilar. La solución anterior abrió en Visual Studio con 9/9 proyectos. No se atribuye esa apertura a una nueva compilación del IDE. No se verifican controles remotos de GitHub ni se publica.
 
 ## Reproducir
 
@@ -27,3 +27,18 @@ Windows: scripts/tests/windows-delivery.tests.ps1 comprueba configuración priva
 La prueba SQL adicional detectó inicialmente pérdida Unicode en parámetros ANSI. Se corrigió usando VARCHAR explícito, collation UTF-8 e IsUnicode para parámetros, según https://learn.microsoft.com/en-us/ef/core/providers/sql-server/columns . La regresión comprueba escritura y lectura reales, además de migración.
 
 Los informes no contienen credenciales, tokens ni datos del directorio externo. Las pruebas y escáneres no son un pentest exhaustivo ni certificación de seguridad.
+
+## Retirada de simuladores del runtime
+
+El corte 1.0.2-local.1 elimina los endpoints de demostración, las facturas de portada y el almacén de Accounts en memoria. Accounts sólo utiliza Novasoft. La suite disminuye al retirar pruebas del ejemplo y del almacén eliminados; se conservan las pruebas de facturación, contratos, seguridad y proveedor. Las nuevas regresiones comprueban la eliminación de la tabla vacía, rollback y rechazo de borrado si contiene datos, 404 de endpoints retirados y rechazo HTTP de escrituras antiguas con mode=simulated.
+
+Las respuestas HTTP controladas existen únicamente en Test y Frontend/e2e: permiten verificar timeouts, errores y validaciones sin generar registros externos. No se compilan en la aplicación entregada. La factura live acredita SQL; la consulta live de Novasoft sólo lee el código ya autorizado, sin repetir el alta:
+
+```powershell
+$env:E2E_BASE_URL='http://127.0.0.1:5080'
+$env:E2E_NOVASOFT='1'
+$env:E2E_ACCOUNT_CODE='NEXOUI261010B'
+npm run test:e2e -- e2e/accounts-live.spec.ts
+```
+
+El POST real de la versión anterior queda registrado como evidencia histórica, no como una nueva creación de esta versión.

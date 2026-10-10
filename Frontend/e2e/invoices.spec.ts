@@ -28,7 +28,7 @@ async function mockLocal(page: Page, canUseRealAccounts = false) {
       }),
     }),
   );
-  await page.route('**/api/v1/demo/invoices', (route) =>
+  await page.route('**/api/v1/invoices?**', (route) =>
     route.fulfill({ json: envelope({ items: [invoice], page: 1, pageSize: 10, totalCount: 1 }) }),
   );
   await page.route('**/api/v1/invoices/preview', (route) =>
@@ -52,22 +52,28 @@ async function fillInvoice(page: Page) {
   await expect(page.getByText('Actualizando importes…')).toBeHidden();
 }
 test.describe('UI with controlled API responses (not live SQL evidence)', () => {
-  test('real mode requires server capability and sends an explicit real query', async ({
-    page,
-  }) => {
+  test('accounts queries the provider without a simulation selector', async ({ page }) => {
     await mockLocal(page, true);
-    const modes: string[] = [];
     await page.route('**/api/v1/accounts?**', (route) => {
-      const mode = new URL(route.request().url()).searchParams.get('mode')!;
-      modes.push(mode);
-      return route.fulfill({ json: envelope({ mode, accounts: [] }) });
+      expect(new URL(route.request().url()).searchParams.has('mode')).toBe(false);
+      return route.fulfill({ json: envelope({ accounts: [] }) });
     });
     await page.goto('/cuentas');
-    await expect(page.getByRole('button', { name: 'Novasoft real', exact: true })).toBeEnabled();
-    await page.getByRole('button', { name: 'Novasoft real', exact: true }).click();
-    await expect(page.getByText('Modo real seleccionado')).toBeVisible();
     await expect(page.getByText('No encontramos cuentas')).toBeVisible();
-    expect(modes).toEqual(['simulated', 'real']);
+    await expect(page.getByRole('button', { name: 'Simulación', exact: true })).toHaveCount(0);
+  });
+  test('unconfigured accounts shows setup state without issuing provider requests', async ({
+    page,
+  }) => {
+    await mockLocal(page);
+    const requests: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('/api/v1/accounts')) requests.push(request.url());
+    });
+    await page.goto('/cuentas');
+    await expect(page.getByText('Conexión pendiente de configuración')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Crear cuenta', exact: true })).toHaveCount(0);
+    expect(requests).toEqual([]);
   });
   test('saves the server totals, sends CSRF and preserves retry identity after a timeout', async ({
     page,
@@ -186,15 +192,14 @@ test.describe('UI with controlled API responses (not live SQL evidence)', () => 
     await oldFinished;
     await expect(page.locator('.grand-total dd')).toHaveText(/\$\s*100,00/);
   });
-  test('accounts accepts a simulated request and consults the actual response', async ({
+  test('accounts submits the provider contract and consults acceptance', async ({
     page,
   }, testInfo) => {
-    await mockLocal(page);
+    await mockLocal(page, true);
     let created = false;
     await page.route('**/api/v1/accounts?**', (route) =>
       route.fulfill({
         json: envelope({
-          mode: 'simulated',
           accounts: created
             ? [
                 {
@@ -223,16 +228,15 @@ test.describe('UI with controlled API responses (not live SQL evidence)', () => 
       }),
     );
     await page.route('**/api/v1/accounts', (route) => {
-      expect(route.request().postDataJSON().mode).toBe('simulated');
+      expect(route.request().postDataJSON()).not.toHaveProperty('mode');
       expect(route.request().headers()['x-csrf-token']).toBe('test-csrf');
       created = true;
       return route.fulfill({
-        json: envelope({ mode: 'simulated', code: 'DEMO001', accepted: true }),
+        json: envelope({ code: 'DEMO001', accepted: true }),
       });
     });
     await page.goto('/cuentas');
     await expect(page.getByText('No encontramos cuentas')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Novasoft real', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: 'Crear cuenta', exact: true }).click();
     await page.locator('#account-code').fill('DEMO001');
     await page.locator('#identificationType').fill('06');
@@ -252,20 +256,23 @@ test.describe('UI with controlled API responses (not live SQL evidence)', () => 
     await expect(page.getByText('Solicitud aceptada: DEMO001')).toBeVisible();
     await page.getByRole('button', { name: 'Consultar esta cuenta' }).click();
     await expect(page.getByRole('cell', { name: 'Cuenta ficticia', exact: false })).toBeVisible();
-    await expect(page.getByText('Respuesta simulada')).toBeVisible();
+    await expect(page.getByText('Respuesta de Novasoft')).toBeVisible();
   });
-  test('invoice and demo screens pass WCAG AA automated checks', async ({ page }, testInfo) => {
+  test('invoice list and creation screens pass WCAG AA automated checks', async ({
+    page,
+  }, testInfo) => {
     await mockLocal(page);
     await page.goto('/');
-    await expect(
-      page.getByRole('heading', { name: 'Así se ve una factura registrada' }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mis facturas' })).toBeVisible();
     expect(
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
         .violations,
     ).toEqual([]);
     await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({ path: testInfo.outputPath('demo-desktop.png'), fullPage: true });
+    await page.screenshot({
+      path: testInfo.outputPath('invoice-list-desktop.png'),
+      fullPage: true,
+    });
     await page.goto('/facturas/nueva');
     await fillInvoice(page);
     expect(

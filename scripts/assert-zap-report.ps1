@@ -15,8 +15,8 @@ if (-not $site.PSObject.Properties['alerts'] -or $site.alerts -isnot [Array]) { 
 if ($ScannerExitCode -eq 2 -and $site.alerts.Count -eq 0) { throw 'ZAP declaró warnings, pero el reporte no contiene alertas evaluables.' }
 if ([string]$site.'@name' -ne 'http://127.0.0.1:5080') { throw 'El reporte no corresponde al sitio local autorizado.' }
 $cache = Get-Content -LiteralPath $CacheEvidencePath -Raw | ConvertFrom-Json
-if ($cache.baseUrl -ne 'http://127.0.0.1:5080' -or $cache.checks -isnot [Array] -or $cache.checks.Count -lt 7) { throw 'Falta evidencia suficiente de no-store para la API.' }
-$required = @{ session = $false; write = $false; detail = $false; list = $false; simulated = $false; forbidden = $false }
+if ($cache.baseUrl -ne 'http://127.0.0.1:5080' -or $cache.checks -isnot [Array] -or $cache.checks.Count -lt 6) { throw 'Falta evidencia suficiente de no-store para la API.' }
+$required = @{ session = $false; write = $false; detail = $false; list = $false; forbidden = $false }
 foreach ($check in $cache.checks) {
     if ([string]$check.cacheControl -notmatch '(?i)(^|,)\s*no-store\s*(,|$)' -or
         [string]$check.cacheControl -match '(?i)(^|,)\s*(public|s-maxage\s*=|max-age\s*=)') { throw 'Una respuesta API carece de no-store o permite caché compartida.' }
@@ -25,8 +25,7 @@ foreach ($check in $cache.checks) {
     if ($key -match '^POST /api/v1/invoices (200|201)$') { $required.write = $true }
     if ($key -match '^GET /api/v1/invoices/[1-9][0-9]* 200$') { $required.detail = $true }
     if ($key -eq 'GET /api/v1/invoices 200') { $required.list = $true }
-    if ($key -eq 'GET /api/v1/accounts?mode=simulated 200') { $required.simulated = $true }
-    if ($key -eq 'GET /api/v1/accounts?mode=real 403') { $required.forbidden = $true }
+    if ($key -eq 'GET /api/v1/accounts 403') { $required.forbidden = $true }
 }
 if ($required.Values -contains $false) { throw 'No se comprobaron todos los tipos de respuesta API requeridos.' }
 $staticPaths = New-Object 'Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)

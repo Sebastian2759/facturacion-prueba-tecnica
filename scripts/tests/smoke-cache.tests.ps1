@@ -20,8 +20,7 @@ function Invoke-WebRequest {
             }
         }
         '/api/v1/invoices/1' { $result.data = @{ invoice = @{ number = 1 } } }
-        '/api/v1/accounts?mode=simulated' { $result.data = @{ mode = 'simulated'; accounts = @(@{ code = '1' }) } }
-        '/api/v1/accounts?mode=real' { if (-not $fixtureCacheState.allowReal) { $status = 403 }; $result = @{ status = $status } }
+        '/api/v1/accounts' { if (-not $fixtureCacheState.allowReal) { $status = 403 }; $result = @{ status = $status } }
         default { throw "Unexpected fixture route: $path" }
     }
     $cacheControl = $(if ($path -eq $fixtureCacheState.badPath) { 'public, max-age=3600' } else { 'no-store' })
@@ -30,10 +29,10 @@ function Invoke-WebRequest {
 $cachePath = Join-Path $testRoot 'synthetic-api-cache-policy.json'
 & (Join-Path $repo 'scripts/smoke-local.ps1') -CacheEvidencePath $cachePath 6>$null
 $evidence = Get-Content -LiteralPath $cachePath -Raw | ConvertFrom-Json
-if ($evidence.checks.Count -ne 7 -or ($evidence.checks | Where-Object { $_.cacheControl -ne 'no-store' })) { throw 'The smoke did not record all seven API cache checks.' }
+if ($evidence.checks.Count -ne 6 -or ($evidence.checks | Where-Object { $_.cacheControl -ne 'no-store' })) { throw 'The smoke did not record all six API cache checks.' }
 if ((Get-Content -LiteralPath $cachePath -Raw) -match 'synthetic-test-value|csrf|cookie|Evaluador|565250') { throw 'The cache evidence contains response body or authentication data.' }
 $count = 1
-foreach ($path in @('/api/v1/session', '/api/v1/invoices', '/api/v1/invoices/1', '/api/v1/accounts?mode=simulated', '/api/v1/accounts?mode=real')) {
+foreach ($path in @('/api/v1/session', '/api/v1/invoices', '/api/v1/invoices/1', '/api/v1/accounts')) {
     $fixtureCacheState.badPath = $path
     $failure = $null
     try { & (Join-Path $repo 'scripts/smoke-local.ps1') 6>$null } catch { $failure = $_.Exception.Message }
