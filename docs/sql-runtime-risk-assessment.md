@@ -1,5 +1,11 @@
 # Evaluación del riesgo de la imagen SQL Server
 
+## Alternativa oficial RHEL comprobada el 9 de octubre de 2026
+
+La [ejecución diagnóstica 38014461532](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38014461532), commit `f13866bd3926b9bfe64a49f60ea10711141327ed`, analizó sin ejecutar la imagen oficial `mcr.microsoft.com/mssql/rhel/server:2022-latest@sha256:a28ec29377c9a45f3afe7411c27b75124e3c6dd3e4f5adab930eb4bea2951dcc`. Trivy detectó RHEL 9.8 y **113 ocurrencias HIGH, 50 CVE únicos y cero CRITICAL**: 44 ocurrencias en paquetes del sistema y las mismas 69 ocurrencias Go en tres binarios. Cambiar de Ubuntu a esta imagen no elimina el bloqueo. La imagen de la aplicación no se modificó y no se aplicó una excepción.
+
+El artefacto de diagnóstico `11655243964` se descargó y verificó contra SHA-256 `424407544c524bb23b2ac3492b9afa7540a23b166151770ab6e53404426fec7d`; Gitleaks de los reportes descargados no encontró secretos. El workflow manual `sql-candidate.yml` sólo produce evidencia; no publica ni autoriza el ZIP. En el equipo local, WDAC impidió ejecutar Trivy, por lo que el diagnóstico se realizó en GitHub Actions sin cambiar controles de Windows.
+
 Fecha de corte: 9 de octubre de 2026, después de la CI 37994136672 (run10). Estado: SQL 2022 mantiene el único gate previo a empaquetado bloqueante; funcionalidad, CSP/CSS, OpenAPI, ZAP y Semgrep pasaron. **No se aplicaron exclusiones, excepciones ni cambios de umbral al análisis SQL.** La revisión confirma versiones y símbolos afectados presentes, pero no demuestra explotabilidad ni ausencia de riesgo.
 
 ## Imagen y evidencia de origen

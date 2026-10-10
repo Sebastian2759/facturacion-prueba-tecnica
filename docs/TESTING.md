@@ -24,7 +24,7 @@ Evidencia: [CI 37994136672](https://github.com/Sebastian2759/facturacion-prueba-
 | ZAP baseline local | Gate aprobado: sólo informativos risk 0 aceptados, API no-store comprobada y ninguna alerta rechazada. Exit 2 del escáner revisado mediante JSON. |
 | OpenAPI | Dos comprobaciones aprobadas: export real del backend y export HTTP del contenedor, con puente consumido por Angular. |
 | ZIP final | Pendiente; no se etiqueta como release verificada. |
-| Instalación Windows con Docker | No ejecutada; Docker/WSL ausentes en el equipo local. |
+| Instalación Windows con Docker | No ejecutada; Docker/WSL instalados, SVM desactivado en BIOS y primer inicio pendientes. |
 | Novasoft real | No ejecutado; pruebas HTTP controladas y simulación local. |
 
 WDAC 0x800711C7 continúa afectando la ejecución .NET del equipo Windows. Las 159 pruebas aprobadas pertenecen al entorno CI Linux, no a una evasión de esa política.
@@ -98,4 +98,4 @@ Se ejecutaron 13 comprobaciones con PowerShell 7 sobre Windows: generación de c
 
 El parser real de Windows PowerShell 5.1 también aceptó los siete scripts del evaluador. Esto acredita sintaxis, no su ejecución: la ejecución directa de scripts con ese motor está deshabilitada en el equipo y no se modificó su política. PowerShell 7 tiene una política local RemoteSigned ya establecida.
 
-Docker y WSL siguen ausentes. No se acreditan instalación, arranque de contenedores, persistencia ni backup/restore en Windows. Esas operaciones conservan únicamente la evidencia CI Linux del run10. La consulta adicional del registro Microsoft devolvió el mismo digest SQL 2022 ya analizado; el bloqueo de seguridad continúa sin excepción autorizada.
+Docker Desktop 4.94 y WSL 3.0.1 ya están instalados. VirtualMachinePlatform está habilitada, pero el firmware informa virtualización desactivada y WSL confirma que no puede iniciar. Falta habilitar SVM en BIOS, reiniciar y completar la aceptación de términos de Docker por el usuario. No se acreditan instalación, arranque de contenedores, persistencia ni backup/restore en Windows. Esas operaciones conservan únicamente la evidencia CI Linux del run10. La consulta adicional del registro Microsoft devolvió el mismo digest SQL 2022 ya analizado; el bloqueo de seguridad continúa sin excepción autorizada.

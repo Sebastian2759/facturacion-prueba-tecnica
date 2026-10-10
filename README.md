@@ -72,7 +72,7 @@ Evidencia del 9 de octubre de 2026: [CI 37994136672](https://github.com/Sebastia
 - **Bloqueo de seguridad:** la imagen oficial SQL conserva hallazgos Go y OpenSSL; el análisis binario identifica símbolos asociados a **9 CVE Go HIGH** sin restricción Windows. No demuestra explotabilidad remota ni justifica una excepción. Véase el [análisis de runtime](docs/sql-runtime-risk-assessment.md).
 - El gate ZAP **pasó** con informativos risk 0 revisados y API `no-store` comprobada. El escáner devolvió 2; el JSON no contiene alertas rechazadas. No equivale a cero alertas ni a un pentest.
 - El CSS bloqueado detectado en el run7 está **corregido**, con comprobación repetida en el run10 de estilos efectivos y nonce/CSP. Pasaron ambas comprobaciones OpenAPI, incluida la del contenedor. **Trivy SQL es el único gate previo a empaquetado que bloquea**; no hay ZIP final aprobado ni instalación Windows con Docker acreditada.
-- En el equipo local, WDAC `0x800711C7` sigue limitando el runtime .NET y no hay Docker/WSL; las pruebas backend/SQL anteriores se ejecutaron en CI Linux.
+- En el equipo local, WDAC `0x800711C7` sigue limitando el runtime .NET y Docker Desktop/WSL ya están instalados, pero SVM sigue desactivado en BIOS; las pruebas backend/SQL anteriores se ejecutaron en CI Linux.
 - Novasoft real: no ejecutado; el ZIP fuerza simulación identificada. La guía HTML se revisó offline en escritorio/móvil; no sustituye el arranque de la aplicación.
 
 Node **24.21.0 LTS** con npm **11.13.0** fue verificado también mediante toolchain portable. La preparación no instala ni cambia políticas del equipo.
