@@ -1,6 +1,8 @@
 # Contexto del proyecto
 
-**Decisión vigente:** el propietario aprobó el riesgo residual SQL para evaluación local con datos ficticios. La [aceptación SQL-LOCAL-2026-10-09](sql-risk-acceptance.md) y su inventario exacto permiten tratar sólo los hallazgos conocidos; los demás controles siguen siendo obligatorios. Los resultados que siguen conservan el historial anterior a esta decisión. La nueva CI y el ZIP aún están pendientes, al igual que el arranque completo en Windows.
+**Entrega generada:** [CI 38018319032 / run12](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38018319032) terminó correctamente sobre el commit `5b1efa2c75fba7ed7fa839d8addc78693b78424f` y produjo `Aplicacion-1.0.0-ci.12.zip`. Estado: `release-verified-with-accepted-risk`, con SQL-LOCAL-2026-10-09 visible en el manifiesto. SHA-256 del ZIP: `ad415b466dfcedd427494632ad5ed0fe086e6862fe35a503a6980b0f6076c358`. Se verificaron descarga, extracción e integridad en Windows; el arranque completo con Docker Desktop sigue pendiente de SVM. Los apartados sobre runs anteriores conservan el historial; no describen el estado actual del empaquetado.
+
+**Decisión vigente:** el propietario aprobó el riesgo residual SQL para evaluación local con datos ficticios. La [aceptación SQL-LOCAL-2026-10-09](sql-risk-acceptance.md) y su inventario exacto permiten tratar sólo los hallazgos conocidos; los demás controles siguen siendo obligatorios. Los resultados que siguen conservan el historial anterior a esta decisión. La CI run12 generó el ZIP; el arranque completo en Windows sigue pendiente.
 
 Nexo implementa el examen de facturación C#/HTML5 y consumo Accounts sobre Template, base `3393c2e7b02f7d0ea439b461b8fba5d561107681`.
 

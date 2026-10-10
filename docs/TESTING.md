@@ -1,6 +1,8 @@
 # Pruebas y evidencia
 
-**Decisión vigente:** el propietario aprobó el riesgo residual SQL para evaluación local con datos ficticios. La [aceptación SQL-LOCAL-2026-10-09](sql-risk-acceptance.md) y su inventario exacto permiten tratar sólo los hallazgos conocidos; los demás controles siguen siendo obligatorios. Los resultados que siguen conservan el historial anterior a esta decisión. La nueva CI y el ZIP aún están pendientes, al igual que el arranque completo en Windows.
+**Entrega generada:** [CI 38018319032 / run12](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38018319032) terminó correctamente sobre el commit `5b1efa2c75fba7ed7fa839d8addc78693b78424f` y produjo `Aplicacion-1.0.0-ci.12.zip`. Estado: `release-verified-with-accepted-risk`, con SQL-LOCAL-2026-10-09 visible en el manifiesto. SHA-256 del ZIP: `ad415b466dfcedd427494632ad5ed0fe086e6862fe35a503a6980b0f6076c358`. Se verificaron descarga, extracción e integridad en Windows; el arranque completo con Docker Desktop sigue pendiente de SVM. Los apartados sobre runs anteriores conservan el historial; no describen el estado actual del empaquetado.
+
+**Decisión vigente:** el propietario aprobó el riesgo residual SQL para evaluación local con datos ficticios. La [aceptación SQL-LOCAL-2026-10-09](sql-risk-acceptance.md) y su inventario exacto permiten tratar sólo los hallazgos conocidos; los demás controles siguen siendo obligatorios. Los resultados que siguen conservan el historial anterior a esta decisión. La CI run12 generó el ZIP; el arranque completo en Windows sigue pendiente.
 
 Actualizado: 9 de octubre de 2026. No confundir compilación con ejecución ni respuestas controladas con persistencia real.
 
@@ -101,3 +103,11 @@ Se ejecutaron 13 comprobaciones con PowerShell 7 sobre Windows: generación de c
 El parser real de Windows PowerShell 5.1 también aceptó los siete scripts del evaluador. Esto acredita sintaxis, no su ejecución: la ejecución directa de scripts con ese motor está deshabilitada en el equipo y no se modificó su política. PowerShell 7 tiene una política local RemoteSigned ya establecida.
 
 Docker Desktop 4.94 y WSL 3.0.1 ya están instalados. VirtualMachinePlatform está habilitada, pero el firmware informa virtualización desactivada y WSL confirma que no puede iniciar. Falta habilitar SVM en BIOS, reiniciar y completar la aceptación de términos de Docker por el usuario. No se acreditan instalación, arranque de contenedores, persistencia ni backup/restore en Windows. Esas operaciones conservan únicamente la evidencia CI Linux del run10. La consulta adicional del registro Microsoft devolvió el mismo digest SQL 2022 ya analizado; el corte histórico no tenía aceptación; la autorización posterior figura en sql-risk-acceptance.md.
+
+## Cierre de empaquetado con aceptación SQL — run12
+
+La CI 38018319032 aprobó 159 pruebas .NET sin omisiones, 28 unitarias Angular, 4 proxy, 7 navegador controladas y 1 live API/SQL, 29 casos del gate ZAP, 7 de caché y 35 del control SQL. Pasaron Semgrep (31 archivos, cero hallazgos/errores), Gitleaks, auditorías, Trivy filesystem/ASP.NET y las imágenes derivadas app/migrador. El escaneo SQL conserva 71 HIGH y cero CRITICAL dentro de la aceptación exacta; no se describe como limpio.
+
+Se generaron y verificaron backup vacío/restore/CHECKDB, SBOM, manifiesto y checksums; el ZIP fue extraído y revalidado en CI. Descargado en Windows, se verificó primero el hash del artefacto GitHub, luego el ZIP interno y todos los archivos extraídos. Gitleaks adicional del paquete extraído: cero hallazgos. Pasaron 16 pruebas sintéticas Windows de los scripts/manifiesto; no equivalen al arranque de Docker Desktop.
+
+El run11 ya validaba la aceptación, pero el wrapper heredó exit 1 del diagnóstico opcional SQL 2025. La corrección sólo restablece éxito después de validar los gates requeridos. Cinco regresiones adicionales comprueban ese caso y el rechazo de fallos, JSON inválido y nuevos hallazgos. Run12 confirma la corrección en CI real.
