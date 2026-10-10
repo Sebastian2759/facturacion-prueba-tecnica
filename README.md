@@ -1,5 +1,7 @@
 # Nexo · Facturación y evaluación local
 
+**Decisión vigente:** el propietario aprobó el riesgo residual SQL para evaluación local con datos ficticios. La [aceptación SQL-LOCAL-2026-10-09](docs/sql-risk-acceptance.md) y su inventario exacto permiten tratar sólo los hallazgos conocidos; los demás controles siguen siendo obligatorios. Los resultados que siguen conservan el historial anterior a esta decisión. La nueva CI y el ZIP aún están pendientes, al igual que el arranque completo en Windows.
+
 Aplicación Angular + C# basada en Template para registrar facturas en SQL Server y explorar Accounts. La entrega vigente es **local en Windows x64**, acompañada por este repositorio privado y documentación en SharePoint. No requiere cuenta cloud ni publica una demo en Azure/Cloudflare.
 
 ## Evaluar la release
@@ -12,7 +14,7 @@ Con Windows x64, internet y Docker Desktop funcionando con contenedores Linux/Co
 
 Abra **http://127.0.0.1:5080**. La guía incluida es `LEEME.html`. El primer inicio descarga imágenes oficiales fijadas y ensambla imágenes copiando publicaciones .NET/Angular precompiladas; el evaluador no necesita SDK ni Node. SQL queda en una red privada Docker sin puerto al host.
 
-Este comando corresponde al **ZIP verificado**. Un checkout del código todavía no contiene app/migrator publicados ni el manifiesto final. CI ya comprobó backup/restore, CHECKDB y el recorrido API/SQL de la aplicación preparada. El ZIP final y la instalación Windows siguen pendientes: los gates de seguridad aún bloquean la release.
+Este comando corresponde al **ZIP verificado**. Un checkout del código todavía no contiene app/migrator publicados ni el manifiesto final. CI ya comprobó backup/restore, CHECKDB y el recorrido API/SQL de la aplicación preparada. El ZIP final y la instalación Windows siguen pendientes. La nueva CI debe comprobar la aceptación SQL acotada y todos los controles restantes.
 
 `detener.cmd` conserva datos; `diagnosticar.cmd` revisa estado. `backup.cmd` produce una copia privada; `restaurar.cmd` restaura a una base nueva sin sobrescribir ni cambiar la base activa automáticamente. El backup distribuido será **esquema migrado vacío**; los ejemplos de portada son ficticios y no están almacenados como facturas privadas.
 
@@ -81,6 +83,6 @@ Node **24.21.0 LTS** con npm **11.13.0** fue verificado también mediante toolch
 
 Basado en [ServiciosAndesTool/Template](https://dev.azure.com/ServiciosAndesTool/_git/Template), commit `3393c2e7b02f7d0ea439b461b8fba5d561107681`. Se conserva Clean Architecture, CQRS, validación, ResponseBase y convenciones de repositorio/mapper. Los archivos DemoArchitecture son material heredado y no un grafo actualizado de la aplicación.
 
-Destino: [GitHub privado personal](https://github.com/Sebastian2759/facturacion-prueba-tecnica), cuenta `Sebastian2759`, correo principal requerido verificado `forero.sebastian157@gmail.com`. Repositorio sincronizado; el corte de evidencia CI corresponde al commit `b0b7e25eb93f93b2870281bc2bc716a38ff2b463`. La release final sigue bloqueada. El workflow vigente es `.github/workflows/quality.yml`; `azure-pipelines.yml` fue retirado y reemplazado por GitHub Actions.
+Destino: [GitHub privado personal](https://github.com/Sebastian2759/facturacion-prueba-tecnica), cuenta `Sebastian2759`, correo principal requerido verificado `forero.sebastian157@gmail.com`. Repositorio sincronizado; el corte de evidencia CI corresponde al commit `b0b7e25eb93f93b2870281bc2bc716a38ff2b463`. La nueva CI y el paquete final siguen pendientes de comprobación. El workflow vigente es `.github/workflows/quality.yml`; `azure-pipelines.yml` fue retirado y reemplazado por GitHub Actions.
 
 El paquete excluye datos reales, credenciales del examen, secretos locales y PDF original. Los componentes de terceros conservan sus condiciones de licencia; la configuración SQL Developer se destina a evaluación.

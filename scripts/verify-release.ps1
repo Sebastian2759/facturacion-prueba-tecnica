@@ -17,5 +17,10 @@ foreach ($line in $lines) {
     if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ne $hash) { throw "Integridad no válida: $relative. Vuelva a descargar el ZIP." }
 }
 $release = Get-Content -LiteralPath (Join-Path $rootPath 'release.json') -Raw | ConvertFrom-Json
-if ($release.status -ne 'release-verified') { throw 'El paquete no ha superado los controles de entrega.' }
+if ($release.status -notin @('release-verified', 'release-verified-with-accepted-risk')) { throw 'El paquete no ha superado los controles de entrega.' }
+if ($release.status -eq 'release-verified-with-accepted-risk') {
+    if ($release.profile -ne 'local-evaluation' -or $release.sqlRiskAcceptance.acceptanceId -ne 'SQL-LOCAL-2026-10-09' -or
+        $release.sqlRiskAcceptance.status -notin @('accepted-risk', 'passed-no-findings') -or $release.sqlRiskAcceptance.image -ne $release.images.sqlserver) { throw 'La aceptación SQL del paquete no es válida.' }
+    Write-Host 'Evaluación local con riesgo SQL aceptado. Consulte docs/sql-risk-acceptance.md; utilice datos ficticios.'
+}
 Write-Host 'Integridad de los archivos de entrega verificada.'

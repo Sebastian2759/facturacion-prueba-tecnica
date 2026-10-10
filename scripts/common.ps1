@@ -11,7 +11,7 @@ function Invoke-Checked {
 function Assert-Docker {
     if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { throw 'Instale Docker Desktop y habilite contenedores Linux. Consulte LEEME.html; puede requerir virtualización, WSL 2 y reiniciar Windows.' }
     $os = & docker info --format '{{.OSType}}' 2>$null
-    if ($LASTEXITCODE -ne 0 -or $os -ne 'linux') { throw 'Abra Docker Desktop y active el motor de contenedores Linux.' }
+    if ($LASTEXITCODE -ne 0 -or $os -ne 'linux') { throw 'Abra Docker Desktop y active el motor Linux con WSL 2. Si indica virtualización deshabilitada, revise Administrador de tareas > Rendimiento > CPU; habilite SVM (AMD) o VT-x (Intel) en BIOS según el fabricante y reinicie. Consulte LEEME.html. No es necesario cambiar BIOS si Docker ya funciona.' }
     & docker compose version | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'Se requiere Docker Compose v2 incluido en Docker Desktop.' }
 }

@@ -1,5 +1,7 @@
 # Pruebas y evidencia
 
+**Decisión vigente:** el propietario aprobó el riesgo residual SQL para evaluación local con datos ficticios. La [aceptación SQL-LOCAL-2026-10-09](sql-risk-acceptance.md) y su inventario exacto permiten tratar sólo los hallazgos conocidos; los demás controles siguen siendo obligatorios. Los resultados que siguen conservan el historial anterior a esta decisión. La nueva CI y el ZIP aún están pendientes, al igual que el arranque completo en Windows.
+
 Actualizado: 9 de octubre de 2026. No confundir compilación con ejecución ni respuestas controladas con persistencia real.
 
 ## Resultado observado
@@ -19,7 +21,7 @@ Evidencia: [CI 37994136672](https://github.com/Sebastian2759/facturacion-prueba-
 | Gitleaks / NuGet / npm | Gates aprobados en la ejecución indicada. |
 | Semgrep | 1.179.0, 31 archivos examinados, 0 hallazgos y 0 errores. PyPI oficial, Python 3.12.3, venv aislado, hashes y wheels obligatorios. |
 | Trivy filesystem e imagen ASP.NET | Aprobados. |
-| Trivy SQL 2022 / candidato SQL 2025 | SQL 2022 **bloquea la entrega**; SQL 2025 falla el diagnóstico. 71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL en cada imagen. Sin excepción SQL. |
+| Trivy SQL 2022 / candidato SQL 2025 | SQL 2022 **bloquea la entrega**; SQL 2025 falla el diagnóstico. 71 ocurrencias HIGH, 24 CVE únicos y 0 CRITICAL en cada imagen. En aquel run no existía excepción SQL; la aceptación vigente se documenta por separado. |
 | Backup/restore / CHECKDB / migradores / smoke API | Aprobados en CI sobre la aplicación preparada y SQL real. |
 | ZAP baseline local | Gate aprobado: sólo informativos risk 0 aceptados, API no-store comprobada y ninguna alerta rechazada. Exit 2 del escáner revisado mediante JSON. |
 | OpenAPI | Dos comprobaciones aprobadas: export real del backend y export HTTP del contenedor, con puente consumido por Angular. |
@@ -98,4 +100,4 @@ Se ejecutaron 13 comprobaciones con PowerShell 7 sobre Windows: generación de c
 
 El parser real de Windows PowerShell 5.1 también aceptó los siete scripts del evaluador. Esto acredita sintaxis, no su ejecución: la ejecución directa de scripts con ese motor está deshabilitada en el equipo y no se modificó su política. PowerShell 7 tiene una política local RemoteSigned ya establecida.
 
-Docker Desktop 4.94 y WSL 3.0.1 ya están instalados. VirtualMachinePlatform está habilitada, pero el firmware informa virtualización desactivada y WSL confirma que no puede iniciar. Falta habilitar SVM en BIOS, reiniciar y completar la aceptación de términos de Docker por el usuario. No se acreditan instalación, arranque de contenedores, persistencia ni backup/restore en Windows. Esas operaciones conservan únicamente la evidencia CI Linux del run10. La consulta adicional del registro Microsoft devolvió el mismo digest SQL 2022 ya analizado; el bloqueo de seguridad continúa sin excepción autorizada.
+Docker Desktop 4.94 y WSL 3.0.1 ya están instalados. VirtualMachinePlatform está habilitada, pero el firmware informa virtualización desactivada y WSL confirma que no puede iniciar. Falta habilitar SVM en BIOS, reiniciar y completar la aceptación de términos de Docker por el usuario. No se acreditan instalación, arranque de contenedores, persistencia ni backup/restore en Windows. Esas operaciones conservan únicamente la evidencia CI Linux del run10. La consulta adicional del registro Microsoft devolvió el mismo digest SQL 2022 ya analizado; el corte histórico no tenía aceptación; la autorización posterior figura en sql-risk-acceptance.md.

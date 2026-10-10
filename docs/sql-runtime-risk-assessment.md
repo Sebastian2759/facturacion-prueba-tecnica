@@ -1,6 +1,8 @@
 # Evaluación del riesgo de la imagen SQL Server
 
-La detección de estos componentes afectados es un resultado del proceso de revisión DevSecOps. No se atribuye a una demo sin controles ni implica que los fallos sean aceptables por ser habituales. Su gestión requiere análisis, reducción de exposición y corrección verificada; la [explicación para el evaluador](SECURITY.md#interpretación-de-los-hallazgos-de-terceros) distingue este contexto de una aceptación formal del riesgo. Los hallazgos permanecen abiertos y no hay excepción SQL aprobada.
+**Decisión vigente:** el propietario aprobó el riesgo residual SQL para evaluación local con datos ficticios. La [aceptación SQL-LOCAL-2026-10-09](sql-risk-acceptance.md) y su inventario exacto permiten tratar sólo los hallazgos conocidos; los demás controles siguen siendo obligatorios. Los resultados que siguen conservan el historial anterior a esta decisión. La nueva CI y el ZIP aún están pendientes, al igual que el arranque completo en Windows.
+
+La detección de estos componentes afectados es un resultado del proceso de revisión DevSecOps. No se atribuye a una demo sin controles ni implica que los fallos sean aceptables por ser habituales. Su gestión requiere análisis, reducción de exposición y corrección verificada; la [explicación para el evaluador](SECURITY.md#interpretación-de-los-hallazgos-de-terceros) distingue este contexto de una aceptación formal del riesgo. Los hallazgos permanecen abiertos con riesgo aceptado por el propietario según la decisión vigente indicada arriba.
 
 ## Alternativa oficial RHEL comprobada el 9 de octubre de 2026
 

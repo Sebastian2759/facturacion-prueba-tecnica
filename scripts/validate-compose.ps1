@@ -15,6 +15,8 @@ try {
     $env:COMPOSE_PROJECT_NAME = 'facturacion_compose_check'
     $serialized = Invoke-Checked 'docker' @('compose', '--env-file', $emptyEnvironment, '-f', (Join-Path $script:ReleaseRoot 'compose.yaml'), '--profile', 'tools', 'config', '--format', 'json')
     $configuration = ($serialized -join "`n") | ConvertFrom-Json
+    $lock = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'toolchain-lock.json') -Raw | ConvertFrom-Json
+    if ($configuration.services.database.image -cne $lock.images.sqlserver) { throw 'La imagen SQL de Compose debe coincidir con el digest analizado y aceptado.' }
     $port = @($configuration.services.app.ports)
     if ($port.Count -ne 1 -or $port[0].host_ip -ne '127.0.0.1' -or $port[0].published -ne '5080') { throw 'La aplicación debe publicar un único puerto 5080 en loopback.' }
     if ($configuration.services.database.PSObject.Properties['ports']) { throw 'SQL Server no debe publicar puertos en la entrega.' }

@@ -140,13 +140,23 @@ if ($receipt.status -ne 'functional-verified-not-authorized-for-release' -or
 }
 Invoke-Checked 'trivy' @('image', '--severity', 'HIGH,CRITICAL', '--exit-code', '1', 'facturacion-local-ci')
 Invoke-Checked 'trivy' @('image', '--severity', 'HIGH,CRITICAL', '--exit-code', '1', 'facturacion-migrator-ci')
+$sqlDecisionPath = Join-Path $stagePath 'docs/sql-risk-decision.json'
+$securityRoot = Join-Path $script:ReleaseRoot 'artifacts/security'
+$runtimeSummary = @(Get-Content -LiteralPath (Join-Path $securityRoot 'runtime-images-summary.json') -Raw | ConvertFrom-Json)
+$sqlScans = @($runtimeSummary | Where-Object { $_.name -eq 'sqlserver' })
+if ($sqlScans.Count -ne 1 -or -not $sqlScans[0].acceptanceValidated) { throw 'Falta la decisión SQL de esta ejecución.' }
+& (Join-Path $PSScriptRoot 'assert-sql-risk.ps1') -ReportPath (Join-Path $securityRoot 'trivy-sqlserver.json') -ScannerExitCode $sqlScans[0].exitCode -Image $manifest.images.sqlserver -PolicyPath (Join-Path $stagePath 'docs/sql-risk-acceptance.json') -Profile $manifest.profile -DecisionPath $sqlDecisionPath
+$sqlDecision = Get-Content -LiteralPath $sqlDecisionPath -Raw | ConvertFrom-Json
 Invoke-Checked 'gitleaks' @('dir', $stagePath, '--redact', '--report-format', 'json', '--report-path', (Join-Path $script:ReleaseRoot 'artifacts/security/package-secrets.json'))
 Invoke-Checked 'trivy' @('fs', '--scanners', 'vuln,misconfig,secret', '--severity', 'HIGH,CRITICAL', '--exit-code', '1', $stagePath)
 Invoke-Checked 'trivy' @('fs', '--format', 'cyclonedx', '--output', (Join-Path $stagePath 'SBOM.cdx.json'), $stagePath)
-$manifest.status = 'release-verified'
+$manifest.status = 'release-verified-with-accepted-risk'
+$manifest | Add-Member -NotePropertyName sqlRiskAcceptance -NotePropertyValue $sqlDecision
+$manifest | Add-Member -NotePropertyName windowsDockerValidation -NotePropertyValue 'pending-manual-verification'
 $manifest.backupVerified = $true
 Write-Utf8 $manifestPath ($manifest | ConvertTo-Json -Depth 8)
 Write-Utf8 (Join-Path $stagePath 'docs/release-evidence.md') "# Evidencia de generación`n`nCommit: $($manifest.sourceCommit). Verificación UTC: $([DateTime]::UtcNow.ToString('o')).`n`nEl job generador completó: backup CHECKSUM y VERIFYONLY, restauración en otra base, tablas/historial EF y ausencia de registros, CHECKDB, factura ficticia creada y consultada vía API y navegador real tras restaurar, repetición idempotente, sesión/CSRF, Accounts simuladas y rechazo real, Gitleaks del paquete, Trivy y baseline ZAP local. Consulte los reportes y resultados de CI del mismo commit; no es una certificación ni un pentest exhaustivo.`n"
+Add-Content -LiteralPath (Join-Path $stagePath 'docs/release-evidence.md') -Encoding utf8 -Value "`nSQL tiene riesgo aceptado explícitamente: $($sqlDecision.acceptanceId), $($sqlDecision.highFindings) hallazgos HIGH, sin CRITICAL. No significa corrección ni escaneo limpio. Consulte sql-risk-acceptance.md/json y sql-risk-decision.json. Esta evidencia procede de CI Linux; el arranque completo en Docker Desktop Windows permanece pendiente. La caducidad limita nuevas entregas; no desactiva una instalación existente."
 $checksums = Get-ChildItem -LiteralPath $stagePath -Recurse -Force -File | Sort-Object FullName | ForEach-Object {
     $relative = [IO.Path]::GetRelativePath($stagePath, $_.FullName).Replace('\','/')
     "$(($_ | Get-FileHash -Algorithm SHA256).Hash.ToLowerInvariant())  $relative"

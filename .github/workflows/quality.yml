@@ -72,6 +72,7 @@ jobs:
         run: |
           ./scripts/tests/zap-gate.tests.ps1
           ./scripts/tests/smoke-cache.tests.ps1
+          ./scripts/tests/sql-risk.tests.ps1
       - name: Formatting and build with security analyzers
         id: build
         run: |

@@ -1,5 +1,7 @@
 # Evaluación local — comenzar aquí
 
+**Riesgo SQL aceptado para esta evaluación:** consulte [motivo, alcance y vigencia](sql-risk-acceptance.md). El paquete identifica los hallazgos pendientes; use datos ficticios y acceso local. La aceptación no acredita por sí sola que el ZIP esté generado ni que Windows haya sido probado.
+
 Esta entrega se ejecuta en **Windows x64 con Docker Desktop en modo Linux**. La aplicación abre en `http://127.0.0.1:5080`. El paquete contiene Angular y .NET ya compilados: el evaluador no necesita Node, Visual Studio ni SDK de .NET.
 
 **Estado del repositorio:** los scripts y el pipeline definen la construcción y los controles. Un directorio de fuentes o un payload `prepared-not-verified` no constituye el ZIP final. Sólo un job de CI exitoso que adjunte `Aplicacion-<version>.zip`, su checksum y las evidencias del mismo commit acredita una entrega verificada. No se publica la aplicación en un servicio de alojamiento.
@@ -25,7 +27,9 @@ Windows puede marcar los archivos descargados. Después de comprobar su proceden
 - Memoria suficiente para SQL Server (límite de 2 GiB), la API (512 MiB), Docker y Windows. Se recomiendan al menos 6 GiB asignables al entorno Docker y 10 GiB de disco libre para imágenes, base y backups.
 - Puerto `5080` libre. SQL Server no publica ningún puerto hacia Windows en la entrega.
 
-Los scripts comprueban Docker y el perfil Linux; no instalan software de sistema ni aceptan configuraciones del equipo por usted.
+**Si Docker ya funciona con WSL 2 y contenedores Linux, no necesita entrar a la BIOS ni repetir la instalación.** Puede pasar directamente a extraer e iniciar. Si falta Docker, instálelo y complete su primer inicio. Sólo si informa virtualización deshabilitada, revise Administrador de tareas → Rendimiento → CPU y siga las instrucciones del fabricante para activar SVM (AMD) o VT-x (Intel) en BIOS/UEFI, guardar y reiniciar. En un equipo administrado puede necesitar ayuda de TI.
+
+Esta preparación es una sola vez por equipo. Los scripts comprueban Docker y el perfil Linux; no instalan software de sistema, cambian la BIOS ni aceptan términos por usted. Después, iniciar.cmd automatiza la aplicación y su base de datos.
 
 ## 3. Extraer e iniciar
 

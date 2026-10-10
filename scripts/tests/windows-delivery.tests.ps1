@@ -79,6 +79,20 @@ foreach ($unsafePath in @('../outside.txt', '..\outside.txt', 'C:\outside.txt'))
 }
 # These fixtures exercise verifier rejection; never label them as deliverables.
 Write-Utf8 $sumPath $valid
+$accepted = @{ status = 'release-verified-with-accepted-risk'; profile = 'local-evaluation'; images = @{ sqlserver = 'synthetic-image' }; sqlRiskAcceptance = @{ acceptanceId = 'SQL-LOCAL-2026-10-09'; status = 'accepted-risk'; image = 'synthetic-image' } }
+Write-Utf8 (Join-Path $package 'release.json') ($accepted | ConvertTo-Json -Depth 5)
+Write-FixtureChecksums
+& $verify -Root $package 6>$null
+Pass 'Verify synthetic local package with explicit risk acceptance'
+$accepted.profile = 'production'
+Write-Utf8 (Join-Path $package 'release.json') ($accepted | ConvertTo-Json -Depth 5)
+Write-FixtureChecksums
+Expect-Rejection 'Reject SQL acceptance in production package' { & $verify -Root $package 6>$null } 'aceptaci'
+$accepted.profile = 'local-evaluation'
+$accepted.sqlRiskAcceptance.image = 'different-image'
+Write-Utf8 (Join-Path $package 'release.json') ($accepted | ConvertTo-Json -Depth 5)
+Write-FixtureChecksums
+Expect-Rejection 'Reject SQL acceptance for different package image' { & $verify -Root $package 6>$null } 'aceptaci'
 $report = [ordered]@{
     status = 'windows-script-checks-passed-not-an-installation-test'
     verifiedUtc = [DateTime]::UtcNow.ToString('o')

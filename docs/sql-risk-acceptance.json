@@ -1,0 +1,584 @@
+{
+  "schemaVersion": 1,
+  "id": "SQL-LOCAL-2026-10-09",
+  "status": "accepted",
+  "owner": "Sebastian Forero / Sebastian2759",
+  "authorization": "Usuario: ya te dije que la aceptemos dejando claro el por que; autorización explícita en este chat.",
+  "acceptedAtUtc": "2026-10-10T02:32:00Z",
+  "expiresAtUtc": "2026-10-24T02:32:00Z",
+  "scope": "local-evaluation",
+  "image": "mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090",
+  "baselineRun": "37994136672",
+  "baselineReportSha256": "9a107b86281cbbef6ab3377411c55e6dd865b65b224c9b16721515c94bb6cee8",
+  "reason": "Evaluación técnica local con datos ficticios y SQL Server requerido. Las alternativas oficiales SQL 2025 y RHEL analizadas no eliminan los hallazgos; los binarios Go propietarios requieren corrección del proveedor. El aislamiento y mínimo privilegio reducen exposición sin eliminar el riesgo.",
+  "findings": [
+    {
+      "target": "mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090 (ubuntu 22.04)",
+      "type": "ubuntu",
+      "cve": "CVE-2026-84782",
+      "package": "libssl3",
+      "version": "3.0.2-0ubuntu1.29",
+      "severity": "HIGH"
+    },
+    {
+      "target": "mcr.microsoft.com/mssql/server:2022-latest@sha256:4402d880dd4c34bfa7d8705e56a86cd6c88da80a1f6bbbe741f999e76264a090 (ubuntu 22.04)",
+      "type": "ubuntu",
+      "cve": "CVE-2026-84782",
+      "package": "openssl",
+      "version": "3.0.2-0ubuntu1.29",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-27145",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-32280",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-32281",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-32283",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-33810",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-33811",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-33814",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-33818",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-39820",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-39821",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-39822",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-39836",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-42499",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-42504",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-46600",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-56853",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-56858",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-56859",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-56860",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-56862",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-78667",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-78669",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql-extensibility/bin/launchpad",
+      "type": "gobinary",
+      "cve": "CVE-2026-97031",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-27145",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-32280",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-32281",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-32283",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-33810",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-33811",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-33814",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-33818",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-39820",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-39821",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-39822",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-39836",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-42499",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-42504",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-46600",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-56853",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-56858",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-56859",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-56860",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-56862",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-78667",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-78669",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/launchpadd",
+      "type": "gobinary",
+      "cve": "CVE-2026-97031",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-27145",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-32280",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-32281",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-32283",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-33810",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-33811",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-33814",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-33818",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-39820",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-39821",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-39822",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-39836",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-42499",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-42504",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-46600",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-56853",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-56858",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-56859",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-56860",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-56862",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-78667",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-78669",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    },
+    {
+      "target": "opt/mssql/bin/setnetbr",
+      "type": "gobinary",
+      "cve": "CVE-2026-97031",
+      "package": "stdlib",
+      "version": "v1.26.1",
+      "severity": "HIGH"
+    }
+  ]
+}

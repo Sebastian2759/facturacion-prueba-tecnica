@@ -5,7 +5,7 @@ $reports = Join-Path $script:ReleaseRoot 'artifacts/security'
 $failed = $false
 $summary = @()
 # Candidate results are diagnostic only. The actual SQL 2022 image remains a
-# required gate and no candidate silently replaces the configured database.
+# required gate with an explicit local-only acceptance; candidates never replace it.
 $targets = @(
     @{ Name = 'aspnet'; Image = $lock.images.aspnet; Required = $true },
     @{ Name = 'sqlserver'; Image = $lock.images.sqlserver; Required = $true },
@@ -28,8 +28,14 @@ foreach ($target in $targets) {
             }
         } catch { $validReport = $false }
     }
-    if ($target.Required -and ($scanExit -ne 0 -or -not $validReport -or $findings -gt 0)) { $failed = $true }
-    $summary += [pscustomobject]@{ name = $target.Name; image = $target.Image; required = $target.Required; exitCode = $scanExit; validReport = $validReport; highCriticalFindings = $findings }
+    $accepted = $false
+    if ($target.Name -eq 'sqlserver') {
+        try {
+            & (Join-Path $PSScriptRoot 'assert-sql-risk.ps1') -ReportPath $path -ScannerExitCode $scanExit -Image $target.Image -DecisionPath (Join-Path $reports 'sql-risk-decision.json')
+            $accepted = $true
+        } catch { Write-Warning $_.Exception.Message; $failed = $true }
+    } elseif ($target.Required -and ($scanExit -ne 0 -or -not $validReport -or $findings -gt 0)) { $failed = $true }
+    $summary += [pscustomobject]@{ name = $target.Name; image = $target.Image; required = $target.Required; exitCode = $scanExit; validReport = $validReport; highCriticalFindings = $findings; acceptanceValidated = $accepted }
     Write-Host "$($target.Name): HIGH/CRITICAL=$findings; exit=$scanExit; required=$($target.Required); report=$validReport"
 }
 Write-Utf8 (Join-Path $reports 'runtime-images-summary.json') ($summary | ConvertTo-Json -Depth 5)
