@@ -1,5 +1,9 @@
 # Aceptación del riesgo SQL para la evaluación local
 
+**Estado vigente — Windows verificado:** `Aplicacion-1.0.0-ci.15.zip`, commit `89be6447e9f69fb7b6b24be2dd90b9fd0fbff6c6`, generado por [CI run15](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38022085155), fue descargado y probado sin modificar en Windows 11 x64 con Docker Desktop y los lanzadores de PowerShell 5.1. Pasaron arranque desde extracción nueva, factura por API y navegador, persistencia después de detener/iniciar, backup, restauración en una base nueva y CHECKDB. SHA-256: `fd333c43e0ad90a9ef1055481761c211557b1fa95eb6975373ecc15f74799652`. SQL mantiene riesgo aceptado, no corregido. Las referencias a SVM desactivado o pruebas Windows pendientes que se conservan más abajo pertenecen a cortes históricos anteriores a esta validación.
+
+[Detalle de la prueba Windows](windows-validation.md).
+
 **Decisión aprobada por el propietario:** Sebastian Forero / cuenta personal Sebastian2759. El usuario confirmó en el chat: «ya te dije que la aceptemos dejando claro el por que». Se registra el 9 de octubre de 2026, 21:32 de Colombia (10 de octubre, 02:32 UTC), con identificador **SQL-LOCAL-2026-10-09**.
 
 ## Motivo y límites

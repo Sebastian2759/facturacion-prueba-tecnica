@@ -1,5 +1,9 @@
 # Requisitos y trazabilidad
 
+**Estado vigente — Windows verificado:** `Aplicacion-1.0.0-ci.15.zip`, commit `89be6447e9f69fb7b6b24be2dd90b9fd0fbff6c6`, generado por [CI run15](https://github.com/Sebastian2759/facturacion-prueba-tecnica/actions/runs/38022085155), fue descargado y probado sin modificar en Windows 11 x64 con Docker Desktop y los lanzadores de PowerShell 5.1. Pasaron arranque desde extracción nueva, factura por API y navegador, persistencia después de detener/iniciar, backup, restauración en una base nueva y CHECKDB. SHA-256: `fd333c43e0ad90a9ef1055481761c211557b1fa95eb6975373ecc15f74799652`. SQL mantiene riesgo aceptado, no corregido. Las referencias a SVM desactivado o pruebas Windows pendientes que se conservan más abajo pertenecen a cortes históricos anteriores a esta validación.
+
+[Detalle de la prueba Windows](windows-validation.md).
+
 Fuente: examen práctico proporcionado por el usuario y plantilla Template. El PDF define el ejercicio; no se distribuye con el código si contiene credenciales. Las decisiones de producto/seguridad adicionales se distinguen del enunciado. La entrega online fue cancelada; queda ZIP Windows x64 con internet, GitHub privado y SharePoint.
 
 ## Facturación
